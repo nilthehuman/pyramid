@@ -7,6 +7,7 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
 
@@ -29,7 +30,7 @@ class KeyboardHandler(Widget):
             return True
         if keycode[1] == 'shift':
             print("yay you pressed shift!")
-            App.get_running_app().root.toggle_overlay_panel()
+            App.get_running_app().root.toggle_overlay_grid()
             return True
         if keycode[1] == '?':
             print("yay you pressed question mark!")
@@ -49,7 +50,7 @@ class KeyboardHandler(Widget):
         print("keycode:", keycode)
         if keycode[1] == 'shift':
             print("yay you released shift!")
-            App.get_running_app().root.toggle_overlay_panel()
+            App.get_running_app().root.toggle_overlay_grid()
             return True
         return False
 
@@ -59,7 +60,7 @@ class PyramidWindow(AnchorLayout):
     def __init__(self, para=None, **kwargs):
         super().__init__(**kwargs)
         self.help_window = None
-        self.overlay_panel = None
+        self.overlay_grid = None
 
     def toggle_help_window(self, *_):
         if not self.help_window:
@@ -69,13 +70,13 @@ class PyramidWindow(AnchorLayout):
             self.remove_widget(self.help_window)
             self.help_window = None
 
-    def toggle_overlay_panel(self):
-        if not self.overlay_panel:
-            self.overlay_panel = ParadigmPanel()
-            self.add_widget(self.overlay_panel)
+    def toggle_overlay_grid(self):
+        if not self.overlay_grid:
+            self.overlay_grid = ParadigmGrid()
+            self.add_widget(self.overlay_grid)
         else:
-            self.remove_widget(self.overlay_panel)
-            self.overlay_panel = None
+            self.remove_widget(self.overlay_grid)
+            self.overlay_grid = None
 
 
 class HelpButton(Button):
@@ -88,11 +89,8 @@ class HelpButton(Button):
     def toggle_help_window(self, *args):
         App.get_running_app().root.toggle_help_window(*args)
 
+
 class HelpWindow(Label):
-    pass
-
-
-class ParadigmPanel(AnchorLayout):
     pass
 
 
@@ -101,8 +99,17 @@ class ParadigmGrid(GridLayout):
     def __init__(self, para=None, **kwargs):
         super().__init__(**kwargs)
         self.para = para
-        for _ in range(16):
-            self.add_widget(ParadigmCell())
+        self.add_widget(Widget())  # spacer in the top left corner
+        for _ in range(4):
+            self.add_widget(ParadigmText())
+        for _ in range(4):
+            self.add_widget(ParadigmText())
+            for _ in range(4):
+                self.add_widget(ParadigmCell())
+
+
+class ParadigmText(TextInput):
+    pass
 
 
 class ParadigmCell(Button):

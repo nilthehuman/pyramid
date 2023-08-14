@@ -14,8 +14,8 @@
         anchor_x: 'left'
         anchor_y: 'top'
         HelpButton:
-    ParadigmPanel:
-        id: panel
+    ParadigmGrid:
+        id: grid
 
 
 <HelpButton>
@@ -38,29 +38,26 @@
             pos: self.pos
 
 
-<ParadigmPanel>
+<ParadigmGrid>
     size_hint: None, 0.8
-    width: 1.1 * self.height
-    anchor_x: 'right'
-    anchor_y: 'bottom'
-    padding: 40, 40, 0, 0
-    canvas:
+    width: self.height
+    cols: 5
+    rows: 5
+    padding: 20
+    spacing: 10, 10
+    canvas.before:
         Color:
             rgb: 0.08, 0, 0.1
         Rectangle:
             pos: self.pos
             size: self.size
-    ParadigmGrid:
-        id: grid
 
 
-<ParadigmGrid>
-    size_hint: None, 1
-    width: self.height
-    cols: 4
-    rows: 4
-    padding: 20
-    spacing: 10, 10
+<ParadigmText>
+    size_hint_y: None
+    height: 40
+    color: 0, 0, 0
+    halign: 'center'
 
 
 <ParadigmCell>
