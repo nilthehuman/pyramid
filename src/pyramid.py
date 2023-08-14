@@ -87,8 +87,26 @@ class Paradigm(list):
         for row in range(self.num_rows):
             for col in range(self.num_cols):
                 para_truth[row][col] = False if self[row][col] < 0.5 else True
+        # get rid of trivial (i.e. full or empty) rows and columns
+        trivial_rows = []
+        for row in range(len(para_truth)):
+            if all(para_truth[row]) or all(not p for p in para_truth[row]):
+                trivial_rows.append(row)
+        trivial_rows.reverse()
+        for row in trivial_rows:
+            del para_truth[row]
+        trivial_cols = []
+        for col in range(len(para_truth[0])):
+            if all(para_truth[row][col] for row in range(len(para_truth))) or all(not para_truth[row][col] for row in range(len(para_truth))):
+                trivial_cols.append(col)
+        trivial_cols.reverse()
+        for col in trivial_cols:
+            for row in range(len(para_truth)):
+                del para_truth[row][col]
+        if not para_truth or not para_truth[0]:
+            return True
         # use brute force for now
-        all_permutations = product(permutations(range(self.num_rows)), permutations(range(self.num_cols)))
+        all_permutations = product(permutations(range(len(para_truth))), permutations(range(len(para_truth[0]))))
         for permutation in all_permutations:
             next_para = deepcopy(para_truth)
             for row in range(self.num_rows):
