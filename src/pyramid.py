@@ -109,11 +109,39 @@ class Paradigm(list):
         all_permutations = product(permutations(range(len(para_truth))), permutations(range(len(para_truth[0]))))
         for permutation in all_permutations:
             next_para = deepcopy(para_truth)
+            for row in range(len(para_truth)):
+                for col in range(len(para_truth[0])):
+                    permuted_row = permutation[0][row]
+                    permuted_col = permutation[1][col]
+                    next_para[row][col] = para_truth[permuted_row][permuted_col]
+            if check(next_para):
+                return True
+        return False
+
+    def is_pyramid_strict(self):
+        """Check the central working hypothesis for the current state of the paradigm,
+        but make sure all cells are ordered monotonously as well."""
+        def check(paradigm):
+            for row in paradigm:
+                for cell, next_cell in zip(row, row[1:]):
+                    if cell < next_cell:
+                        return False
+            for row_i in range(len(paradigm) - 1):
+                for col_i in range(len(paradigm[0])):
+                    if paradigm[row_i][col_i] < paradigm[row_i + 1][col_i]:
+                        return False
+            return True
+        if not self or not self[0]:
+            return True
+        # use brute force for now
+        all_permutations = product(permutations(range(len(self))), permutations(range(len(self[0]))))
+        for permutation in all_permutations:
+            next_para = deepcopy(self)
             for row in range(self.num_rows):
                 for col in range(self.num_cols):
                     permuted_row = permutation[0][row]
                     permuted_col = permutation[1][col]
-                    next_para[row][col] = para_truth[permuted_row][permuted_col]
+                    next_para[row][col] = self[permuted_row][permuted_col]
             if check(next_para):
                 return True
         return False
