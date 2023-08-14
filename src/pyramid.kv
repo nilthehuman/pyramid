@@ -9,8 +9,33 @@
             size: self.size
     anchor_x: 'center'
     anchor_y: 'center'
+    AnchorLayout:
+        size_hint: 1, 1
+        anchor_x: 'left'
+        anchor_y: 'top'
+        HelpButton:
     ParadigmPanel:
         id: panel
+
+
+<HelpButton>
+    size_hint: None, None
+    size: 70, 40
+    text: 'Help'
+    color: 0, 0, 0
+    background_color: 2.0, 1.0, 0.8
+
+
+<HelpWindow>
+    size_hint: 1, 1
+    background_color: 0.4, 0.2, 0.1
+    text: 'TODO: help text goes here...'
+    canvas.before:
+        Color:
+            rgb: 0.24, 0.12, 0.48
+        Rectangle:
+            size: self.size
+            pos: self.pos
 
 
 <ParadigmPanel>

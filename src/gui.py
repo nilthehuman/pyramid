@@ -3,14 +3,15 @@
 from kivy import require as kivy_require
 kivy_require('2.1.0')
 from kivy.app import App
-#from kivy.core.window import Window
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
 
 from pyramid import Paradigm
+
 
 class KeyboardHandler(Widget):
     """Listens for keypresses in the application's window and dispatches the appropriate calls."""
@@ -33,6 +34,11 @@ class KeyboardHandler(Widget):
         if keycode[1] == '?':
             print("yay you pressed question mark!")
             return True
+        if keycode[1] == 'escape':
+            print("yay you pressed escape!")
+            if App.get_running_app().root.help_window:
+                App.get_running_app().root.toggle_help_window()
+                return True
         if keycode[1] == 'q':
             print("yay you pressed q!")
             App.get_running_app().stop()
@@ -52,15 +58,38 @@ class PyramidWindow(AnchorLayout):
 
     def __init__(self, para=None, **kwargs):
         super().__init__(**kwargs)
+        self.help_window = None
         self.overlay_panel = None
+
+    def toggle_help_window(self, *_):
+        if not self.help_window:
+            self.help_window = HelpWindow()
+            self.add_widget(self.help_window)
+        else:
+            self.remove_widget(self.help_window)
+            self.help_window = None
 
     def toggle_overlay_panel(self):
         if not self.overlay_panel:
-            self.overlay_panel = ParadigmCell()
+            self.overlay_panel = ParadigmPanel()
             self.add_widget(self.overlay_panel)
         else:
             self.remove_widget(self.overlay_panel)
             self.overlay_panel = None
+
+
+class HelpButton(Button):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.bind(on_release=self.toggle_help_window)
+
+    # you can't bind to PyramidWindow in __init__ because of Kivy's initialization order
+    def toggle_help_window(self, *args):
+        App.get_running_app().root.toggle_help_window(*args)
+
+class HelpWindow(Label):
+    pass
 
 
 class ParadigmPanel(AnchorLayout):
