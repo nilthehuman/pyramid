@@ -12,32 +12,27 @@ class Paradigm(list):
         self.affect_farther_cells = False
         self.experience = 0
         if not row_values or not col_values:
-            self.num_rows = 0
-            self.num_cols = 0
             return
         assert len(row_values) == len(set(row_values))
         assert len(col_values) == len(set(col_values))
         self.row_values = row_values
         self.col_values = col_values
-        # store table dimensions separately: redundant but convenient
-        self.num_rows = len(row_values)
-        self.num_cols = len(col_values)
         for _ in row_values:
             self.append([None for _ in col_values])
 
     def initialize(self, corner_rows, corner_cols):
         """Fill the top left corner of the given size with 1's, the rest of the table with 0's."""
-        assert 0 < corner_rows < self.num_rows
-        assert 0 < corner_cols < self.num_cols
+        assert 0 < corner_rows < len(self)
+        assert 0 < corner_cols < len(self[0])
         assert self[0][0] is None
-        for row in range(self.num_rows):
-            for col in range(self.num_cols):
+        for row in range(len(self)):
+            for col in range(len(self[0])):
                 self[row][col] = 1 if row < corner_rows and col < corner_cols else 0
 
     def pick_cell(self):
         """Select a uniformly random cell in the paradigm."""
-        row = randrange(self.num_rows)
-        col = randrange(self.num_cols)
+        row = randrange(len(self))
+        col = randrange(len(self[0]))
         return row, col
 
     def nudge(self, row, col, outcome):
@@ -51,11 +46,11 @@ class Paradigm(list):
         row, col = self.pick_cell()
         outcome = True if random() < self[row][col] else False
         self.nudge(row, col, outcome)
-        for i in range(1, max(self.num_rows, self.num_cols)):
+        for i in range(1, max(len(self), len(self[0]))):
             for y, x in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
                 current_row = row + i * y
                 current_col = col + i * x
-                if 0 <= current_row < self.num_rows and 0 <= current_col < self.num_cols:
+                if 0 <= current_row < len(self) and 0 <= current_col < len(self[0]):
                     self.nudge(current_row, current_col, outcome)
             if not self.affect_farther_cells:
                 break
@@ -73,7 +68,7 @@ class Paradigm(list):
                 try:
                     first_false = row.index(False)
                 except ValueError:
-                    first_false = self.num_rows
+                    first_false = len(self)
                 if not all(not cell for cell in row[first_false + 1:]):
                     # discontiguous row
                     return False
@@ -84,8 +79,8 @@ class Paradigm(list):
             return True
         assert self[0][0] is not None
         para_truth = deepcopy(self)
-        for row in range(self.num_rows):
-            for col in range(self.num_cols):
+        for row in range(len(self)):
+            for col in range(len(self[0])):
                 para_truth[row][col] = False if self[row][col] < 0.5 else True
         # get rid of trivial (i.e. full or empty) rows and columns
         trivial_rows = []
@@ -137,8 +132,8 @@ class Paradigm(list):
         all_permutations = product(permutations(range(len(self))), permutations(range(len(self[0]))))
         for permutation in all_permutations:
             next_para = deepcopy(self)
-            for row in range(self.num_rows):
-                for col in range(self.num_cols):
+            for row in range(len(self)):
+                for col in range(len(self[0])):
                     permuted_row = permutation[0][row]
                     permuted_col = permutation[1][col]
                     next_para[row][col] = self[permuted_row][permuted_col]
