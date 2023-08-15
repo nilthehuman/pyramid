@@ -87,28 +87,17 @@ class Paradigm(list):
                 last_row_first_false = first_false
             return True
         assert self[0][0] is not None
+        if not self or not self[0]:
+            return self
         para_truth = deepcopy(self)
         for row in range(len(self)):
             for col in range(len(self[0])):
                 para_truth[row][col] = False if self[row][col] < 0.5 else True
         # get rid of trivial (i.e. full or empty) rows and columns
-        trivial_rows = []
-        for row in range(len(para_truth)):
-            if all(para_truth[row]) or all(not p for p in para_truth[row]):
-                trivial_rows.append(row)
-        trivial_rows.reverse()
-        for row in trivial_rows:
-            del para_truth[row]
-        trivial_cols = []
-        for col in range(len(para_truth[0])):
-            if all(para_truth[row][col] for row in range(len(para_truth))) or all(not para_truth[row][col] for row in range(len(para_truth))):
-                trivial_cols.append(col)
-        trivial_cols.reverse()
-        for col in trivial_cols:
-            for row in range(len(para_truth)):
-                del para_truth[row][col]
-        if not para_truth or not para_truth[0]:
-            return True
+        full_rows  = filter(lambda row: all(para_truth[row]), range(len(para_truth)))
+        empty_rows = filter(lambda row: all(map(lambda x: not x, para_truth[row])), range(len(para_truth)))
+        full_cols  = filter(lambda col: all(row[col] for row in para_truth), range(len(para_truth)))
+        empty_cols = filter(lambda col: all(map(lambda x: not x, (row[col] for row in para_truth))), range(len(para_truth)))
         # use brute force for now
         all_permutations = product(permutations(range(len(para_truth))), permutations(range(len(para_truth[0]))))
         for permutation in all_permutations:
@@ -117,10 +106,12 @@ class Paradigm(list):
                 for col in range(len(para_truth[0])):
                     permuted_row = permutation[0][row]
                     permuted_col = permutation[1][col]
+                    next_para.row_labels[row] = para_truth.row_labels[permuted_row]
+                    next_para.col_labels[col] = para_truth.col_labels[permuted_col]
                     next_para[row][col] = para_truth[permuted_row][permuted_col]
             if check(next_para):
-                return True
-        return False
+                return next_para
+        return None
 
     def is_pyramid_strict(self):
         """Check the central working hypothesis for the current state of the paradigm,
@@ -136,7 +127,8 @@ class Paradigm(list):
                         return False
             return True
         if not self or not self[0]:
-            return True
+            return self
+        assert self[0][0] is not None
         # use brute force for now
         all_permutations = product(permutations(range(len(self))), permutations(range(len(self[0]))))
         for permutation in all_permutations:
@@ -145,7 +137,9 @@ class Paradigm(list):
                 for col in range(len(self[0])):
                     permuted_row = permutation[0][row]
                     permuted_col = permutation[1][col]
+                    next_para.row_labels[row] = self.row_labels[permuted_row]
+                    next_para.col_labels[col] = self.col_labels[permuted_col]
                     next_para[row][col] = self[permuted_row][permuted_col]
             if check(next_para):
-                return True
-        return False
+                return next_para
+        return None
