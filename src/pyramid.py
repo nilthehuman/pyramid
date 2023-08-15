@@ -7,29 +7,27 @@ from random import random, randrange, seed  # TODO: seed() the generator at the 
 class Paradigm(list):
     """An m x n table of two orthogonal, multivalued morpho(phono)logical features that jointly determine the binary value of a third feature."""
 
-    def __init__(self, row_labels=None, col_labels=None):
+    def __init__(self, row_labels=None, col_labels=None, matrix=None):
         """Overloaded constructor, works both with a matrix as argument or a pair of label lists."""
         super().__init__([])
         self.affect_farther_cells = False
         self.experience = 0
-        self.row_labels = []
-        self.col_labels = []
-        if not row_labels:
-            return
-        if all(isinstance(elem, list) for elem in row_labels):
-            # the argument is a real-valued matrix, copy it one for one
-            assert not col_labels
-            values = row_labels
-            for row in values:
+        if row_labels:
+            assert len(row_labels) == len(set(row_labels))
+            self.row_labels = row_labels
+        else:
+            self.row_labels = []
+        if col_labels:
+            assert len(col_labels) == len(set(col_labels))
+            self.col_labels = col_labels
+        else:
+            self.col_labels = []
+        if matrix:
+            for row in matrix:
                 self.append(deepcopy(row))
-            return
-        # the arguments are lists of labels
-        assert len(row_labels) == len(set(row_labels))
-        assert len(col_labels) == len(set(col_labels))
-        self.row_labels = row_labels
-        self.col_labels = col_labels
-        for _ in row_labels:
-            self.append([None for _ in col_labels])
+        else:
+            for _ in row_labels:
+                self.append([None for _ in col_labels])
 
     def initialize(self, corner_rows, corner_cols):
         """Fill the top left corner of the given size with 1's, the rest of the table with 0's."""
