@@ -3,6 +3,7 @@
 from kivy import require as kivy_require
 kivy_require('2.1.0')
 from kivy.app import App
+from kivy.graphics import Color
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
@@ -61,6 +62,7 @@ class PyramidWindow(AnchorLayout):
         super().__init__(**kwargs)
         self.help_window = None
         self.overlay_grid = None
+        self.ids.grid.set_para(para)
 
     def toggle_help_window(self, *_):
         if not self.help_window:
@@ -72,8 +74,10 @@ class PyramidWindow(AnchorLayout):
 
     def toggle_overlay_grid(self):
         if not self.overlay_grid:
-            self.overlay_grid = ParadigmGrid()
-            self.add_widget(self.overlay_grid)
+            para_rearranged = self.ids.grid.para.is_pyramid()
+            if para_rearranged:
+                self.overlay_grid = ParadigmGrid(para_rearranged)
+                self.add_widget(self.overlay_grid)
         else:
             self.remove_widget(self.overlay_grid)
             self.overlay_grid = None
@@ -98,14 +102,21 @@ class ParadigmGrid(GridLayout):
 
     def __init__(self, para=None, **kwargs):
         super().__init__(**kwargs)
+        if para:
+            self.set_para(para)
+
+    def set_para(self, para):
+        """Clear our child widgets and replace them with text fields and buttons corresponding to the new paradigm we have been handed."""
         self.para = para
+        if not para:
+            return
         self.add_widget(Widget())  # spacer in the top left corner
-        for _ in range(4):
-            self.add_widget(ParadigmText())
-        for _ in range(4):
-            self.add_widget(ParadigmText())
-            for _ in range(4):
-                self.add_widget(ParadigmCell())
+        for label in para.col_labels:
+            self.add_widget(ParadigmText(text=label))
+        for label, values in zip(para.row_labels, para):
+            self.add_widget(ParadigmText(text=label))
+            for value in values:
+                self.add_widget(ParadigmCell(value))
 
 
 class ParadigmText(TextInput):
@@ -113,12 +124,27 @@ class ParadigmText(TextInput):
 
 
 class ParadigmCell(Button):
-    pass
+
+    def __init__(self, bias, **kwargs):
+        super().__init__(**kwargs)
+        self.bias = bias
+        self.update()
+
+    def update(self):
+        self.text  = str(self.bias)
+        lime       = Color(0.22, 0.8, 0.22)
+        grapefruit = Color(0.9, 0.31, 0.3)
+        self.background_color = [sum(x) for x in zip([self.bias * c for c in lime.rgb],
+                                                     [(1-self.bias) * c for c in grapefruit.rgb])]
 
 
 class PyramidApp(App):
     def build(self):
-        root = PyramidWindow()
+        para = Paradigm( row_labels=['ház', 'gáz', 'tűz', 'pénz'],
+                         col_labels=['-k', '-t', '-m', '-d'],
+                         matrix=[[1, 1, 1, 1], [1, 0, 1, 1], [1, 1, 1, 1], [1, 0, 1, 1]] )
+                         #matrix=[[0, 0, 0, 0], [1, 0, 1, 1], [1, 0, 1, 1], [1, 0, 1, 1]] )
+        root = PyramidWindow(para)
         self.keyboardhandler = KeyboardHandler()
         return root
 
