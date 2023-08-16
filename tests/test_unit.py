@@ -11,7 +11,7 @@ def test_is_pyramid_both_true():
                [0, 0, 1, 0, 0],
                [1, 1, 1, 1, 0],
                [0, 0, 0, 0, 0] ]
-    para = Paradigm(matrix)
+    para = Paradigm(matrix=matrix)
     assert para.is_pyramid()
     assert para.is_pyramid_strict()
 
@@ -21,7 +21,7 @@ def test_is_pyramid_both_false():
                [0, 0, 1, 0, 0],
                [1, 1, 1, 1, 0],
                [0, 0, 0, 0, 0] ]
-    para = Paradigm(matrix)
+    para = Paradigm(matrix=matrix)
     assert not para.is_pyramid()
     assert not para.is_pyramid_strict()
 
@@ -31,6 +31,6 @@ def test_is_pyramid_only_strict_false():
                [1.0, 0, 0, 0, 0],
                [1.0, 0, 0, 0, 0],
                [0.0, 0, 0, 0, 0] ]
-    para = Paradigm(matrix)
+    para = Paradigm(matrix=matrix)
     assert para.is_pyramid()
     assert not para.is_pyramid_strict()
