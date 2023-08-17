@@ -96,8 +96,8 @@ class Paradigm(list):
         # isolate trivial (i.e. full or empty) rows and columns
         full_rows  = set(filter(lambda row: all(para_truth[row]), range(len(para_truth))))
         empty_rows = set(filter(lambda row: all(map(lambda x: not x, para_truth[row])), range(len(para_truth))))
-        full_cols  = set(filter(lambda col: all(row[col] for row in para_truth), range(len(para_truth))))
-        empty_cols = set(filter(lambda col: all(map(lambda x: not x, (row[col] for row in para_truth))), range(len(para_truth))))
+        full_cols  = set(filter(lambda col: all(row[col] for row in para_truth), range(len(para_truth[0]))))
+        empty_cols = set(filter(lambda col: all(map(lambda x: not x, (row[col] for row in para_truth))), range(len(para_truth[0]))))
         # use brute force for now
         row_permutations = [tuple(full_rows) + perm + tuple(empty_rows) for perm in permutations(set(range(len(para_truth))) - set(full_rows) - set(empty_rows))]
         col_permutations = [tuple(full_cols) + perm + tuple(empty_cols) for perm in permutations(set(range(len(para_truth[0]))) - set(full_cols) - set(empty_cols))]
