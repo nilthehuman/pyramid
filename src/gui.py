@@ -25,28 +25,21 @@ class KeyboardHandler(Widget):
         self.keyboard.bind(on_key_up=self.on_keyreleased)
 
     def on_keypressed(self, _keyboard, keycode, _text, modifiers):
-        print("keycode:", keycode)
         if keycode[1] == 'spacebar':
-            print("yay you pressed space!")
             return True
         if keycode[1] == 'shift' or keycode[1] == 'rshift':
-            print("yay you pressed shift!")
             App.get_running_app().root.toggle_overlay_grid()
             return True
         if keycode[1] == '?':
-            print("yay you pressed question mark!")
             return True
         if keycode[1] == 'escape':
-            print("yay you pressed escape!")
             if App.get_running_app().root.help_window:
                 App.get_running_app().root.toggle_help_window()
                 return True
         return False
 
     def on_keyreleased(self, _keyboard, keycode):
-        print("keycode:", keycode)
         if keycode[1] == 'shift' or keycode[1] == 'rshift':
-            print("yay you released shift!")
             App.get_running_app().root.toggle_overlay_grid()
             return True
         return False
@@ -130,11 +123,9 @@ class ParadigmGrid(GridLayout):
                 self.col_text_inputs[col].text = self.para.col_labels[col]
             return
         if row is not None:
-            print("setting", self.para.row_labels[row], "to", text)
             self.para.row_labels[row] = text
         if col is not None:
             self.para.col_labels[col] = text
-        print(self.para.row_labels)
         assert len(self.para.row_labels) == len(set(self.para.row_labels))
         assert len(self.para.col_labels) == len(set(self.para.col_labels))
 
