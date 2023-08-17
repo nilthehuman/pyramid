@@ -119,12 +119,41 @@ class ParadigmGrid(GridLayout):
                 self.add_widget(ParadigmCell(i, j))
                 self.children[0].update()
 
+    def label_changed(self, row=None, col=None, text=None):
+        assert (row is None) != (col is None)
+        if not text:
+            # not a good idea
+            #warn("Please don't leave row or column labels empty")
+            if row:
+                self.row_text_inputs[row].text = self.para.row_labels[row]
+            else:
+                self.col_text_inputs[col].text = self.para.col_labels[col]
+            return
+        if row is not None:
+            print("setting", self.para.row_labels[row], "to", text)
+            self.para.row_labels[row] = text
+        if col is not None:
+            self.para.col_labels[col] = text
+        print(self.para.row_labels)
+        assert len(self.para.row_labels) == len(set(self.para.row_labels))
+        assert len(self.para.col_labels) == len(set(self.para.col_labels))
+
 
 class ParadigmText(TextInput):
-    pass
 
+    def __init__(self, row=None, col=None, **kwargs):
+        super().__init__(**kwargs)
+        self.row = row
+        self.col = col
+        self.bind(focus=self.text_changed)
 
 class ParadigmCell(Button):
+    def text_changed(self, instance, focused=None):
+        assert self == instance
+        if focused is False:
+            self.parent.label_changed(row=self.row, col=self.col, text=self.text)
+
+
 
     def __init__(self, row, col, **kwargs):
         super().__init__(**kwargs)
