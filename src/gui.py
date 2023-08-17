@@ -50,7 +50,7 @@ class PyramidWindow(AnchorLayout):
     def __init__(self, para=None, **kwargs):
         super().__init__(**kwargs)
         self.help_window = None
-        self.overlay_grid = None
+        self.overlay = None
         self.ids.grid.set_para(para)
 
     def toggle_help_window(self, *_):
@@ -62,14 +62,18 @@ class PyramidWindow(AnchorLayout):
             self.help_window = None
 
     def toggle_overlay_grid(self):
-        if not self.overlay_grid:
+        if not self.overlay:
             para_rearranged = self.ids.grid.para.is_pyramid()
             if para_rearranged:
-                self.overlay_grid = ParadigmGrid(para_rearranged)
-                self.add_widget(self.overlay_grid)
+                self.overlay = ParadigmGrid(para_rearranged)
+                self.add_widget(self.overlay)
+            else:
+                self.overlay = NoSolutionLabel()
+                self.add_widget(self.overlay)
+
         else:
-            self.remove_widget(self.overlay_grid)
-            self.overlay_grid = None
+            self.remove_widget(self.overlay)
+            self.overlay = None
 
 
 class HelpButton(Button):
@@ -110,6 +114,7 @@ class ParadigmGrid(GridLayout):
             self.add_widget(self.row_text_inputs[-1])
             for j, value in enumerate(row):
                 self.add_widget(ParadigmCell(i, j))
+                # N.B. Kivy's add_widget function pushes widgets to the front of the child widget list
                 self.children[0].update()
 
     def label_changed(self, row=None, col=None, text=None):
@@ -190,6 +195,10 @@ class CellEditText(TextInput):
         assert self == instance
         if focused is False:
             self.parent.remove_widget(self)
+
+
+class NoSolutionLabel(Label):
+    pass
 
 
 class PyramidApp(App):
