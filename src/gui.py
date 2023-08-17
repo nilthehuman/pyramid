@@ -41,10 +41,6 @@ class KeyboardHandler(Widget):
             if App.get_running_app().root.help_window:
                 App.get_running_app().root.toggle_help_window()
                 return True
-        if keycode[1] == 'q':
-            print("yay you pressed q!")
-            App.get_running_app().stop()
-            return True
         return False
 
     def on_keyreleased(self, _keyboard, keycode):
