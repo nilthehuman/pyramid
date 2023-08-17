@@ -106,13 +106,18 @@ class ParadigmGrid(GridLayout):
         self.para = para
         if not para:
             return
+        self.row_text_inputs = []
+        self.col_text_inputs = []
         self.add_widget(Widget())  # spacer in the top left corner
-        for label in para.col_labels:
-            self.add_widget(ParadigmText(text=label))
-        for label, values in zip(para.row_labels, para):
-            self.add_widget(ParadigmText(text=label))
-            for value in values:
-                self.add_widget(ParadigmCell(value))
+        for j, label in enumerate(para.col_labels):
+            self.col_text_inputs.append(ParadigmText(col=j, text=label))
+            self.add_widget(self.col_text_inputs[-1])
+        for i, (label, row) in enumerate(zip(para.row_labels, para)):
+            self.row_text_inputs.append(ParadigmText(row=i, text=label))
+            self.add_widget(self.row_text_inputs[-1])
+            for j, value in enumerate(row):
+                self.add_widget(ParadigmCell(i, j))
+                self.children[0].update()
 
 
 class ParadigmText(TextInput):
@@ -121,17 +126,18 @@ class ParadigmText(TextInput):
 
 class ParadigmCell(Button):
 
-    def __init__(self, bias, **kwargs):
+    def __init__(self, row, col, **kwargs):
         super().__init__(**kwargs)
-        self.bias = bias
-        self.update()
+        self.row = row
+        self.col = col
 
     def update(self):
-        self.text  = str(self.bias)
+        bias = self.parent.para[self.row][self.col]
+        self.text  = str(bias)
         lime       = Color(0.22, 0.8, 0.22)
         grapefruit = Color(0.9, 0.31, 0.3)
-        self.background_color = [sum(x) for x in zip([self.bias * c for c in lime.rgb],
-                                                     [(1-self.bias) * c for c in grapefruit.rgb])]
+        self.background_color = [sum(x) for x in zip([bias * c for c in lime.rgb],
+                                                     [(1-bias) * c for c in grapefruit.rgb])]
 
 
 class PyramidApp(App):
