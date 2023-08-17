@@ -138,6 +138,11 @@ class ParadigmGrid(GridLayout):
         assert len(self.para.row_labels) == len(set(self.para.row_labels))
         assert len(self.para.col_labels) == len(set(self.para.col_labels))
 
+    def bias_changed(self, row, col, new_bias):
+        self.para[row][col] = new_bias
+        # N.B. Kivy's add_widget function pushes widgets to the front of the child widget list
+        self.children[- (row + 1) * (len(self.para[0]) + 1) - (col + 1) - 1].update()
+
 
 class ParadigmText(TextInput):
 
@@ -147,18 +152,24 @@ class ParadigmText(TextInput):
         self.col = col
         self.bind(focus=self.text_changed)
 
-class ParadigmCell(Button):
     def text_changed(self, instance, focused=None):
         assert self == instance
         if focused is False:
             self.parent.label_changed(row=self.row, col=self.col, text=self.text)
 
 
+class ParadigmCell(AnchorLayout, Button):
 
     def __init__(self, row, col, **kwargs):
         super().__init__(**kwargs)
         self.row = row
         self.col = col
+        self.bind(on_release=self.edit_bias)
+
+    def edit_bias(self, *_args):
+        textinput = CellEditText()
+        self.add_widget(textinput)
+        textinput.focus = True
 
     def update(self):
         bias = self.parent.para[self.row][self.col]
@@ -167,6 +178,27 @@ class ParadigmCell(Button):
         grapefruit = Color(0.9, 0.31, 0.3)
         self.background_color = [sum(x) for x in zip([bias * c for c in lime.rgb],
                                                      [(1-bias) * c for c in grapefruit.rgb])]
+
+
+class CellEditText(TextInput):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.bind(on_text_validate=self.text_validated)
+        self.bind(focus=self.focus_changed)
+
+    def text_validated(self, instance):
+        assert self == instance
+        try:
+            self.parent.parent.bias_changed(self.parent.row, self.parent.col, float(self.text))
+        except ValueError:
+            #warn("Matrix values are supposed to be numeric.")
+            pass
+
+    def focus_changed(self, instance, focused=None):
+        assert self == instance
+        if focused is False:
+            self.parent.remove_widget(self)
 
 
 class PyramidApp(App):
