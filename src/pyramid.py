@@ -98,6 +98,10 @@ class Paradigm(list):
         empty_rows = set(filter(lambda row: all(map(lambda x: not x, para_truth[row])), range(len(para_truth))))
         full_cols  = set(filter(lambda col: all(row[col] for row in para_truth), range(len(para_truth[0]))))
         empty_cols = set(filter(lambda col: all(map(lambda x: not x, (row[col] for row in para_truth))), range(len(para_truth[0]))))
+        if len(para_truth) - len(full_rows) - len(empty_rows) > 8 or len(para_truth) - len(full_cols) - len(empty_cols) > 8:
+            # no way, don't even try, we might run out of memory
+            raise ValueError('Input paradigm is too large, aborting calculation, sorry')
+            return None
         # use brute force for now
         row_permutations = [tuple(full_rows) + perm + tuple(empty_rows) for perm in permutations(set(range(len(para_truth))) - set(full_rows) - set(empty_rows))]
         col_permutations = [tuple(full_cols) + perm + tuple(empty_cols) for perm in permutations(set(range(len(para_truth[0]))) - set(full_cols) - set(empty_cols))]
@@ -133,6 +137,10 @@ class Paradigm(list):
         if not self or not self[0]:
             return self
         assert self[0][0] is not None
+        if len(self) > 8 or len(self) > 8:
+            # no way, don't even try, we might run out of memory
+            raise ValueError('Input paradigm is too large, aborting calculation, sorry')
+            return None
         # use brute force for now
         all_permutations = product(permutations(range(len(self))), permutations(range(len(self[0]))))
         for row_permutation, col_permutation in all_permutations:
