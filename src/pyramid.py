@@ -93,25 +93,29 @@ class Paradigm(list):
         for row in range(len(self)):
             for col in range(len(self[0])):
                 para_truth[row][col] = False if self[row][col] < 0.5 else True
-        # get rid of trivial (i.e. full or empty) rows and columns
-        full_rows  = filter(lambda row: all(para_truth[row]), range(len(para_truth)))
-        empty_rows = filter(lambda row: all(map(lambda x: not x, para_truth[row])), range(len(para_truth)))
-        full_cols  = filter(lambda col: all(row[col] for row in para_truth), range(len(para_truth)))
-        empty_cols = filter(lambda col: all(map(lambda x: not x, (row[col] for row in para_truth))), range(len(para_truth)))
+        # isolate trivial (i.e. full or empty) rows and columns
+        full_rows  = set(filter(lambda row: all(para_truth[row]), range(len(para_truth))))
+        empty_rows = set(filter(lambda row: all(map(lambda x: not x, para_truth[row])), range(len(para_truth))))
+        full_cols  = set(filter(lambda col: all(row[col] for row in para_truth), range(len(para_truth))))
+        empty_cols = set(filter(lambda col: all(map(lambda x: not x, (row[col] for row in para_truth))), range(len(para_truth))))
         # use brute force for now
-        all_permutations = product(permutations(range(len(para_truth))), permutations(range(len(para_truth[0]))))
-        for permutation in all_permutations:
+        row_permutations = [tuple(full_rows) + perm + tuple(empty_rows) for perm in permutations(set(range(len(para_truth))) - set(full_rows) - set(empty_rows))]
+        col_permutations = [tuple(full_cols) + perm + tuple(empty_cols) for perm in permutations(set(range(len(para_truth[0]))) - set(full_cols) - set(empty_cols))]
+        all_permutations = product(row_permutations, col_permutations)
+        for row_permutation, col_permutation in all_permutations:
             next_para = deepcopy(para_truth)
             for row in range(len(para_truth)):
                 for col in range(len(para_truth[0])):
-                    permuted_row = permutation[0][row]
-                    permuted_col = permutation[1][col]
-                    next_para.row_labels[row] = para_truth.row_labels[permuted_row]
-                    next_para.col_labels[col] = para_truth.col_labels[permuted_col]
+                    permuted_row = row_permutation[row]
+                    permuted_col = col_permutation[col]
+                    if para_truth.row_labels:
+                        next_para.row_labels[row] = para_truth.row_labels[permuted_row]
+                    if para_truth.col_labels:
+                        next_para.col_labels[col] = para_truth.col_labels[permuted_col]
                     next_para[row][col] = para_truth[permuted_row][permuted_col]
             if check(next_para):
                 return next_para
-        return None
+        return None  # no solution
 
     def is_pyramid_strict(self):
         """Check the central working hypothesis for the current state of the paradigm,
@@ -131,14 +135,16 @@ class Paradigm(list):
         assert self[0][0] is not None
         # use brute force for now
         all_permutations = product(permutations(range(len(self))), permutations(range(len(self[0]))))
-        for permutation in all_permutations:
+        for row_permutation, col_permutation in all_permutations:
             next_para = deepcopy(self)
             for row in range(len(self)):
                 for col in range(len(self[0])):
-                    permuted_row = permutation[0][row]
-                    permuted_col = permutation[1][col]
-                    next_para.row_labels[row] = self.row_labels[permuted_row]
-                    next_para.col_labels[col] = self.col_labels[permuted_col]
+                    permuted_row = row_permutation[row]
+                    permuted_col = col_permutation[col]
+                    if self.row_labels:
+                        next_para.row_labels[row] = self.row_labels[permuted_row]
+                    if self.col_labels:
+                        next_para.col_labels[col] = self.col_labels[permuted_col]
                     next_para[row][col] = self[permuted_row][permuted_col]
             if check(next_para):
                 return next_para
