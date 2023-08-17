@@ -4,6 +4,7 @@ from time import time
 
 from ..src.pyramid import Paradigm
 
+
 def test_is_pyramid_fast_enough_positive():
     matrix = [ [0.0, 0.1, 0.2, 0.3, 0.4],
                [0.5, 0.6, 0.7, 0.8, 0.9],
