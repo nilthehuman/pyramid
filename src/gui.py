@@ -117,7 +117,11 @@ class ParadigmGrid(GridLayout):
                 # N.B. Kivy's add_widget function pushes widgets to the front of the child widget list
                 self.children[0].update()
 
-    def label_changed(self, row=None, col=None, text=None):
+    def step(self):
+        self.para.step()
+        self.update_all_cells()
+
+    def update_label(self, row=None, col=None, text=None):
         assert (row is None) != (col is None)
         if not text:
             # not a good idea
@@ -134,10 +138,15 @@ class ParadigmGrid(GridLayout):
         assert len(self.para.row_labels) == len(set(self.para.row_labels))
         assert len(self.para.col_labels) == len(set(self.para.col_labels))
 
-    def bias_changed(self, row, col, new_bias):
+    def update_cell(self, row, col, new_bias):
         self.para[row][col] = new_bias
         # N.B. Kivy's add_widget function pushes widgets to the front of the child widget list
         self.children[- (row + 1) * (len(self.para[0]) + 1) - (col + 1) - 1].update()
+
+    def update_all_cells(self):
+        for child in self.children:
+            if isinstance(child, ParadigmCell):
+                child.update()
 
 
 class ParadigmText(TextInput):
@@ -151,7 +160,7 @@ class ParadigmText(TextInput):
     def text_changed(self, instance, focused=None):
         assert self == instance
         if focused is False:
-            self.parent.label_changed(row=self.row, col=self.col, text=self.text)
+            self.parent.update_label(row=self.row, col=self.col, text=self.text)
 
 
 class ParadigmCell(AnchorLayout, Button):
@@ -186,7 +195,7 @@ class CellEditText(TextInput):
     def text_validated(self, instance):
         assert self == instance
         try:
-            self.parent.parent.bias_changed(self.parent.row, self.parent.col, float(self.text))
+            self.parent.parent.update_cell(self.parent.row, self.parent.col, float(self.text))
         except ValueError:
             #warn("Matrix values are supposed to be numeric.")
             pass
