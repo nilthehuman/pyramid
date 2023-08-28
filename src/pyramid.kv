@@ -29,11 +29,12 @@
 <HelpWindow>
     size_hint: 1, 1
     halign: 'center'
+    color: 0.8, 0.8, 0.8
     text: self.text
     markup: True
     canvas.before:
         Color:
-            rgb: 0.3, 0.15, 0.12
+            rgb: 0.32, 0.12, 0.12
         Rectangle:
             size: self.size
             pos: self.pos
@@ -58,25 +59,31 @@
     size_hint_y: None
     height: 40
     color: 0, 0, 0
+    font_size: 20
     multiline: False
     halign: 'center'
 
 
 <ParadigmCell>
     background_normal: ''
+    color: 1.0, 1.0, 1.0
+    font_size: 20
     text: self.text
 
 
 <CellEditText>
     size_hint_y: 0.6
+    cursor_color: 0, 0, 0
     color: 0, 0, 0
+    font_size: 20
     multiline: False
     halign: 'center'
 
 
 <NoSolutionLabel>
     size_hint: None, None
-    size: 200, 60
+    size: 240, 75
+    font_size: 20
     text: 'No solution, sorry :('
     canvas.before:
         Color:
