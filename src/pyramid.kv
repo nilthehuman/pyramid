@@ -28,11 +28,12 @@
 
 <HelpWindow>
     size_hint: 1, 1
-    background_color: 0.4, 0.2, 0.1
-    text: 'TODO: help text goes here...'
+    halign: 'center'
+    text: self.text
+    markup: True
     canvas.before:
         Color:
-            rgb: 0.24, 0.12, 0.48
+            rgb: 0.3, 0.15, 0.12
         Rectangle:
             size: self.size
             pos: self.pos

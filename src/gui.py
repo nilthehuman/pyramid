@@ -85,10 +85,29 @@ class HelpButton(Button):
     # you can't bind to PyramidWindow in __init__ because of Kivy's initialization order
     def toggle_help_window(self, *args):
         App.get_running_app().root.toggle_help_window(*args)
+        return True
 
 
 class HelpWindow(Label):
-    pass
+
+    def __init__(self, para=None, **kwargs):
+        super().__init__(**kwargs)
+        # block click events from Widgets below
+        self.bind(on_touch_down=lambda *_: True)
+        self.bind(on_touch_up=self.toggle_help_window)
+        self.text = '''[size=20][b]Help[/b][/size]\n\n
+            Each matrix cell shows the prevalence (the "bias") of a certain
+            morphological phenomenon when the morphemes in its row and column
+            are combined. Bias values range from 0 to 1.\n
+            Click on any row or column label to edit the morpheme corresponding
+            to that row or column.\n
+            Click on any matrix cell to change the value of its bias.\n
+            Hold [b]Shift[/b] to see if the matrix can be rearranged to fit the
+            research project\'s working hypothesis.'''
+
+    def toggle_help_window(self, *args):
+        App.get_running_app().root.toggle_help_window(args)
+        return True
 
 
 class ParadigmGrid(GridLayout):
