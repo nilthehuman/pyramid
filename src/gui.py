@@ -12,7 +12,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
 
-from pyramid import Paradigm
+from .pyramid import Paradigm
 
 
 # pylint: disable=no-member
