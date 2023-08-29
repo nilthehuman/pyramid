@@ -7,8 +7,8 @@ from random import random, randrange, seed  # TODO: seed() the generator at the 
 class Paradigm(list):
     """An m x n table of two orthogonal, multivalued morpho(phono)logical features that jointly determine the binary value of a third feature."""
 
-    def __init__(self, row_labels=None, col_labels=None, matrix=None):
-        """Overloaded constructor, works both with a matrix as argument or a pair of label lists."""
+    def __init__(self, row_labels=None, col_labels=None, para=None):
+        """Overloaded constructor, works both with a paradigm as argument or a pair of label lists."""
         super().__init__([])
         self.affect_farther_cells = False
         self.experience = 0
@@ -22,8 +22,8 @@ class Paradigm(list):
             self.col_labels = col_labels
         else:
             self.col_labels = []
-        if matrix:
-            for row in matrix:
+        if para:
+            for row in para:
                 self.append(deepcopy(row))
         else:
             for _ in row_labels:

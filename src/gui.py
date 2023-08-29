@@ -99,14 +99,14 @@ class HelpWindow(Label):
         self.bind(on_touch_down=lambda *_: True)
         self.bind(on_touch_up=self.toggle_help_window)
         self.text = '''[size=20][b]Help[/b][/size]\n\n
-            Each matrix cell shows the prevalence (the "bias") of a certain
+            Each paradigm cell shows the prevalence (the "bias") of a certain
             morphological phenomenon when the morphemes in its row and column
             are combined. Bias values range from 0 to 1.\n
             Click on any row or column label to edit the morpheme corresponding
             to that row or column.\n
-            Click on any matrix cell to change the value of its bias.\n
-            Hold [b]Shift[/b] to see if the matrix can be rearranged to fit the
-            research project\'s working hypothesis.'''
+            Click on any paradigm cell to change the value of its bias.\n
+            Hold [b]Shift[/b] to see if the paradigm can be rearranged to fit
+            the research project\'s working hypothesis.'''
 
     def toggle_help_window(self, *args):
         App.get_running_app().root.toggle_help_window(args)
@@ -221,7 +221,7 @@ class CellEditText(TextInput):
             new_value = max(0, min(1, new_value))
             self.parent.parent.update_cell(self.parent.row, self.parent.col, new_value)
         except ValueError:
-            #warn("Matrix values are supposed to be numeric.")
+            #warn("Paradigm values are supposed to be numeric.")
             pass
 
     def focus_changed(self, instance, focused=None):
@@ -238,8 +238,8 @@ class PyramidApp(App):
     def build(self):
         para = Paradigm( row_labels=['ház', 'gáz', 'tűz', 'pénz'],
                          col_labels=['-k', '-t', '-m', '-d'],
-                         matrix=[[1, 1, 1, 1], [1, 0, 1, 1], [1, 1, 1, 1], [1, 0, 1, 1]] )
-                         #matrix=[[0, 0, 0, 0], [1, 0, 1, 1], [1, 0, 1, 1], [1, 0, 1, 1]] )
+                         para=[[1, 1, 1, 1], [1, 0, 1, 1], [1, 1, 1, 1], [1, 0, 1, 1]] )
+                         #para=[[0, 0, 0, 0], [1, 0, 1, 1], [1, 0, 1, 1], [1, 0, 1, 1]] )
         root = PyramidWindow(para)
         self.keyboardhandler = KeyboardHandler()
         return root
