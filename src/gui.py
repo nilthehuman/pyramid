@@ -213,7 +213,10 @@ class CellEditText(TextInput):
     def text_validated(self, instance):
         assert self == instance
         try:
-            self.parent.parent.update_cell(self.parent.row, self.parent.col, float(self.text))
+            new_value = float(self.text)
+            # clamp to [0, 1]
+            new_value = max(0, min(1, new_value))
+            self.parent.parent.update_cell(self.parent.row, self.parent.col, new_value)
         except ValueError:
             #warn("Matrix values are supposed to be numeric.")
             pass
