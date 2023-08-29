@@ -199,7 +199,7 @@ class ParadigmCell(AnchorLayout, Button):
 
     def update(self):
         bias = self.parent.para[self.row][self.col]
-        self.text  = str(bias)
+        self.text  = "%0.3g" % bias
         lime       = Color(0.22, 0.8, 0.22)
         grapefruit = Color(0.9, 0.31, 0.3)
         self.background_color = [sum(x) for x in zip([bias * c for c in lime.rgb],
