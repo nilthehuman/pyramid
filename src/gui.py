@@ -133,8 +133,7 @@ class ParadigmGrid(GridLayout):
             self.add_widget(self.row_text_inputs[-1])
             for j, value in enumerate(row):
                 self.add_widget(ParadigmCell(i, j))
-                # N.B. Kivy's add_widget function pushes widgets to the front of the child widget list
-                self.children[0].update()
+        self.update_all_cells()
 
     def step(self):
         self.para.step()
