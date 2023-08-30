@@ -28,7 +28,17 @@ class KeyboardHandler(Widget):
         self.keyboard.bind(on_key_up=self.on_keyreleased)
 
     def on_keypressed(self, _keyboard, keycode, _text, modifiers):
+        if keycode[1] == 'right':
+            # run a single step of the simulation
+            App.get_running_app().root.ids.grid.step()
+            return True
+        if keycode[1] == 'left':
+            # revert last step of the simulation
+            App.get_running_app().root.ids.grid.undo_step()
+            return True
         if keycode[1] == 'spacebar':
+            # run simulation until spacebar pressed again
+            # TODO...
             return True
         if keycode[1] == 'shift' or keycode[1] == 'rshift':
             App.get_running_app().root.toggle_overlay_grid()
@@ -105,6 +115,10 @@ class HelpWindow(Label):
             Click on any row or column label to edit the morpheme corresponding
             to that row or column.\n
             Click on any paradigm cell to change the value of its bias.\n
+            Press [b]RightArrow (→)[/b] to perform one iteration of the
+            simulation.\n
+            Press [b]LeftArrow (←)[/b] to undo one iteration of the
+            simulation.\n
             Hold [b]Shift[/b] to see if the paradigm can be rearranged to fit
             the research project\'s working hypothesis.'''
 
@@ -140,6 +154,10 @@ class ParadigmGrid(GridLayout):
 
     def step(self):
         self.para.step()
+        self.update_all_cells()
+
+    def undo_step(self):
+        self.para.undo_step()
         self.update_all_cells()
 
     def update_label(self, row=None, col=None, text=None):

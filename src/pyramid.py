@@ -4,14 +4,14 @@ from copy import deepcopy
 from itertools import permutations, product
 from random import random, randrange, seed  # TODO: seed() the generator at the appropriate site
 
-class Paradigm(list):
+class Paradigm:
     """An m x n table of two orthogonal, multivalued morpho(phono)logical features that jointly determine the binary value of a third feature."""
 
     def __init__(self, row_labels=None, col_labels=None, para=None):
         """Overloaded constructor, works both with a paradigm as argument or a pair of label lists."""
-        super().__init__([])
         self.affect_farther_cells = False
-        self.experience = 0
+        self.iteration = 0
+        self.history = []
         if row_labels:
             assert len(row_labels) == len(set(row_labels))
             self.row_labels = row_labels
@@ -22,12 +22,28 @@ class Paradigm(list):
             self.col_labels = col_labels
         else:
             self.col_labels = []
+        self.history.append([])
         if para:
             for row in para:
-                self.append(deepcopy(row))
+                self.history[0].append(deepcopy(row))
         else:
             for _ in row_labels:
-                self.append([None for _ in col_labels])
+                self.history[0].append([None for _ in col_labels])
+
+    def state(self):
+        return self.history[self.iteration]
+
+    def __repr__(self):
+        return str(self.state())
+
+    def __iter__(self):
+        return self.state().__iter__()
+
+    def __len__(self):
+        return len(self.state())
+
+    def __getitem__(self, index):
+        return self.state()[index]
 
     def initialize(self, corner_rows, corner_cols):
         """Fill the top left corner of the given size with 1's, the rest of the table with 0's."""
@@ -38,6 +54,11 @@ class Paradigm(list):
             for col in range(len(self[0])):
                 self[row][col] = 1 if row < corner_rows and col < corner_cols else 0
 
+    def store_snapshot(self):
+        """Save a copy of the current state of the paradigm, to be restored later if needed."""
+        if self.history:
+            self.history.append(deepcopy(list(self)))
+
     def pick_cell(self):
         """Select a uniformly random cell in the paradigm."""
         row = randrange(len(self))
@@ -46,12 +67,16 @@ class Paradigm(list):
 
     def nudge(self, row, col, outcome):
         """Adjust the value of a single cell based on an outcome in a neighboring cell."""
-        delta = (1 if outcome else -1) / (self.experience + 1)
+        delta = (1 if outcome else -1) / (self.iteration + 1)
         self[row][col] = min(max(self[row][col] + delta, 0), 1)
 
     def step(self):
         """Perform a single iteration of the stochastic simulation."""
-        assert len(self) > 0
+        if self.iteration < len(self.history) - 1:
+            self.redo_step()
+            return
+        self.store_snapshot()
+        self.iteration += 1
         row, col = self.pick_cell()
         outcome = True if random() < self[row][col] else False
         self.nudge(row, col, outcome)
@@ -63,7 +88,18 @@ class Paradigm(list):
                     self.nudge(current_row, current_col, outcome)
             if not self.affect_farther_cells:
                 break
-        self.experience += 1
+
+    def undo_step(self):
+        """Restore previous paradigm state from the history."""
+        assert self.history
+        if 0 < self.iteration:
+            self.iteration -= 1
+
+    def redo_step(self):
+        """Restore next paradigm state from the history."""
+        assert self.history
+        if self.iteration < len(self.history) - 1:
+            self.iteration += 1
 
     def simulate(self, iterations):
         pass  # TODO

@@ -1,5 +1,7 @@
 """Unit tests to check basic expected behaviors."""
 
+from copy import deepcopy
+
 from ..src.pyramid import Paradigm
 
 
@@ -74,3 +76,23 @@ def test_step_twice():
     after_first_step = para[0][0]
     para.step()
     assert (after_first_step - 0.5) * (para[0][0] - 0.5) > 0
+
+
+def test_step_once_and_undo():
+    matrix = [ [0.5] ]
+    para = Paradigm(matrix=matrix)
+    para_orig = deepcopy(para)
+    para.step()
+    para.undo_step()
+    assert para_orig == para
+
+
+def test_step_twice_and_undo():
+    matrix = [ [0.5] ]
+    para = Paradigm(matrix=matrix)
+    para_orig = deepcopy(para)
+    para.step()
+    para.step()
+    para.undo_step()
+    para.undo_step()
+    assert para_orig == para
