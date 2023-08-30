@@ -90,7 +90,7 @@ class Paradigm:
         if self.effect_direction == Paradigm.EffectDir.INWARD:
             # picked cell looks around, sees which way the average leans
             # and is adjusted that way
-            relevant_biases = []
+            relevant_biases = [ self[row][col] ]
             for i in range(1, min(self.effect_radius + 1, max(len(self), len(self[0])))):
                 for y, x in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
                     current_row = row + i * y
