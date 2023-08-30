@@ -40,6 +40,7 @@ class Paradigm:
                 self.history[0].append([None for _ in col_labels])
 
     def state(self):
+        """The current matrix of bias values."""
         return self.history[self.iteration]
 
     def __repr__(self):
@@ -125,6 +126,7 @@ class Paradigm:
             self.iteration += 1
 
     def simulate(self, iterations):
+        """Run a predefined number of iterations of the simulation."""
         pass  # TODO
 
     def is_pyramid(self):

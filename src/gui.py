@@ -28,6 +28,7 @@ class KeyboardHandler(Widget):
         self.keyboard.bind(on_key_up=self.on_keyreleased)
 
     def on_keypressed(self, _keyboard, keycode, _text, modifiers):
+        """Catch and handle user keypresses corresponding to app functions."""
         if keycode[1] == 'right':
             # run a single step of the simulation
             App.get_running_app().root.ids.grid.step()
@@ -52,6 +53,7 @@ class KeyboardHandler(Widget):
         return False
 
     def on_keyreleased(self, _keyboard, keycode):
+        """Remove overlay paradigm once user releases shift key."""
         if keycode[1] == 'shift' or keycode[1] == 'rshift':
             App.get_running_app().root.toggle_overlay_grid()
             return True
@@ -67,6 +69,7 @@ class PyramidWindow(AnchorLayout):
         self.ids.grid.set_para(para)
 
     def toggle_help_window(self, *_):
+        """Show or hide fullscreen Label with help text."""
         if not self.help_window:
             self.help_window = HelpWindow()
             self.add_widget(self.help_window)
@@ -75,6 +78,7 @@ class PyramidWindow(AnchorLayout):
             self.help_window = None
 
     def toggle_overlay_grid(self):
+        """Show or hide paradigm rearranged according to our working hypothesis."""
         if not self.overlay:
             para_rearranged = self.ids.grid.para.is_pyramid()
             if para_rearranged:
@@ -97,6 +101,7 @@ class HelpButton(Button):
 
     # you can't bind to PyramidWindow in __init__ because of Kivy's initialization order
     def toggle_help_window(self, *args):
+        """Show or hide fullscreen Label with help text."""
         App.get_running_app().root.toggle_help_window(*args)
         return True
 
@@ -123,6 +128,7 @@ class HelpWindow(Label):
             the research project\'s working hypothesis.'''
 
     def toggle_help_window(self, *args):
+        """Show or hide fullscreen Label with help text."""
         App.get_running_app().root.toggle_help_window(args)
         return True
 
@@ -153,14 +159,17 @@ class ParadigmGrid(GridLayout):
         self.update_all_cells()
 
     def step(self):
+        """Perform one iteration of the simulation (thin wrapper around Paradigm.step)."""
         self.para.step()
         self.update_all_cells()
 
     def undo_step(self):
+        """Revert one iteration of the simulation (thin wrapper around Paradigm.undo_step)."""
         self.para.undo_step()
         self.update_all_cells()
 
     def update_label(self, row=None, col=None, text=None):
+        """Set the user's desired string as row or column label in the paradigm."""
         assert (row is None) != (col is None)
         if not text:
             # not a good idea
@@ -178,11 +187,13 @@ class ParadigmGrid(GridLayout):
         assert len(self.para.col_labels) == len(set(self.para.col_labels))
 
     def update_cell(self, row, col, new_bias):
+        """Set the bias of a cell in the underlying Paradigm object to a new value."""
         self.para[row][col] = new_bias
         # N.B. Kivy's add_widget function pushes widgets to the front of the child widget list
         self.children[- (row + 1) * (len(self.para[0]) + 1) - (col + 1) - 1].update()
 
     def update_all_cells(self):
+        """Sync all visual grid cells with the cells of the underlying Paradigm object."""
         for child in self.children:
             if isinstance(child, ParadigmCell):
                 child.update()
@@ -197,6 +208,7 @@ class ParadigmText(TextInput):
         self.bind(focus=self.text_changed)
 
     def text_changed(self, instance, focused=None):
+        """Set the user's desired string as row or column label in the paradigm."""
         assert self == instance
         if focused is False:
             self.parent.update_label(row=self.row, col=self.col, text=self.text)
@@ -211,11 +223,13 @@ class ParadigmCell(AnchorLayout, Button):
         self.bind(on_release=self.edit_bias)
 
     def edit_bias(self, *_args):
+        """Show a temporary TextInput box to allow the user to redefine the label of a column or a row."""
         textinput = CellEditText()
         self.add_widget(textinput)
         textinput.focus = True
 
     def update(self):
+        """Sync this cell's content and color with the bias of the underlying Paradigm's cell."""
         bias = self.parent.para[self.row][self.col]
         if isinstance(bias, bool):
             self.text = str(bias)
@@ -236,6 +250,7 @@ class CellEditText(TextInput):
         self.bind(focus=self.focus_changed)
 
     def text_validated(self, instance):
+        """Set a new bias value in the cell once the user finished typing."""
         assert self == instance
         try:
             new_value = float(self.text)
@@ -247,6 +262,7 @@ class CellEditText(TextInput):
             pass
 
     def focus_changed(self, instance, focused=None):
+        """Remove this TextInput box if the user has clicked elsewhere."""
         assert self == instance
         if focused is False:
             self.parent.remove_widget(self)
