@@ -12,6 +12,11 @@ class Paradigm:
         INWARD  = 1
         OUTWARD = 2
 
+    class SimStatus(Enum):
+        STOPPED   = 1
+        RUNNING   = 2
+        CANCELLED = 3
+
     def __init__(self, row_labels=None, col_labels=None, matrix=None):
         """Overloaded constructor, works both with a matrix as argument or a pair of label lists."""
         # default settings
@@ -20,6 +25,7 @@ class Paradigm:
         # housekeeping variables
         self.iteration = 0
         self.history = []
+        self.sim_status = Paradigm.SimStatus.STOPPED
         if row_labels:
             assert len(row_labels) == len(set(row_labels))
             self.row_labels = row_labels
@@ -125,9 +131,28 @@ class Paradigm:
         if self.iteration < len(self.history) - 1:
             self.iteration += 1
 
-    def simulate(self, iterations):
-        """Run a predefined number of iterations of the simulation."""
-        pass  # TODO
+    def running(self):
+        """Is the simulation currently in progress?"""
+        return self.sim_status == Paradigm.SimStatus.RUNNING
+
+    def cancel(self):
+        """Cancel running simulation."""
+        if self.running():
+            self.sim_status = Paradigm.SimStatus.CANCELLED
+
+    def simulate(self, max_iterations=None, batch_size=100):
+        """Run a predefined number of iterations of the simulation or until cancelled by the user."""
+        if self.sim_status == Paradigm.SimStatus.STOPPED:
+            self.sim_status = Paradigm.SimStatus.RUNNING
+        if max_iterations is None:
+            max_iterations = int(1e9)  # math.inf is not applicable
+        self.iterations = 0
+        for _ in range(batch_size):
+            if self.sim_status == Paradigm.SimStatus.CANCELLED or self.iterations >= max_iterations:
+                self.sim_status = Paradigm.SimStatus.STOPPED
+                break
+            self.step()
+            self.iterations += 1
 
     def is_pyramid(self):
         """Check the central working hypothesis for the current state of the paradigm."""

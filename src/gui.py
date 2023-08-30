@@ -3,6 +3,7 @@
 from kivy import require as kivy_require
 kivy_require('2.1.0')
 from kivy.app import App
+from kivy.clock import Clock
 from kivy.graphics import Color
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.button import Button
@@ -39,7 +40,7 @@ class KeyboardHandler(Widget):
             return True
         if keycode[1] == 'spacebar':
             # run simulation until spacebar pressed again
-            # TODO...
+            App.get_running_app().root.ids.grid.start_stop_simulation()
             return True
         if keycode[1] == 'shift' or keycode[1] == 'rshift':
             App.get_running_app().root.toggle_overlay_grid()
@@ -137,6 +138,7 @@ class ParadigmGrid(GridLayout):
 
     def __init__(self, para=None, **kwargs):
         super().__init__(**kwargs)
+        self.timed_callback = None
         if para:
             self.set_para(para)
 
@@ -166,6 +168,22 @@ class ParadigmGrid(GridLayout):
     def undo_step(self):
         """Revert one iteration of the simulation (thin wrapper around Paradigm.undo_step)."""
         self.para.undo_step()
+        self.update_all_cells()
+
+    def start_stop_simulation(self):
+        """Keep running the simulation until the same method is called again."""
+        if self.timed_callback:
+            assert self.para.running()
+            self.timed_callback.cancel()
+            self.timed_callback = None
+            self.para.cancel()
+        else:
+            self.run_batch(0)
+            self.timed_callback = Clock.schedule_interval(self.run_batch, 0.1)
+
+    def run_batch(self, _elapsed_time):
+        """Callback to perform one batch of iterations of the simulation."""
+        self.para.simulate()
         self.update_all_cells()
 
     def update_label(self, row=None, col=None, text=None):
