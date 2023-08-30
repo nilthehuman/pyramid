@@ -1,15 +1,23 @@
 """The core class that implements most of the business logic: a generalized two-dimensional morphological paradigm."""
 
 from copy import deepcopy
+from enum import Enum
 from itertools import permutations, product
 from random import random, randrange, seed  # TODO: seed() the generator at the appropriate site
 
 class Paradigm:
     """An m x n table of two orthogonal, multivalued morpho(phono)logical features that jointly determine the binary value of a third feature."""
 
+    class EffectDir(Enum):
+        INWARD  = 1
+        OUTWARD = 2
+
     def __init__(self, row_labels=None, col_labels=None, matrix=None):
         """Overloaded constructor, works both with a matrix as argument or a pair of label lists."""
-        self.affect_farther_cells = False
+        # default settings
+        self.effect_direction = Paradigm.EffectDir.INWARD
+        self.effect_radius = 2
+        # housekeeping variables
         self.iteration = 0
         self.history = []
         if row_labels:
@@ -22,6 +30,7 @@ class Paradigm:
             self.col_labels = col_labels
         else:
             self.col_labels = []
+        # load initial state
         self.history.append([])
         if matrix:
             for row in matrix:
@@ -78,16 +87,30 @@ class Paradigm:
         self.store_snapshot()
         self.iteration += 1
         row, col = self.pick_cell()
-        outcome = True if random() < self[row][col] else False
-        self.nudge(row, col, outcome)
-        for i in range(1, max(len(self), len(self[0]))):
-            for y, x in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
-                current_row = row + i * y
-                current_col = col + i * x
-                if 0 <= current_row < len(self) and 0 <= current_col < len(self[0]):
-                    self.nudge(current_row, current_col, outcome)
-            if not self.affect_farther_cells:
-                break
+        if self.effect_direction == Paradigm.EffectDir.INWARD:
+            # picked cell looks around, sees which way the average leans
+            # and is adjusted that way
+            relevant_biases = []
+            for i in range(1, min(self.effect_radius + 1, max(len(self), len(self[0])))):
+                for y, x in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+                    current_row = row + i * y
+                    current_col = col + i * x
+                    if 0 <= current_row < len(self) and 0 <= current_col < len(self[0]):
+                        relevant_biases.append(self[current_row][current_col])
+            outcome = 0.5 <= sum(relevant_biases) / len(relevant_biases)
+            self.nudge(row, col, outcome)
+        elif self.effect_direction == Paradigm.EffectDir.OUTWARD:
+            # picked cell adjusts neighboring cells (probably) toward itself
+            outcome = random() < self[row][col]
+            self.nudge(row, col, outcome)
+            for i in range(1, min(self.effect_radius + 1, max(len(self), len(self[0])))):
+                for y, x in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+                    current_row = row + i * y
+                    current_col = col + i * x
+                    if 0 <= current_row < len(self) and 0 <= current_col < len(self[0]):
+                        self.nudge(current_row, current_col, outcome)
+        else:
+            raise ValueError("The EffectDir enum has no such value")
 
     def undo_step(self):
         """Restore previous paradigm state from the history."""
