@@ -38,11 +38,11 @@ class KeyboardHandler(Widget):
             # revert last step of the simulation
             App.get_running_app().root.ids.grid.undo_step()
             return True
-        if keycode[1] == '0' or keycode[1] == 'left' and 'ctrl' in modifiers:
+        if keycode[1] == 'home' or keycode[1] == 'left' and 'ctrl' in modifiers:
             # reset simulation to initial state
             App.get_running_app().root.ids.grid.rewind_all()
             return True
-        if keycode[1] == '9' or keycode[1] == 'right' and 'ctrl' in modifiers:
+        if keycode[1] == 'end' or keycode[1] == 'right' and 'ctrl' in modifiers:
             # reset simulation to latest state
             App.get_running_app().root.ids.grid.forward_all()
             return True
