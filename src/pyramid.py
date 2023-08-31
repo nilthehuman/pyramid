@@ -177,8 +177,8 @@ class Paradigm:
                 if not all(not cell for cell in row[first_false + 1:]):
                     # discontiguous row
                     return False
-                if last_row_first_false is not None and last_row_first_false < first_false:
-                    # row longer than previous row
+                if last_row_first_false is not None and last_row_first_false > first_false:
+                    # row shorter than previous row
                     return False
                 last_row_first_false = first_false
             return True
@@ -199,7 +199,7 @@ class Paradigm:
             raise ValueError('Input paradigm is too large, aborting calculation, sorry')
             return None
         # use brute force for now
-        row_permutations = [tuple(full_rows) + perm + tuple(empty_rows) for perm in permutations(set(range(len(para_truth))) - set(full_rows) - set(empty_rows))]
+        row_permutations = [tuple(empty_rows) + perm + tuple(full_rows) for perm in permutations(set(range(len(para_truth))) - set(full_rows) - set(empty_rows))]
         col_permutations = [tuple(full_cols) + perm + tuple(empty_cols) for perm in permutations(set(range(len(para_truth[0]))) - set(full_cols) - set(empty_cols))]
         all_permutations = product(row_permutations, col_permutations)
         for row_permutation, col_permutation in all_permutations:
@@ -227,7 +227,7 @@ class Paradigm:
                         return False
             for row_i in range(len(paradigm) - 1):
                 for col_i in range(len(paradigm[0])):
-                    if paradigm[row_i][col_i] < paradigm[row_i + 1][col_i]:
+                    if paradigm[row_i][col_i] > paradigm[row_i + 1][col_i]:
                         return False
             return True
         if not self or not self[0]:
