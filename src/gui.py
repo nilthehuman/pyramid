@@ -144,6 +144,7 @@ class ParadigmGrid(GridLayout):
 
     def set_para(self, para):
         """Clear our child widgets and replace them with text fields and buttons corresponding to the new paradigm we have been handed."""
+        self.clear_widgets()
         self.para = para
         if not para:
             return
