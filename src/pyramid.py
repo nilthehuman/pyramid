@@ -188,7 +188,7 @@ class Paradigm:
         para_truth = deepcopy(self)
         for row in range(len(self)):
             for col in range(len(self[0])):
-                para_truth[row][col] = False if self[row][col] < 0.5 else True
+                para_truth[row][col] = 0.5 <= self[row][col]
         # isolate trivial (i.e. full or empty) rows and columns
         full_rows  = set(filter(lambda row: all(para_truth[row]), range(len(para_truth))))
         empty_rows = set(filter(lambda row: all(map(lambda x: not x, para_truth[row])), range(len(para_truth))))
