@@ -131,6 +131,16 @@ class Paradigm:
         if self.iteration < len(self.history) - 1:
             self.iteration += 1
 
+    def rewind_all(self):
+        """Undo all steps done so far and return to initial paradigm state."""
+        assert self.history
+        self.iteration = 0
+
+    def forward_all(self):
+        """Redo all steps done so far and return to last paradigm state."""
+        assert self.history
+        self.iteration = len(self.history) - 1
+
     def running(self):
         """Is the simulation currently in progress?"""
         return self.sim_status == Paradigm.SimStatus.RUNNING

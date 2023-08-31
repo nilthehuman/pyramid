@@ -30,13 +30,21 @@ class KeyboardHandler(Widget):
 
     def on_keypressed(self, _keyboard, keycode, _text, modifiers):
         """Catch and handle user keypresses corresponding to app functions."""
-        if keycode[1] == 'right':
+        if keycode[1] == 'right' and 'ctrl' not in modifiers:
             # run a single step of the simulation
             App.get_running_app().root.ids.grid.step()
             return True
-        if keycode[1] == 'left':
+        if keycode[1] == 'left' and 'ctrl' not in modifiers:
             # revert last step of the simulation
             App.get_running_app().root.ids.grid.undo_step()
+            return True
+        if keycode[1] == '0' or keycode[1] == 'left' and 'ctrl' in modifiers:
+            # reset simulation to initial state
+            App.get_running_app().root.ids.grid.rewind_all()
+            return True
+        if keycode[1] == '9' or keycode[1] == 'right' and 'ctrl' in modifiers:
+            # reset simulation to latest state
+            App.get_running_app().root.ids.grid.forward_all()
             return True
         if keycode[1] == 'spacebar':
             # run simulation until spacebar pressed again
@@ -169,6 +177,16 @@ class ParadigmGrid(GridLayout):
     def undo_step(self):
         """Revert one iteration of the simulation (thin wrapper around Paradigm.undo_step)."""
         self.para.undo_step()
+        self.update_all_cells()
+
+    def rewind_all(self):
+        """Revert simulation all the way to initial state."""
+        self.para.rewind_all()
+        self.update_all_cells()
+
+    def forward_all(self):
+        """Redo all iterations until the latest state."""
+        self.para.forward_all()
         self.update_all_cells()
 
     def start_stop_simulation(self):
