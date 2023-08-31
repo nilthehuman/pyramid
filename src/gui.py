@@ -53,7 +53,8 @@ class KeyboardHandler(Widget):
         if keycode[1] == 'shift' or keycode[1] == 'rshift':
             App.get_running_app().root.show_overlay_grid()
             return True
-        if keycode[1] == '?':
+        if keycode[1] == 'enter' and 'shift' in modifiers:
+            App.get_running_app().root.replace_para_with_overlay()
             return True
         if keycode[1] == 'escape':
             if App.get_running_app().root.help_window:
@@ -96,6 +97,13 @@ class PyramidWindow(AnchorLayout):
             else:
                 self.overlay = NoSolutionLabel()
                 self.add_widget(self.overlay)
+
+    def replace_para_with_overlay(self):
+        """Overwrite the current state of the paradigm with the rearranged one
+        and make it the new starting state."""
+        if self.overlay:
+            self.ids.grid.para = self.overlay.para
+            self.ids.grid.update_all_cells()
 
     def hide_overlay_grid(self):
         """Hide the rearranged paradigm and show the original again."""
@@ -322,7 +330,7 @@ class PyramidApp(App):
     def build(self):
         para = Paradigm( row_labels=['ház', 'gáz', 'tűz', 'pénz'],
                          col_labels=['-k', '-t', '-m', '-d'],
-                         matrix=[[1, 1, 1, 1], [1, 0, 1, 1], [1, 1, 1, 1], [1, 0, 1, 1]] )
+                         matrix=[[1, 0, 0.4, 0.2], [1, 0, 1, 1], [1, 1, 1, 1], [1, 0, 1, 1]] )
                          #matrix=[[0, 0, 0, 0], [1, 0, 1, 1], [1, 0, 1, 1], [1, 0, 1, 1]] )
         root = PyramidWindow(para)
         self.keyboardhandler = KeyboardHandler()
