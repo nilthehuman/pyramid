@@ -173,7 +173,7 @@ class Paradigm:
                 try:
                     first_false = row.index(False)
                 except ValueError:
-                    first_false = len(self)
+                    first_false = len(paradigm[0])
                 if not all(not cell for cell in row[first_false + 1:]):
                     # discontiguous row
                     return False
