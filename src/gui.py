@@ -202,7 +202,8 @@ class ParadigmGrid(GridLayout):
 
     def run_batch(self, _elapsed_time):
         """Callback to perform one batch of iterations of the simulation."""
-        self.para.simulate()
+        para_size = len(self.para) * len(self.para[0])
+        self.para.simulate(batch_size=para_size)
         self.update_all_cells()
 
     def update_label(self, row=None, col=None, text=None):
