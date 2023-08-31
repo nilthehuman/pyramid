@@ -228,6 +228,8 @@ class ParadigmGrid(GridLayout):
 
     def update_cell(self, row, col, new_bias):
         """Set the bias of a cell in the underlying Paradigm object to a new value."""
+        self.para.invalidate_future_history()
+        self.para.store_snapshot()
         self.para[row][col] = new_bias
         # N.B. Kivy's add_widget function pushes widgets to the front of the child widget list
         self.children[- (row + 1) * (len(self.para[0]) + 1) - (col + 1) - 1].update()

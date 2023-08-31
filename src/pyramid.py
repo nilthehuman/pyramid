@@ -74,6 +74,11 @@ class Paradigm:
         """Save a copy of the current state of the paradigm, to be restored later if needed."""
         if self.history:
             self.history.append(deepcopy(list(self)))
+            self.iteration += 1
+
+    def invalidate_future_history(self):
+        """Remove the forward-facing part of the history on account of the present state being changed."""
+        del self.history[self.iteration + 1:]
 
     def pick_cell(self):
         """Select a uniformly random cell in the paradigm."""
@@ -92,7 +97,6 @@ class Paradigm:
             self.redo_step()
             return
         self.store_snapshot()
-        self.iteration += 1
         row, col = self.pick_cell()
         if self.effect_direction == Paradigm.EffectDir.INWARD:
             # picked cell looks around, sees which way the average leans
