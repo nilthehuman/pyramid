@@ -51,7 +51,7 @@ class KeyboardHandler(Widget):
             App.get_running_app().root.ids.grid.start_stop_simulation()
             return True
         if keycode[1] == 'shift' or keycode[1] == 'rshift':
-            App.get_running_app().root.toggle_overlay_grid()
+            App.get_running_app().root.show_overlay_grid()
             return True
         if keycode[1] == '?':
             return True
@@ -64,7 +64,7 @@ class KeyboardHandler(Widget):
     def on_keyreleased(self, _keyboard, keycode):
         """Remove overlay paradigm once user releases shift key."""
         if keycode[1] == 'shift' or keycode[1] == 'rshift':
-            App.get_running_app().root.toggle_overlay_grid()
+            App.get_running_app().root.hide_overlay_grid()
             return True
         return False
 
@@ -86,8 +86,8 @@ class PyramidWindow(AnchorLayout):
             self.remove_widget(self.help_window)
             self.help_window = None
 
-    def toggle_overlay_grid(self):
-        """Show or hide paradigm rearranged according to our working hypothesis."""
+    def show_overlay_grid(self):
+        """Show paradigm rearranged according to our working hypothesis."""
         if not self.overlay:
             para_rearranged = self.ids.grid.para.is_pyramid()
             if para_rearranged:
@@ -97,7 +97,9 @@ class PyramidWindow(AnchorLayout):
                 self.overlay = NoSolutionLabel()
                 self.add_widget(self.overlay)
 
-        else:
+    def hide_overlay_grid(self):
+        """Hide the rearranged paradigm and show the original again."""
+        if self.overlay:
             self.remove_widget(self.overlay)
             self.overlay = None
 
