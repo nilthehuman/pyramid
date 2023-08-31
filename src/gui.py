@@ -183,11 +183,15 @@ class ParadigmGrid(GridLayout):
 
     def rewind_all(self):
         """Revert simulation all the way to initial state."""
+        if self.timed_callback:
+            self.start_stop_simulation()
         self.para.rewind_all()
         self.update_all_cells()
 
     def forward_all(self):
         """Redo all iterations until the latest state."""
+        if self.timed_callback:
+            self.start_stop_simulation()
         self.para.forward_all()
         self.update_all_cells()
 
