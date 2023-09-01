@@ -140,12 +140,19 @@ class HelpWindow(Label):
             Click on any row or column label to edit the morpheme corresponding
             to that row or column.\n
             Click on any paradigm cell to change the value of its bias.\n
-            Press [b]RightArrow (→)[/b] to perform one iteration of the
+            Press [b]RightArrow (->)[/b] to perform one iteration of the
             simulation.\n
-            Press [b]LeftArrow (←)[/b] to undo one iteration of the
+            Press [b]LeftArrow (<-)[/b] to undo one iteration of the
             simulation.\n
+            Press [b]End[/b] or [b]Ctrl-RightArrow[/b] to skip to the last
+            state of the simulation.\n
+            Press [b]Home[/b] or [b]Ctrl-LeftArrow[/b] to skip to the initial
+            state of the simulation.\n
+            Press [b]Space[/b] to start or stop an open-ended simulation.\n
             Hold [b]Shift[/b] to see if the paradigm can be rearranged to fit
-            the research project\'s working hypothesis.'''
+            the research project\'s working hypothesis.\n
+            While holding [b]Shift[/b], press [b]Enter[/b] to keep the
+            rearranged paradigm and replace the original paradigm with it.'''
 
     def toggle_help_window(self, *args):
         """Show or hide fullscreen Label with help text."""
