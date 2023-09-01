@@ -179,12 +179,15 @@ class Paradigm:
         if self.running():
             self.sim_status = Paradigm.SimStatus.CANCELLED
 
-    def simulate(self, max_iterations=None, batch_size=100):
+    def simulate(self, max_iterations=None, batch_size=None):
         """Run a predefined number of iterations of the simulation or until cancelled by the user."""
+        assert max_iterations or batch_size
         if self.sim_status == Paradigm.SimStatus.STOPPED:
             self.sim_status = Paradigm.SimStatus.RUNNING
         if max_iterations is None:
             max_iterations = int(1e9)  # math.inf is not applicable
+        if batch_size is None:
+            batch_size = int(1e9)  # math.inf is not applicable
         self.iterations = 0
         for _ in range(batch_size):
             if self.sim_status == Paradigm.SimStatus.CANCELLED or self.iterations >= max_iterations:
