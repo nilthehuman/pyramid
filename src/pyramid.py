@@ -113,7 +113,7 @@ class Paradigm:
         return row, col
 
     def nudge(self, row, col, outcome):
-        """Adjust the value of a single cell based on an outcome in a neighboring cell."""
+        """Adjust the value of a single cell based on an outcome in a neighboring cell or cells."""
         delta = (1 if outcome else -1) / (self.iteration + 1)
         self[row][col] = min(max(self[row][col] + delta, 0), 1)
 
