@@ -106,6 +106,37 @@ class Paradigm:
         """Remove the forward-facing part of the history on account of the present state being changed."""
         del self.history[self.iteration + 1:]
 
+    @with_history
+    def undo_step(self):
+        """Restore previous paradigm state from the history."""
+        if 0 < self.iteration:
+            self.iteration -= 1
+
+    @with_history
+    def redo_step(self):
+        """Restore next paradigm state from the history."""
+        if self.iteration < len(self.history) - 1:
+            self.iteration += 1
+
+    @with_history
+    def rewind_all(self):
+        """Undo all steps done so far and return to initial paradigm state."""
+        self.iteration = 0
+
+    @with_history
+    def forward_all(self):
+        """Redo all steps done so far and return to last paradigm state."""
+        self.iteration = len(self.history) - 1
+
+    def running(self):
+        """Is the simulation currently in progress?"""
+        return self.sim_status == Paradigm.SimStatus.RUNNING
+
+    def cancel(self):
+        """Cancel running simulation."""
+        if self.running():
+            self.sim_status = Paradigm.SimStatus.CANCELLED
+
     def pick_cell(self):
         """Select a uniformly random cell in the paradigm."""
         row = randrange(len(self))
@@ -148,37 +179,6 @@ class Paradigm:
                         self.nudge(current_row, current_col, outcome)
         else:
             raise ValueError("The EffectDir enum has no such value")
-
-    @with_history
-    def undo_step(self):
-        """Restore previous paradigm state from the history."""
-        if 0 < self.iteration:
-            self.iteration -= 1
-
-    @with_history
-    def redo_step(self):
-        """Restore next paradigm state from the history."""
-        if self.iteration < len(self.history) - 1:
-            self.iteration += 1
-
-    @with_history
-    def rewind_all(self):
-        """Undo all steps done so far and return to initial paradigm state."""
-        self.iteration = 0
-
-    @with_history
-    def forward_all(self):
-        """Redo all steps done so far and return to last paradigm state."""
-        self.iteration = len(self.history) - 1
-
-    def running(self):
-        """Is the simulation currently in progress?"""
-        return self.sim_status == Paradigm.SimStatus.RUNNING
-
-    def cancel(self):
-        """Cancel running simulation."""
-        if self.running():
-            self.sim_status = Paradigm.SimStatus.CANCELLED
 
     def simulate(self, max_iterations=None, batch_size=None):
         """Run a predefined number of iterations of the simulation or until cancelled by the user."""
