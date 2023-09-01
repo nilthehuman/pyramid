@@ -24,6 +24,7 @@ class Paradigm:
         self.effect_radius = 2
         # housekeeping variables
         self.iteration = 0
+        self.para_state = None
         self.history = []
         self.sim_status = Paradigm.SimStatus.STOPPED
         if row_labels:
@@ -47,7 +48,9 @@ class Paradigm:
 
     def state(self):
         """The current matrix of bias values."""
-        return self.history[self.iteration]
+        if self.history:
+            return self.history[self.iteration]
+        return self.para_state
 
     def __repr__(self):
         return str(self.state())
@@ -70,12 +73,34 @@ class Paradigm:
             for col in range(len(self[0])):
                 self[row][col] = 1 if row < corner_rows and col < corner_cols else 0
 
+    def track_history(self, on=True):
+        """Enable or disable keeping a history of previous paradigm states."""
+        if on:
+            if not self.history:
+                self.history = []
+                self.store_snapshot()
+                self.para_state = None
+        else:
+            self.para_state = self.state()
+            self.history = None
+
+    def with_history(func):
+        """Decorator to call func only if history is being tracked."""
+        def check_history(self):
+            if self.history:
+                func(self)
+            else:
+                # warn("history tracking is off")
+                pass
+        return check_history
+
+    @with_history
     def store_snapshot(self):
         """Save a copy of the current state of the paradigm, to be restored later if needed."""
-        if self.history:
-            self.history.append(deepcopy(list(self)))
-            self.iteration += 1
+        self.history.append(deepcopy(list(self)))
+        self.iteration += 1
 
+    @with_history
     def invalidate_future_history(self):
         """Remove the forward-facing part of the history on account of the present state being changed."""
         del self.history[self.iteration + 1:]
@@ -93,7 +118,7 @@ class Paradigm:
 
     def step(self):
         """Perform a single iteration of the stochastic simulation."""
-        if self.iteration < len(self.history) - 1:
+        if self.history and self.iteration < len(self.history) - 1:
             self.redo_step()
             return
         self.store_snapshot()
@@ -123,26 +148,26 @@ class Paradigm:
         else:
             raise ValueError("The EffectDir enum has no such value")
 
+    @with_history
     def undo_step(self):
         """Restore previous paradigm state from the history."""
-        assert self.history
         if 0 < self.iteration:
             self.iteration -= 1
 
+    @with_history
     def redo_step(self):
         """Restore next paradigm state from the history."""
-        assert self.history
         if self.iteration < len(self.history) - 1:
             self.iteration += 1
 
+    @with_history
     def rewind_all(self):
         """Undo all steps done so far and return to initial paradigm state."""
-        assert self.history
         self.iteration = 0
 
+    @with_history
     def forward_all(self):
         """Redo all steps done so far and return to last paradigm state."""
-        assert self.history
         self.iteration = len(self.history) - 1
 
     def running(self):
