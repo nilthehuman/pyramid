@@ -208,6 +208,7 @@ class Paradigm:
         all_permutations = product(row_permutations, col_permutations)
         for row_permutation, col_permutation in all_permutations:
             next_para = deepcopy(para_truth)
+            next_para.store_snapshot()
             for row in range(len(para_truth)):
                 for col in range(len(para_truth[0])):
                     permuted_row = row_permutation[row]
@@ -245,6 +246,7 @@ class Paradigm:
         all_permutations = product(permutations(range(len(self))), permutations(range(len(self[0]))))
         for row_permutation, col_permutation in all_permutations:
             next_para = deepcopy(self)
+            next_para.store_snapshot()
             for row in range(len(self)):
                 for col in range(len(self[0])):
                     permuted_row = row_permutation[row]
