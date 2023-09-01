@@ -65,13 +65,13 @@ class Paradigm:
         return self.state()[index]
 
     def initialize(self, corner_rows, corner_cols):
-        """Fill the top left corner of the given size with 1's, the rest of the table with 0's."""
+        """Fill the bottom left corner of the given size with 1's, the rest of the table with 0's."""
         assert 0 < corner_rows < len(self)
         assert 0 < corner_cols < len(self[0])
         assert self[0][0] is None
         for row in range(len(self)):
             for col in range(len(self[0])):
-                self[row][col] = 1 if row < corner_rows and col < corner_cols else 0
+                self[row][col] = 1 if len(self) - row <= corner_rows and col < corner_cols else 0
 
     def track_history(self, on=True):
         """Enable or disable keeping a history of previous paradigm states."""
