@@ -30,6 +30,12 @@ class KeyboardHandler(Widget):
 
     def on_keypressed(self, _keyboard, keycode, _text, modifiers):
         """Catch and handle user keypresses corresponding to app functions."""
+        if App.get_running_app().root.help_window:
+            if keycode[1] == 'escape':
+                if App.get_running_app().root.help_window:
+                    App.get_running_app().root.toggle_help_window()
+            # block all other keypresses too
+            return True
         if keycode[1] == 'right' and 'ctrl' not in modifiers:
             # run a single step of the simulation
             App.get_running_app().root.ids.grid.step()
@@ -56,10 +62,6 @@ class KeyboardHandler(Widget):
         if keycode[1] == 'enter' and 'shift' in modifiers:
             App.get_running_app().root.replace_para_with_overlay()
             return True
-        if keycode[1] == 'escape':
-            if App.get_running_app().root.help_window:
-                App.get_running_app().root.toggle_help_window()
-                return True
         return False
 
     def on_keyreleased(self, _keyboard, keycode):
