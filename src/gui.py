@@ -103,6 +103,7 @@ class PyramidWindow(AnchorLayout):
         and make it the new starting state."""
         if self.overlay:
             self.ids.grid.para = self.overlay.para
+            self.ids.grid.para.invalidate_future_history()
             self.ids.grid.update_all_cells()
 
     def hide_overlay_grid(self):
