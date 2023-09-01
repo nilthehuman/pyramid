@@ -322,7 +322,15 @@ class CellEditText(TextInput):
             new_value = max(0, min(1, new_value))
             self.parent.parent.update_cell(self.parent.row, self.parent.col, new_value)
         except ValueError:
-            #warn("Matrix values are supposed to be numeric.")
+            pass  # fallthrough to next try block
+        try:
+            if "true" == self.text.lower():
+                new_value = True
+            elif "false" == self.text.lower():
+                new_value = False
+            self.parent.parent.update_cell(self.parent.row, self.parent.col, new_value)
+        except NameError:
+            #warn("Matrix values are supposed to be numeric or Boolean.")
             pass
 
     def focus_changed(self, instance, focused=None):
