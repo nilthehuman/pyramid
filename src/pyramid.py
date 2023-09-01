@@ -24,8 +24,8 @@ class Paradigm:
         self.effect_radius = 2
         # housekeeping variables
         self.iteration = 0
-        self.para_state = None
-        self.history = []
+        self.para_state = []
+        self.history = None
         self.sim_status = Paradigm.SimStatus.STOPPED
         if row_labels:
             assert len(row_labels) == len(set(row_labels))
@@ -38,16 +38,16 @@ class Paradigm:
         else:
             self.col_labels = []
         # load initial state
-        self.history.append([])
         if matrix:
             for row in matrix:
-                self.history[0].append(deepcopy(row))
+                self.para_state.append(deepcopy(row))
         else:
             for _ in row_labels:
-                self.history[0].append([None for _ in col_labels])
+                self.para_state.append([None for _ in col_labels])
 
     def state(self):
         """The current matrix of bias values."""
+        assert self.para_state or self.history
         if self.history:
             return self.history[self.iteration]
         return self.para_state
@@ -79,6 +79,7 @@ class Paradigm:
             if not self.history:
                 self.history = []
                 self.store_snapshot()
+                self.iteration = 0
                 self.para_state = None
         else:
             self.para_state = self.state()
@@ -87,7 +88,7 @@ class Paradigm:
     def with_history(func):
         """Decorator to call func only if history is being tracked."""
         def check_history(self):
-            if self.history:
+            if self.history is not None:
                 func(self)
             else:
                 # warn("history tracking is off")

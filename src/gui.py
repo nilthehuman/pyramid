@@ -348,8 +348,9 @@ class PyramidApp(App):
     def build(self):
         para = Paradigm( row_labels=['ház', 'gáz', 'tűz', 'pénz'],
                          col_labels=['-k', '-t', '-m', '-d'],
-                         matrix=[[1, 0, 0.4, 0.2], [1, 0, 1, 1], [1, 1, 1, 1], [1, 0, 1, 1]] )
+                         matrix=[[1, 0, 0.4, 0.2], [1, 0, 1, 1], [1, 1, 1, 1], [1, 0, 1, 0.7]] )
                          #matrix=[[0, 0, 0, 0], [1, 0, 1, 1], [1, 0, 1, 1], [1, 0, 1, 1]] )
+        para.track_history(True)
         root = PyramidWindow(para)
         self.keyboardhandler = KeyboardHandler()
         return root
