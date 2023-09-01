@@ -56,7 +56,6 @@ def test_nudge_twice():
     para = Paradigm(matrix=matrix)
     para.nudge(1, 1, True)
     para.store_snapshot()
-    para.iteration += 1
     para.nudge(1, 1, False)
     assert para[1][1] == 0.5
 
