@@ -21,7 +21,7 @@ class Paradigm:
         """Overloaded constructor, works both with a matrix as argument or a pair of label lists."""
         # default settings
         self.effect_direction = Paradigm.EffectDir.INWARD
-        self.effect_radius = 2
+        self.effect_radius = 1
         # housekeeping variables
         self.iteration = 0
         self.para_state = []
