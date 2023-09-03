@@ -1,5 +1,7 @@
 """The program's graphical frontend, eventually."""
 
+from copy import copy
+
 from kivy import require as kivy_require
 kivy_require('2.1.0')
 from kivy.app import App
@@ -92,7 +94,7 @@ class PyramidWindow(AnchorLayout):
     def show_overlay_grid(self):
         """Show paradigm rearranged according to our working hypothesis."""
         if not self.overlay:
-            para_rearranged = self.ids.grid.para.is_pyramid()
+            para_rearranged = self.ids.grid.is_pyramid()
             if para_rearranged:
                 self.overlay = ParadigmGrid(para_rearranged)
                 self.add_widget(self.overlay)
@@ -104,8 +106,8 @@ class PyramidWindow(AnchorLayout):
         """Overwrite the current state of the paradigm with the rearranged one
         and make it the new starting state."""
         if self.overlay:
-            self.ids.grid.para = self.overlay.para
-            self.ids.grid.para.invalidate_future_history()
+            self.ids.grid.set_para(self.overlay)
+            self.ids.grid.invalidate_future_history()
             self.ids.grid.update_all_cells()
 
     def hide_overlay_grid(self):
@@ -162,10 +164,11 @@ class HelpWindow(Label):
         return True
 
 
-class ParadigmGrid(GridLayout):
+class ParadigmGrid(Paradigm, GridLayout):
 
     def __init__(self, para=None, **kwargs):
-        super().__init__(**kwargs)
+        Paradigm.__init__(self, row_labels=[], col_labels=[])
+        GridLayout.__init__(self, **kwargs)
         self.timed_callback = None
         if para:
             self.set_para(para)
@@ -173,9 +176,12 @@ class ParadigmGrid(GridLayout):
     def set_para(self, para):
         """Clear our child widgets and replace them with text fields and buttons corresponding to the new paradigm we have been handed."""
         self.clear_widgets()
-        self.para = para
         if not para:
             return
+        self.row_labels = copy(para.row_labels)
+        self.col_labels = copy(para.col_labels)
+        self.para_state = copy(para.para_state)
+        self.history = copy(para.history)
         self.row_text_inputs = []
         self.col_text_inputs = []
         self.add_widget(Widget())  # spacer in the top left corner
@@ -189,45 +195,51 @@ class ParadigmGrid(GridLayout):
                 self.add_widget(ParadigmCell(i, j))
         self.update_all_cells()
 
+    def clone(self):
+        """Return a copy of this ParadigmGrid object."""
+        new_para = Paradigm(row_labels=self.row_labels, col_labels=self.col_labels, matrix=self)
+        clone = ParadigmGrid(para=new_para)
+        return clone
+
     def step(self):
         """Perform one iteration of the simulation (thin wrapper around Paradigm.step)."""
-        self.para.step()
+        super().step()
         self.update_all_cells()
 
     def undo_step(self):
         """Revert one iteration of the simulation (thin wrapper around Paradigm.undo_step)."""
-        self.para.undo_step()
+        super().undo_step()
         self.update_all_cells()
 
     def rewind_all(self):
         """Revert simulation all the way to initial state."""
         if self.timed_callback:
             self.start_stop_simulation()
-        self.para.rewind_all()
+        super().rewind_all()
         self.update_all_cells()
 
     def forward_all(self):
         """Redo all iterations until the latest state."""
         if self.timed_callback:
             self.start_stop_simulation()
-        self.para.forward_all()
+        super().forward_all()
         self.update_all_cells()
 
     def start_stop_simulation(self):
         """Keep running the simulation until the same method is called again."""
         if self.timed_callback:
-            assert self.para.running()
+            assert self.running()
             self.timed_callback.cancel()
             self.timed_callback = None
-            self.para.cancel()
+            self.cancel()
         else:
             self.run_batch(0)
             self.timed_callback = Clock.schedule_interval(self.run_batch, 0.1)
 
     def run_batch(self, _elapsed_time):
         """Callback to perform one batch of iterations of the simulation."""
-        para_size = len(self.para) * len(self.para[0])
-        self.para.simulate(batch_size=para_size)
+        para_size = len(self) * len(self[0])
+        self.simulate(batch_size=para_size)
         self.update_all_cells()
 
     def update_label(self, row=None, col=None, text=None):
@@ -237,24 +249,24 @@ class ParadigmGrid(GridLayout):
             # not a good idea
             #warn("Please don't leave row or column labels empty")
             if row:
-                self.row_text_inputs[row].text = self.para.row_labels[row]
+                self.row_text_inputs[row].text = self.row_labels[row]
             else:
-                self.col_text_inputs[col].text = self.para.col_labels[col]
+                self.col_text_inputs[col].text = self.col_labels[col]
             return
         if row is not None:
-            self.para.row_labels[row] = text
+            self.row_labels[row] = text
         if col is not None:
-            self.para.col_labels[col] = text
-        assert len(self.para.row_labels) == len(set(self.para.row_labels))
-        assert len(self.para.col_labels) == len(set(self.para.col_labels))
+            self.col_labels[col] = text
+        assert len(self.row_labels) == len(set(self.row_labels))
+        assert len(self.col_labels) == len(set(self.col_labels))
 
     def update_cell(self, row, col, new_bias):
         """Set the bias of a cell in the underlying Paradigm object to a new value."""
-        self.para.invalidate_future_history()
-        self.para.store_snapshot()
-        self.para[row][col] = new_bias
+        self.invalidate_future_history()
+        self.store_snapshot()
+        self[row][col] = new_bias
         # N.B. Kivy's add_widget function pushes widgets to the front of the child widget list
-        self.children[- (row + 1) * (len(self.para[0]) + 1) - (col + 1) - 1].update()
+        self.children[- (row + 1) * (len(self[0]) + 1) - (col + 1) - 1].update()
 
     def update_all_cells(self):
         """Sync all visual grid cells with the cells of the underlying Paradigm object."""
@@ -294,7 +306,7 @@ class ParadigmCell(AnchorLayout, Button):
 
     def update(self):
         """Sync this cell's content and color with the bias of the underlying Paradigm's cell."""
-        bias = self.parent.para[self.row][self.col]
+        bias = self.parent[self.row][self.col]
         if isinstance(bias, bool):
             self.text = str(bias)
         else:

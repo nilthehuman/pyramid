@@ -47,7 +47,7 @@ class Paradigm:
 
     def state(self):
         """The current matrix of bias values."""
-        assert self.para_state or self.history
+        assert self.para_state is not None or self.history is not None
         if self.history:
             return self.history[self.iteration]
         return self.para_state
@@ -63,6 +63,10 @@ class Paradigm:
 
     def __getitem__(self, index):
         return self.state()[index]
+
+    def clone(self):
+        """Return a copy of this Paradigm object."""
+        return deepcopy(self)
 
     def initialize(self, corner_rows, corner_cols):
         """Fill the bottom left corner of the given size with 1's, the rest of the table with 0's."""
@@ -218,7 +222,7 @@ class Paradigm:
         assert self[0][0] is not None
         if not self or not self[0]:
             return self
-        para_truth = deepcopy(self)
+        para_truth = self.clone()
         for row in range(len(self)):
             for col in range(len(self[0])):
                 para_truth[row][col] = 0.5 <= self[row][col]
@@ -236,7 +240,7 @@ class Paradigm:
         col_permutations = [tuple(full_cols) + perm + tuple(empty_cols) for perm in permutations(set(range(len(para_truth[0]))) - set(full_cols) - set(empty_cols))]
         all_permutations = product(row_permutations, col_permutations)
         for row_permutation, col_permutation in all_permutations:
-            next_para = deepcopy(para_truth)
+            next_para = self.clone()
             next_para.store_snapshot()
             for row in range(len(para_truth)):
                 for col in range(len(para_truth[0])):
@@ -274,7 +278,7 @@ class Paradigm:
         # use brute force for now
         all_permutations = product(permutations(range(len(self))), permutations(range(len(self[0]))))
         for row_permutation, col_permutation in all_permutations:
-            next_para = deepcopy(self)
+            next_para = self.clone()
             next_para.store_snapshot()
             for row in range(len(self)):
                 for col in range(len(self[0])):
