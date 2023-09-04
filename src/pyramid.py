@@ -45,10 +45,7 @@ class Paradigm:
             assert state.row_labels is None or len(state.row_labels) == len(set(state.row_labels))
             assert state.col_labels is None or len(state.col_labels) == len(set(state.col_labels))
             # load initial state
-            if state.matrix:
-                for row in state.matrix:
-                    self.para_state.matrix.append(deepcopy(row))
-            else:
+            if not state.matrix:
                 for _ in state.row_labels:
                     self.para_state.matrix.append([None for _ in state.col_labels])
         else:
