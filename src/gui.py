@@ -34,14 +34,14 @@ class KeyboardHandler(Widget):
         """Catch and handle user keypresses corresponding to app functions."""
         if App.get_running_app().root.help_window:
             if keycode[1] == 'escape':
-                if App.get_running_app().root.help_window:
-                    App.get_running_app().root.toggle_help_window()
+                App.get_running_app().root.toggle_help_window()
             # block all other keypresses too
             return True
-        if keycode[1] == 'escape':
-            if App.get_running_app().root.ids.grid.warning_label:
+        if App.get_running_app().root.ids.grid.warning_label:
+            if keycode[1] == 'escape':
                 App.get_running_app().root.ids.grid.hide_warning()
-                return True
+            # block all other keypresses too
+            return True
         if keycode[1] == 'right' and 'ctrl' not in modifiers:
             # run a single step of the simulation
             App.get_running_app().root.ids.grid.step()
@@ -388,7 +388,19 @@ class CellEditText(TextInput):
 
 
 class WarningLabel(Label):
-    pass
+
+    def __init__(self, para=None, **kwargs):
+        super().__init__(**kwargs)
+        # block click events from Widgets below
+        self.bind(on_touch_down=lambda *_: True)
+        self.bind(on_touch_up=self.dismiss_warning)
+
+    # you can't bind to PyramidWindow in __init__ because of Kivy's initialization order
+    def dismiss_warning(self, *args):
+        """Remove warning label from the screen."""
+        self.parent.ids.grid.hide_warning()
+        #App.get_running_app().root.toggle_help_window(*args)
+        return True
 
 
 class PyramidApp(App):
