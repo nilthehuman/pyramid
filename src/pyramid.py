@@ -17,16 +17,27 @@ class Paradigm:
         RUNNING   = 2
         CANCELLED = 3
 
-    def __init__(self, row_labels=None, col_labels=None, matrix=None):
+    def __init__(self, row_labels=None, col_labels=None, matrix=None, history=None, iteration=0):
         """Overloaded constructor, works both with a matrix as argument or a pair of label lists."""
         # default settings
         self.effect_direction = Paradigm.EffectDir.INWARD
         self.effect_radius = 1
         # housekeeping variables
-        self.iteration = 0
-        self.para_state = []
-        self.history = None
+        self.iteration = iteration
         self.sim_status = Paradigm.SimStatus.STOPPED
+        if history:
+            self.para_state = None
+            self.history = deepcopy(history)
+        else:
+            self.para_state = []
+            self.history = None
+            # load initial state
+            if matrix:
+                for row in matrix:
+                    self.para_state.append(deepcopy(row))
+            else:
+                for _ in row_labels:
+                    self.para_state.append([None for _ in col_labels])
         if row_labels:
             assert len(row_labels) == len(set(row_labels))
             self.row_labels = row_labels
@@ -37,13 +48,6 @@ class Paradigm:
             self.col_labels = col_labels
         else:
             self.col_labels = []
-        # load initial state
-        if matrix:
-            for row in matrix:
-                self.para_state.append(deepcopy(row))
-        else:
-            for _ in row_labels:
-                self.para_state.append([None for _ in col_labels])
 
     def state(self):
         """The current matrix of bias values."""

@@ -1,6 +1,6 @@
 """The program's graphical frontend, eventually."""
 
-from copy import copy
+from copy import copy, deepcopy
 
 from kivy import require as kivy_require
 kivy_require('2.1.0')
@@ -96,8 +96,9 @@ class PyramidWindow(AnchorLayout):
         if not self.overlay:
             para_rearranged = self.ids.grid.is_pyramid()
             if para_rearranged:
-                self.overlay = ParadigmGrid(para_rearranged)
+                self.overlay = para_rearranged
                 self.add_widget(self.overlay)
+                self.overlay.update_all_cells()
             else:
                 self.overlay = NoSolutionLabel()
                 self.add_widget(self.overlay)
@@ -181,7 +182,8 @@ class ParadigmGrid(Paradigm, GridLayout):
         self.row_labels = copy(para.row_labels)
         self.col_labels = copy(para.col_labels)
         self.para_state = copy(para.para_state)
-        self.history = copy(para.history)
+        self.history = deepcopy(para.history)
+        self.iteration = para.iteration
         self.row_text_inputs = []
         self.col_text_inputs = []
         self.add_widget(Widget())  # spacer in the top left corner
@@ -197,7 +199,11 @@ class ParadigmGrid(Paradigm, GridLayout):
 
     def clone(self):
         """Return a copy of this ParadigmGrid object."""
-        new_para = Paradigm(row_labels=self.row_labels, col_labels=self.col_labels, matrix=self)
+        new_para = Paradigm(row_labels=self.row_labels,
+                            col_labels=self.col_labels,
+                            matrix=self,
+                            history=self.history,
+                            iteration=self.iteration)
         clone = ParadigmGrid(para=new_para)
         return clone
 
