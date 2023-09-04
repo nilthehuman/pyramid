@@ -170,7 +170,8 @@ class Paradigm:
         if self.history and self.history_index < len(self.history) - 1:
             self.redo_step()
             return
-        self.store_snapshot()
+        if self.history is not None:
+            self.store_snapshot()
         self.state().iteration += 1
         row, col = self.pick_cell()
         if self.effect_direction == Paradigm.EffectDir.INWARD:
