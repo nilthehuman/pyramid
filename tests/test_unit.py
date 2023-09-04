@@ -13,7 +13,8 @@ def test_is_pyramid_both_true():
                [0, 0, 1, 0, 0],
                [1, 1, 1, 1, 0],
                [0, 0, 0, 0, 0] ]
-    para = Paradigm(matrix=matrix)
+    state = Paradigm.State(matrix=matrix)
+    para = Paradigm(state=state)
     assert para.is_pyramid()
     assert para.is_pyramid_strict()
 
@@ -24,7 +25,8 @@ def test_is_pyramid_both_false():
                [0, 0, 1, 0, 0],
                [1, 1, 1, 1, 0],
                [0, 0, 0, 0, 0] ]
-    para = Paradigm(matrix=matrix)
+    state = Paradigm.State(matrix=matrix)
+    para = Paradigm(state=state)
     assert not para.is_pyramid()
     assert not para.is_pyramid_strict()
 
@@ -35,7 +37,8 @@ def test_is_pyramid_only_strict_false():
                [1.0, 0, 0, 0, 0],
                [1.0, 0, 0, 0, 0],
                [0.0, 0, 0, 0, 0] ]
-    para = Paradigm(matrix=matrix)
+    state = Paradigm.State(matrix=matrix)
+    para = Paradigm(state=state)
     assert para.is_pyramid()
     assert not para.is_pyramid_strict()
 
@@ -44,7 +47,8 @@ def test_nudge_once():
     matrix = [ [0, 0, 0],
                [0, 0, 0],
                [0, 0, 0] ]
-    para = Paradigm(matrix=matrix)
+    state = Paradigm.State(matrix=matrix)
+    para = Paradigm(state=state)
     para.nudge(1, 1, True)
     assert para[1][1] == 1
 
@@ -53,23 +57,26 @@ def test_nudge_twice():
     matrix = [ [0, 0, 0],
                [0, 0, 0],
                [0, 0, 0] ]
-    para = Paradigm(matrix=matrix)
+    state = Paradigm.State(matrix=matrix)
+    para = Paradigm(state=state)
     para.nudge(1, 1, True)
-    para.store_snapshot()
+    para.state().iteration += 1
     para.nudge(1, 1, False)
     assert para[1][1] == 0.5
 
 
 def test_step_once():
     matrix = [ [0.001] ]
-    para = Paradigm(matrix=matrix)
+    state = Paradigm.State(matrix=matrix)
+    para = Paradigm(state=state)
     para.step()
     assert para[0][0] < 0.001
 
 
 def test_step_twice():
     matrix = [ [0.5] ]
-    para = Paradigm(matrix=matrix)
+    state = Paradigm.State(matrix=matrix)
+    para = Paradigm(state=state)
     para.step()
     after_first_step = para[0][0]
     para.step()
@@ -78,7 +85,8 @@ def test_step_twice():
 
 def test_step_once_and_undo():
     matrix = [ [0.5] ]
-    para = Paradigm(matrix=matrix)
+    state = Paradigm.State(matrix=matrix)
+    para = Paradigm(state=state)
     para_orig = list(para)
     para.step()
     para.undo_step()
@@ -87,7 +95,8 @@ def test_step_once_and_undo():
 
 def test_step_twice_and_undo():
     matrix = [ [0.5] ]
-    para = Paradigm(matrix=matrix)
+    state = Paradigm.State(matrix=matrix)
+    para = Paradigm(state=state)
     para_orig = list(para)
     para.step()
     para.step()
