@@ -105,8 +105,7 @@ class Paradigm:
             if self.history is not None:
                 func(self)
             else:
-                self.show_warning("history tracking is off")
-                pass
+                self.show_warning("Cannot %s: history tracking is off." % func.__name__.replace('_', ' '))
         return check_history
 
     @with_history
@@ -125,12 +124,16 @@ class Paradigm:
         """Restore previous paradigm state from the history."""
         if 0 < self.history_index:
             self.history_index -= 1
+        else:
+            self.show_warning("Undo unavailable: already at oldest state in history.")
 
     @with_history
     def redo_step(self):
         """Restore next paradigm state from the history."""
         if self.history_index < len(self.history) - 1:
             self.history_index += 1
+        else:
+            self.show_warning("Redo unavailable: already at newest state in history.")
 
     @with_history
     def rewind_all(self):
