@@ -299,6 +299,16 @@ class ParadigmGrid(Paradigm, GridLayout):
         for child in self.children:
             if isinstance(child, ParadigmCell):
                 child.update()
+            else:
+                # refresh all row and column labels as well
+                try:
+                    child.text = self.row_labels[child.row]
+                except (AttributeError, TypeError):
+                    try:
+                        child.text = self.col_labels[child.col]
+                    except (AttributeError, TypeError):
+                        # this must be the blank spaceholder widget in the top left corner
+                        assert isinstance(child, Widget)
 
 
 class ParadigmText(TextInput):
