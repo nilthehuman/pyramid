@@ -271,16 +271,16 @@ class ParadigmGrid(Paradigm, GridLayout):
             # TODO: this seems like a dead branch?
             self.show_warning("Please don't leave row or column labels empty")
             if row:
-                self.row_text_inputs[row].text = self.row_labels[row]
+                self.row_text_inputs[row].text = self.state().row_labels[row]
             else:
-                self.col_text_inputs[col].text = self.col_labels[col]
+                self.col_text_inputs[col].text = self.state().col_labels[col]
             return
         if row is not None:
-            self.row_labels[row] = text
+            self.state().row_labels[row] = text
         if col is not None:
-            self.col_labels[col] = text
-        assert len(self.row_labels) == len(set(self.row_labels))
-        assert len(self.col_labels) == len(set(self.col_labels))
+            self.state().col_labels[col] = text
+        assert len(self.state().row_labels) == len(set(self.state().row_labels))
+        assert len(self.state().col_labels) == len(set(self.state().col_labels))
 
     def update_cell(self, row, col, new_bias):
         """Set the bias of a cell in the underlying Paradigm object to a new value."""
@@ -298,13 +298,13 @@ class ParadigmGrid(Paradigm, GridLayout):
             else:
                 # refresh all row and column labels as well
                 try:
-                    child.text = self.row_labels[child.row]
+                    child.text = self.state().row_labels[child.row]
                 except (AttributeError, TypeError):
                     try:
-                        child.text = self.col_labels[child.col]
+                        child.text = self.state().col_labels[child.col]
                     except (AttributeError, TypeError):
                         # this must be the blank spaceholder widget in the top left corner
-                        assert isinstance(child, Widget)
+                        assert type(child) == Widget
 
 
 class ParadigmText(TextInput):
