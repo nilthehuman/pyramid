@@ -38,6 +38,10 @@ class KeyboardHandler(Widget):
                     App.get_running_app().root.toggle_help_window()
             # block all other keypresses too
             return True
+        if keycode[1] == 'escape':
+            if App.get_running_app().root.ids.grid.warning_label:
+                App.get_running_app().root.ids.grid.hide_warning()
+                return True
         if keycode[1] == 'right' and 'ctrl' not in modifiers:
             # run a single step of the simulation
             App.get_running_app().root.ids.grid.step()
