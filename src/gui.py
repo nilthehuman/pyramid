@@ -173,7 +173,7 @@ class HelpWindow(Label):
 class ParadigmGrid(Paradigm, GridLayout):
 
     def __init__(self, para=None, **kwargs):
-        Paradigm.__init__(self, row_labels=[], col_labels=[])
+        Paradigm.__init__(self)
         GridLayout.__init__(self, **kwargs)
         self.warning_label = None
         self.timed_callback = None
@@ -184,19 +184,17 @@ class ParadigmGrid(Paradigm, GridLayout):
         """Create text fields and buttons if needed and load the contents of the new paradigm we have been handed."""
         if not para:
             return
-        self.row_labels = copy(para.row_labels)
-        self.col_labels = copy(para.col_labels)
-        self.para_state = copy(para.para_state)
+        self.para_state = deepcopy(para.para_state)
         self.history = deepcopy(para.history)
-        self.iteration = para.iteration
+        self.history_index = para.history_index
         self.row_text_inputs = []
         self.col_text_inputs = []
         if not self.children:
             self.add_widget(Widget())  # spacer in the top left corner
-            for j, label in enumerate(para.col_labels):
+            for j, label in enumerate(para.state().col_labels):
                 self.col_text_inputs.append(ParadigmText(col=j, text=label))
                 self.add_widget(self.col_text_inputs[-1])
-            for i, (label, row) in enumerate(zip(para.row_labels, para)):
+            for i, (label, row) in enumerate(zip(para.state().row_labels, para)):
                 self.row_text_inputs.append(ParadigmText(row=i, text=label))
                 self.add_widget(self.row_text_inputs[-1])
                 for j, value in enumerate(row):
@@ -205,11 +203,9 @@ class ParadigmGrid(Paradigm, GridLayout):
 
     def clone(self):
         """Return a copy of this ParadigmGrid object."""
-        new_para = Paradigm(row_labels=self.row_labels,
-                            col_labels=self.col_labels,
-                            matrix=self,
+        new_para = Paradigm(state=self.para_state,
                             history=self.history,
-                            iteration=self.iteration)
+                            history_index=self.history_index)
         clone = ParadigmGrid(para=new_para)
         return clone
 
@@ -405,10 +401,10 @@ class WarningLabel(Label):
 
 class PyramidApp(App):
     def build(self):
-        para = Paradigm( row_labels=['ház', 'gáz', 'tűz', 'pénz'],
-                         col_labels=['-k', '-t', '-m', '-d'],
-                         matrix=[[1, 0, 0.4, 0.2], [1, 0, 1, 1], [1, 1, 1, 1], [1, 0, 1, 0.7]] )
-                         #matrix=[[0, 0, 0, 0], [1, 0, 1, 1], [1, 0, 1, 1], [1, 0, 1, 1]] )
+        state = Paradigm.State( row_labels=['ház', 'gáz', 'tűz', 'pénz'],
+                                col_labels=['-k', '-t', '-m', '-d'],
+                                matrix=[[1, 0, 0.4, 0.2], [1, 0, 1, 1], [1, 1, 1, 1], [1, 0, 1, 0.7]] )
+        para = Paradigm(state)
         para.track_history(True)
         root = PyramidWindow(para)
         self.keyboardhandler = KeyboardHandler()

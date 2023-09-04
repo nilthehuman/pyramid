@@ -1,6 +1,7 @@
 """The core class that implements most of the business logic: a generalized two-dimensional morphological paradigm."""
 
 from copy import deepcopy
+from dataclasses import dataclass, field
 from enum import Enum
 from itertools import permutations, product
 from logging import warning
@@ -18,56 +19,68 @@ class Paradigm:
         RUNNING   = 2
         CANCELLED = 3
 
-    def __init__(self, row_labels=None, col_labels=None, matrix=None, history=None, iteration=0):
+    @dataclass
+    class State:
+        """Struct defining a discrete point along the simulation history. Does not include user settings."""
+        row_labels: list[str] = field(default_factory=list)
+        col_labels: list[str] = field(default_factory=list)
+        matrix: list[list[float]] = field(default_factory=list)
+        iteration: int = 0
+
+    def __init__(self, state=None, history=None, history_index=None):
         """Overloaded constructor, works both with a matrix as argument or a pair of label lists."""
         # default settings
         self.effect_direction = Paradigm.EffectDir.INWARD
         self.effect_radius = 1
         # housekeeping variables
-        self.iteration = iteration
+        self.para_state = deepcopy(state)
+        self.history = deepcopy(history)
+        self.history_index = history_index
         self.sim_status = Paradigm.SimStatus.STOPPED
         if history:
-            self.para_state = None
-            self.history = deepcopy(history)
-        else:
-            self.para_state = []
-            self.history = None
+            assert not state
+            assert history_index
+            self.history_index = history_index
+        elif state:
+            assert not history_index
+            assert not state.row_labels or len(state.row_labels) == len(set(state.row_labels))
+            assert not state.col_labels or len(state.col_labels) == len(set(state.col_labels))
             # load initial state
-            if matrix:
-                for row in matrix:
-                    self.para_state.append(deepcopy(row))
+            if state.matrix:
+                for row in state.matrix:
+                    self.para_state.matrix.append(deepcopy(row))
             else:
-                for _ in row_labels:
-                    self.para_state.append([None for _ in col_labels])
-        if row_labels:
-            assert len(row_labels) == len(set(row_labels))
-            self.row_labels = row_labels
+                for _ in state.row_labels:
+                    self.para_state.matrix.append([None for _ in state.col_labels])
         else:
-            self.row_labels = []
-        if col_labels:
-            assert len(col_labels) == len(set(col_labels))
-            self.col_labels = col_labels
-        else:
-            self.col_labels = []
+            self.para_state = Paradigm.State()
+        #    self.row_labels = state.row_labels
+        #else:
+        #    self.row_labels = []
+        #if col_labels:
+        #    assert len(col_labels) == len(set(col_labels))
+        #    self.col_labels = col_labels
+        #else:
+        #    self.col_labels = []
 
     def state(self):
         """The current matrix of bias values."""
         assert self.para_state is not None or self.history is not None
         if self.history:
-            return self.history[self.iteration]
+            return self.history[self.history_index]
         return self.para_state
 
     def __repr__(self):
-        return str(self.state())
+        return str(self.state().matrix)
 
     def __iter__(self):
-        return self.state().__iter__()
+        return self.state().matrix.__iter__()
 
     def __len__(self):
-        return len(self.state())
+        return len(self.state().matrix)
 
     def __getitem__(self, index):
-        return self.state()[index]
+        return self.state().matrix[index]
 
     def clone(self):
         """Return a copy of this Paradigm object."""
@@ -91,8 +104,8 @@ class Paradigm:
         if on:
             if not self.history:
                 self.history = []
+                self.history_index = -1
                 self.store_snapshot()
-                self.iteration = 0
                 self.para_state = None
         else:
             self.para_state = self.state()
@@ -111,35 +124,35 @@ class Paradigm:
     @with_history
     def store_snapshot(self):
         """Save a copy of the current state of the paradigm, to be restored later if needed."""
-        self.history.append(deepcopy(list(self)))
-        self.iteration += 1
+        self.history.append(deepcopy(self.state()))
+        self.history_index += 1
 
     @with_history
     def invalidate_future_history(self):
         """Remove the forward-facing part of the history on account of the present state being changed."""
-        del self.history[self.iteration + 1:]
+        del self.history[self.history_index + 1:]
 
     @with_history
     def undo_step(self):
         """Restore previous paradigm state from the history."""
-        if 0 < self.iteration:
-            self.iteration -= 1
+        if 0 < self.history_index:
+            self.history_index -= 1
 
     @with_history
     def redo_step(self):
         """Restore next paradigm state from the history."""
-        if self.iteration < len(self.history) - 1:
-            self.iteration += 1
+        if self.history_index < len(self.history) - 1:
+            self.history_index += 1
 
     @with_history
     def rewind_all(self):
         """Undo all steps done so far and return to initial paradigm state."""
-        self.iteration = 0
+        self.history_index = 0
 
     @with_history
     def forward_all(self):
         """Redo all steps done so far and return to last paradigm state."""
-        self.iteration = len(self.history) - 1
+        self.history_index = len(self.history) - 1
 
     def running(self):
         """Is the simulation currently in progress?"""
@@ -158,15 +171,16 @@ class Paradigm:
 
     def nudge(self, row, col, outcome):
         """Adjust the value of a single cell based on an outcome in a neighboring cell or cells."""
-        delta = (1 if outcome else -1) / (self.iteration + 1)
+        delta = (1 if outcome else -1) / (self.state().iteration + 1)
         self[row][col] = min(max(self[row][col] + delta, 0), 1)
 
     def step(self):
         """Perform a single iteration of the stochastic simulation."""
-        if self.history and self.iteration < len(self.history) - 1:
+        if self.history and self.history_index < len(self.history) - 1:
             self.redo_step()
             return
         self.store_snapshot()
+        self.state().iteration += 1
         row, col = self.pick_cell()
         if self.effect_direction == Paradigm.EffectDir.INWARD:
             # picked cell looks around, sees which way the average leans
