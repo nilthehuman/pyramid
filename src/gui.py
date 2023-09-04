@@ -100,8 +100,7 @@ class PyramidWindow(AnchorLayout):
                 self.add_widget(self.overlay)
                 self.overlay.update_all_cells()
             else:
-                self.overlay = NoSolutionLabel()
-                self.add_widget(self.overlay)
+                self.ids.grid.show_warning('No solution, sorry :(')
 
     def replace_para_with_overlay(self):
         """Overwrite the current state of the paradigm with the rearranged one
@@ -116,6 +115,8 @@ class PyramidWindow(AnchorLayout):
         if self.overlay:
             self.remove_widget(self.overlay)
             self.overlay = None
+        else:
+            self.ids.grid.hide_warning()
 
 
 class HelpButton(Button):
@@ -170,6 +171,7 @@ class ParadigmGrid(Paradigm, GridLayout):
     def __init__(self, para=None, **kwargs):
         Paradigm.__init__(self, row_labels=[], col_labels=[])
         GridLayout.__init__(self, **kwargs)
+        self.warning_label = None
         self.timed_callback = None
         if para:
             self.set_para(para)
@@ -206,6 +208,19 @@ class ParadigmGrid(Paradigm, GridLayout):
                             iteration=self.iteration)
         clone = ParadigmGrid(para=new_para)
         return clone
+
+    def show_warning(self, message):
+        """Display a warning popup on the screen."""
+        if not self.warning_label:
+            self.warning_label = WarningLabel()
+            self.warning_label.text = message
+            self.parent.add_widget(self.warning_label)
+
+    def hide_warning(self):
+        """"Remove warning popup."""
+        if self.warning_label:
+            self.parent.remove_widget(self.warning_label)
+            self.warning_label = None
 
     def step(self):
         """Perform one iteration of the simulation (thin wrapper around Paradigm.step)."""
@@ -358,7 +373,7 @@ class CellEditText(TextInput):
             self.parent.remove_widget(self)
 
 
-class NoSolutionLabel(Label):
+class WarningLabel(Label):
     pass
 
 

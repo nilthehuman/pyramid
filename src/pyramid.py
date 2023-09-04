@@ -3,6 +3,7 @@
 from copy import deepcopy
 from enum import Enum
 from itertools import permutations, product
+from logging import warning
 from random import random, randrange, seed  # TODO: seed() the generator at the appropriate site
 
 class Paradigm:
@@ -81,6 +82,10 @@ class Paradigm:
             for col in range(len(self[0])):
                 self[row][col] = 1 if len(self) - row <= corner_rows and col < corner_cols else 0
 
+    def show_warning(_self, message):
+        """Print a simple textual warning message."""
+        warning(message)
+
     def track_history(self, on=True):
         """Enable or disable keeping a history of previous paradigm states."""
         if on:
@@ -99,7 +104,7 @@ class Paradigm:
             if self.history is not None:
                 func(self)
             else:
-                # warn("history tracking is off")
+                warning("history tracking is off")
                 pass
         return check_history
 
