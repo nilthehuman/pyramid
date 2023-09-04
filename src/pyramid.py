@@ -37,13 +37,13 @@ class Paradigm:
         self.history_index = history_index
         self.sim_status = Paradigm.SimStatus.STOPPED
         if history:
-            assert not state
-            assert history_index
+            assert state is None
+            assert history_index is not None
             self.history_index = history_index
         elif state:
-            assert not history_index
-            assert not state.row_labels or len(state.row_labels) == len(set(state.row_labels))
-            assert not state.col_labels or len(state.col_labels) == len(set(state.col_labels))
+            assert history_index is None
+            assert state.row_labels is None or len(state.row_labels) == len(set(state.row_labels))
+            assert state.col_labels is None or len(state.col_labels) == len(set(state.col_labels))
             # load initial state
             if state.matrix:
                 for row in state.matrix:
