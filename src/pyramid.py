@@ -104,7 +104,7 @@ class Paradigm:
             if self.history is not None:
                 func(self)
             else:
-                show_warning("history tracking is off")
+                self.show_warning("history tracking is off")
                 pass
         return check_history
 

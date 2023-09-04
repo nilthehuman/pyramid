@@ -273,7 +273,7 @@ class ParadigmGrid(Paradigm, GridLayout):
         if not text:
             # not a good idea
             # TODO: this seems like a dead branch?
-            show_warning("Please don't leave row or column labels empty")
+            self.show_warning("Please don't leave row or column labels empty")
             if row:
                 self.row_text_inputs[row].text = self.row_labels[row]
             else:
