@@ -260,10 +260,10 @@ class Paradigm:
                 for col in range(len(para_truth[0])):
                     permuted_row = row_permutation[row]
                     permuted_col = col_permutation[col]
-                    if para_truth.row_labels:
-                        next_para.row_labels[row] = para_truth.row_labels[permuted_row]
-                    if para_truth.col_labels:
-                        next_para.col_labels[col] = para_truth.col_labels[permuted_col]
+                    if para_truth.state().row_labels:
+                        next_para.state().row_labels[row] = para_truth.state().row_labels[permuted_row]
+                    if para_truth.state().col_labels:
+                        next_para.state().col_labels[col] = para_truth.state().col_labels[permuted_col]
                     next_para[row][col] = para_truth[permuted_row][permuted_col]
             if check(next_para):
                 return next_para
@@ -298,10 +298,10 @@ class Paradigm:
                 for col in range(len(self[0])):
                     permuted_row = row_permutation[row]
                     permuted_col = col_permutation[col]
-                    if self.row_labels:
-                        next_para.row_labels[row] = self.row_labels[permuted_row]
-                    if self.col_labels:
-                        next_para.col_labels[col] = self.col_labels[permuted_col]
+                    if self.state().row_labels:
+                        next_para.state().row_labels[row] = self.state().row_labels[permuted_row]
+                    if self.state().col_labels:
+                        next_para.state().col_labels[col] = self.state().col_labels[permuted_col]
                     next_para[row][col] = self[permuted_row][permuted_col]
             if check(next_para):
                 return next_para
