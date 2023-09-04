@@ -177,8 +177,7 @@ class ParadigmGrid(Paradigm, GridLayout):
             self.set_para(para)
 
     def set_para(self, para):
-        """Clear our child widgets and replace them with text fields and buttons corresponding to the new paradigm we have been handed."""
-        self.clear_widgets()
+        """Create text fields and buttons if needed and load the contents of the new paradigm we have been handed."""
         if not para:
             return
         self.row_labels = copy(para.row_labels)
@@ -188,15 +187,16 @@ class ParadigmGrid(Paradigm, GridLayout):
         self.iteration = para.iteration
         self.row_text_inputs = []
         self.col_text_inputs = []
-        self.add_widget(Widget())  # spacer in the top left corner
-        for j, label in enumerate(para.col_labels):
-            self.col_text_inputs.append(ParadigmText(col=j, text=label))
-            self.add_widget(self.col_text_inputs[-1])
-        for i, (label, row) in enumerate(zip(para.row_labels, para)):
-            self.row_text_inputs.append(ParadigmText(row=i, text=label))
-            self.add_widget(self.row_text_inputs[-1])
-            for j, value in enumerate(row):
-                self.add_widget(ParadigmCell(i, j))
+        if not self.children:
+            self.add_widget(Widget())  # spacer in the top left corner
+            for j, label in enumerate(para.col_labels):
+                self.col_text_inputs.append(ParadigmText(col=j, text=label))
+                self.add_widget(self.col_text_inputs[-1])
+            for i, (label, row) in enumerate(zip(para.row_labels, para)):
+                self.row_text_inputs.append(ParadigmText(row=i, text=label))
+                self.add_widget(self.row_text_inputs[-1])
+                for j, value in enumerate(row):
+                    self.add_widget(ParadigmCell(i, j))
         self.update_all_cells()
 
     def clone(self):
