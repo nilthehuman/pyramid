@@ -6,6 +6,7 @@ from enum import Enum
 from itertools import permutations, product
 from logging import warning
 from random import random, randrange, seed  # TODO: seed() the generator at the appropriate site
+from threading import Thread, Lock, local
 
 class Paradigm:
     """An m x n table of two orthogonal, multivalued morpho(phono)logical features that jointly determine the binary value of a third feature."""
@@ -165,7 +166,7 @@ class Paradigm:
         delta = (1 if outcome else -1) / (self.state().iteration + 1)
         self[row][col] = min(max(self[row][col] + delta, 0), 1)
 
-    def step(self):
+    def step(self, row=None, col=None):
         """Perform a single iteration of the stochastic simulation."""
         if self.history and self.history_index < len(self.history) - 1:
             self.redo_step()
@@ -173,7 +174,8 @@ class Paradigm:
         if self.history is not None:
             self.store_snapshot()
         self.state().iteration += 1
-        row, col = self.pick_cell()
+        if not row or not col:
+            row, col = self.pick_cell()
         if self.effect_direction == Paradigm.EffectDir.INWARD:
             # picked cell looks around, sees which way the average leans
             # and is adjusted that way
@@ -199,8 +201,33 @@ class Paradigm:
         else:
             raise ValueError("The EffectDir enum has no such value")
 
-    def simulate(self, max_iterations=None, batch_size=None):
+    def simulate(self, max_iterations=None, batch_size=None, num_threads=1):
         """Run a predefined number of iterations of the simulation or until cancelled by the user."""
+        def thread_step(id):
+            local_vars = local()
+            local_vars.my_id = int(id)
+            local_vars.my_iter = 0
+            while True:
+                if self.sim_status == Paradigm.SimStatus.CANCELLED:
+                    break
+                if self.iterations >= max_iterations:
+                    break
+                if self.current_batch_iterations >= batch_size:
+                    break
+                local_vars.my_iter += 1
+                with lock:
+                    picks[local_vars.my_id] = self.pick_cell()
+                    # have we picked a unique cell?
+                    while len(list(filter(lambda x: x is not None, picks))) != len(set(filter(lambda x: x is not None, picks))):
+                        picks[local_vars.my_id] = self.pick_cell()
+                    self.iterations += 1
+                    self.current_batch_iterations += 1
+                # deliberately ignore thread safety in step, what could possibly go wrong?
+                self.step(*picks[local_vars.my_id])
+            self.sim_status = Paradigm.SimStatus.STOPPED
+            print("exit thread", id)
+            print("my iterations:", local_vars.my_iter)
+            print("batch total iterations:", self.current_batch_iterations)
         assert max_iterations or batch_size
         if self.sim_status == Paradigm.SimStatus.STOPPED:
             self.sim_status = Paradigm.SimStatus.RUNNING
@@ -209,12 +236,15 @@ class Paradigm:
         if batch_size is None:
             batch_size = int(1e9)  # math.inf is not applicable
         self.iterations = 0
-        for _ in range(batch_size):
-            if self.sim_status == Paradigm.SimStatus.CANCELLED or self.iterations >= max_iterations:
-                self.sim_status = Paradigm.SimStatus.STOPPED
-                break
-            self.step()
-            self.iterations += 1
+        # this needs to be an instance var, otherwise threads don't see it for some reason
+        self.current_batch_iterations = 0
+        picks = [None for _ in range(num_threads)]
+        lock = Lock()
+        threads = [Thread(target=thread_step, args=(i, )) for i in range(num_threads)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
 
     def is_pyramid(self):
         """Check the central working hypothesis for the current state of the paradigm."""

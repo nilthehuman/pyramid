@@ -1,6 +1,7 @@
 """The program's graphical frontend, eventually."""
 
 from copy import copy, deepcopy
+from threading import current_thread
 
 from kivy import require as kivy_require
 kivy_require('2.1.0')
@@ -222,10 +223,11 @@ class ParadigmGrid(Paradigm, GridLayout):
             self.parent.remove_widget(self.warning_label)
             self.warning_label = None
 
-    def step(self):
+    def step(self, row=None, col=None):
         """Perform one iteration of the simulation (thin wrapper around Paradigm.step)."""
         super().step()
-        self.update_all_cells()
+        if 'MainThread' == current_thread().name:
+            self.update_all_cells()
 
     def undo_step(self):
         """Revert one iteration of the simulation (thin wrapper around Paradigm.undo_step)."""
@@ -249,7 +251,6 @@ class ParadigmGrid(Paradigm, GridLayout):
     def start_stop_simulation(self):
         """Keep running the simulation until the same method is called again."""
         if self.timed_callback:
-            assert self.running()
             self.timed_callback.cancel()
             self.timed_callback = None
             self.cancel()
