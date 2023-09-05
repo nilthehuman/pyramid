@@ -217,7 +217,7 @@ class ParadigmGrid(Paradigm, GridLayout):
             self.parent.add_widget(self.warning_label)
 
     def hide_warning(self):
-        """"Remove warning popup."""
+        """Remove warning popup."""
         if self.warning_label:
             self.parent.remove_widget(self.warning_label)
             self.warning_label = None
