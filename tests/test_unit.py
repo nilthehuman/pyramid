@@ -107,3 +107,55 @@ def test_step_twice_and_undo():
     para.undo_step()
     para.undo_step()
     assert para_orig == list(para)
+
+
+def test_step_once_rewind_forward():
+    matrix = [ [1, 0, 1, 0, 1],
+               [0, 1, 0, 1, 0],
+               [1, 0, 1, 0, 1],
+               [0, 1, 0, 1, 0],
+               [1, 0, 1, 0, 1] ]
+    state = Paradigm.State(matrix=matrix)
+    para = Paradigm(state=state)
+    para.track_history(True)
+    para_orig = deepcopy(list(para))
+    para.step()
+    para_last = deepcopy(list(para))
+    para.rewind_all()
+    assert para_orig == list(para)
+    para.rewind_all()
+    assert para_orig == list(para)
+    para.forward_all()
+    assert para_last == list(para)
+    para.rewind_all()
+    assert para_orig == list(para)
+
+
+def test_step_twice_undo_rewind_forward():
+    matrix = [ [1, 0, 1, 0, 1],
+               [0, 1, 0, 1, 0],
+               [1, 0, 1, 0, 1],
+               [0, 1, 0, 1, 0],
+               [1, 0, 1, 0, 1] ]
+    state = Paradigm.State(matrix=matrix)
+    para = Paradigm(state=state)
+    para.track_history(True)
+    para_orig = deepcopy(list(para))
+    para.step()
+    para_middle = deepcopy(list(para))
+    para.step()
+    para_last = deepcopy(list(para))
+    para.undo_step()
+    assert para_middle == list(para)
+    para.rewind_all()
+    assert para_orig == list(para)
+    para.undo_step()
+    assert para_orig == list(para)
+    para.rewind_all()
+    assert para_orig == list(para)
+    para.forward_all()
+    assert para_last == list(para)
+    para.undo_step()
+    assert para_middle == list(para)
+    para.undo_step()
+    assert para_orig == list(para)
