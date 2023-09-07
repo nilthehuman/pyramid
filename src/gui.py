@@ -1,6 +1,6 @@
 """The program's graphical frontend, eventually."""
 
-from copy import copy, deepcopy
+from copy import deepcopy
 
 from kivy import require as kivy_require
 kivy_require('2.1.0')
