@@ -5,7 +5,10 @@ from dataclasses import dataclass, field
 from enum import Enum
 from itertools import permutations, product
 from logging import warning
-from random import random, randrange, seed  # TODO: seed() the generator at the appropriate site
+from random import seed, random, randrange
+
+seed()
+
 
 class Paradigm:
     """An m x n table of two orthogonal, multivalued morpho(phono)logical features that jointly determine the binary value of a third feature."""
