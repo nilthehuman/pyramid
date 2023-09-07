@@ -5,7 +5,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 from itertools import permutations, product
 from logging import warning
+from math import ceil
 from random import seed, random, randrange
+from threading import Thread, local
 
 seed()
 
@@ -310,3 +312,27 @@ class Paradigm:
             if check(next_para):
                 return next_para
         return None
+
+#### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
+
+def repeat_simulation(para, reps, max_iterations, num_threads=4, condition=Paradigm.is_pyramid):
+    """Run several simulations from the same starting state and aggregate the results."""
+    def thread_simulate(thread_id):
+        myvars = local()
+        for rep in range(ceil(reps / num_threads)):
+            myvars.result_index = rep * num_threads + int(thread_id)
+            if myvars.result_index < reps:
+                myvars.para = para.clone()
+                myvars.para.simulate(max_iterations)
+                myvars.result = condition(myvars.para) is not None
+                # no need to lock (I think)
+                results[myvars.result_index] = myvars.result
+    para.track_history(False)
+    results = [ None for _ in range(reps) ]
+    threads = [ Thread(target=thread_simulate, args=(i,)) for i in range(num_threads) ]
+    for thread in threads:
+        thread.start()
+    for t in threads:
+        t.join()
+    met_condition = sum(results)
+    return met_condition
