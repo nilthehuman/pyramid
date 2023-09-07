@@ -18,9 +18,6 @@ from kivy.core.window import Window
 from .pyramid import Paradigm
 
 
-# pylint: disable=no-member
-
-
 class KeyboardHandler(Widget):
     """Listens for keypresses in the application's window and dispatches the appropriate calls."""
 
