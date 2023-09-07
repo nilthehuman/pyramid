@@ -315,7 +315,7 @@ class Paradigm:
 
 #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
 
-def repeat_simulation(para, reps, max_iterations, num_threads=4, condition=Paradigm.is_pyramid):
+def repeat_simulation(para, reps, max_iterations, num_threads=4, condition=Paradigm.is_pyramid_strict):
     """Run several simulations from the same starting state and aggregate the results."""
     def thread_simulate(thread_id):
         myvars = local()
