@@ -13,7 +13,8 @@ seed()
 
 
 class Paradigm:
-    """An m x n table of two orthogonal, multivalued morpho(phono)logical features that jointly determine the binary value of a third feature."""
+    """An m x n table of two orthogonal, multivalued morpho(phono)logical features that jointly determine
+    the binary value of a third feature."""
 
     class EffectDir(Enum):
         INWARD  = 1
@@ -110,7 +111,9 @@ class Paradigm:
             if self.history is not None:
                 func(self)
             else:
-                self.show_warning("Cannot %s: history tracking is off." % func.__name__.replace('_', ' '))
+                # do not warn for actions that never come directly from the user
+                if func.__name__ not in ['store_snapshot', 'invalidate_future_history']:
+                    self.show_warning("Cannot %s: history tracking is off." % func.__name__.replace('_', ' '))
         return check_history
 
     @with_history
@@ -175,8 +178,7 @@ class Paradigm:
         if self.history and self.history_index < len(self.history) - 1:
             self.redo_step()
             return
-        if self.history is not None:
-            self.store_snapshot()
+        self.store_snapshot()
         self.state().iteration += 1
         row, col = self.pick_cell()
         if self.effect_direction == Paradigm.EffectDir.INWARD:
