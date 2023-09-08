@@ -322,13 +322,17 @@ def repeat_simulation(para, reps, max_iterations, num_threads=4, condition=Parad
     def thread_simulate(thread_id):
         myvars = local()
         for rep in range(ceil(reps / num_threads)):
-            myvars.result_index = rep * num_threads + int(thread_id)
+            myvars.id = int(thread_id)
+            myvars.result_index = rep * num_threads + myvars.id
             if myvars.result_index < reps:
                 myvars.para = para.clone()
                 myvars.para.simulate(max_iterations)
                 myvars.result = condition(myvars.para) is not None
                 # no need to lock (I think)
                 results[myvars.result_index] = myvars.result
+                if 0 == myvars.id:
+                    progress = int(100 * (rep + 1) / reps * num_threads)
+                    print("\rPerforming %d repeats of %d steps each: %d%% done..." % (reps, max_iterations, progress), end='')
     para.track_history(False)
     results = [ None for _ in range(reps) ]
     threads = [ Thread(target=thread_simulate, args=(i,)) for i in range(num_threads) ]
