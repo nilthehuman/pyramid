@@ -347,7 +347,7 @@ def repeat_simulation(para, reps, max_iterations, num_processes=4, criterion=def
     """Run several simulations from the same starting state and aggregate the results."""
     para.track_history(False)
     with Pool(num_processes) as pool:
-        results = pool.map(partial(process_clone,
+        results = pool.map(partial(subproc_simulate,
                                    reps=reps,
                                    max_iterations=max_iterations,
                                    num_processes=num_processes,
