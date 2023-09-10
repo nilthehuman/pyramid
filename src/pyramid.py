@@ -3,11 +3,13 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
 from enum import Enum
+from functools import partial
 from itertools import permutations, product
 from logging import warning
 from math import ceil
+from multiprocessing import Pool
 from random import seed, random, randrange
-from threading import Thread, local
+from re import search
 
 seed()
 
@@ -317,28 +319,40 @@ class Paradigm:
 
 #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
 
-def repeat_simulation(para, reps, max_iterations, num_threads=4, condition=Paradigm.is_pyramid_strict):
+def default_criterion(para):
+    return para.is_pyramid_strict() is not None
+
+def subproc_simulate(item, reps=None, max_iterations=None, num_processes=None, criterion=None, silent=False):
+    """Number crunching function executed by CPU-bound subprocesses, runs one simulation
+    from the common starting paradigm and checks if it satisfies the criterion."""
+    # the reps and num_processes arguments are only used in displaying progress
+    assert max_iterations is not None
+    assert num_processes is not None
+    assert criterion is not None
+    current_rep, para = item
+    para.simulate(max_iterations)
+    result = criterion(para)
+    if num_processes and not silent:
+        # is this the first process in the pool?
+        if current_rep < reps // num_processes:
+            # report progress live
+            progress = (current_rep + 1) * num_processes
+            if reps is not None:
+                print("\rPerforming %d repeats with %d steps each: %d repeats done." % (reps, max_iterations, progress), end='')
+            else:
+                print("\rPerforming simulation with %d steps each: %d repeats done." % (max_iterations, progress), end='')
+    return result
+
+def repeat_simulation(para, reps, max_iterations, num_processes=4, criterion=default_criterion):
     """Run several simulations from the same starting state and aggregate the results."""
-    def thread_simulate(thread_id):
-        myvars = local()
-        for rep in range(ceil(reps / num_threads)):
-            myvars.id = int(thread_id)
-            myvars.result_index = rep * num_threads + myvars.id
-            if myvars.result_index < reps:
-                myvars.para = para.clone()
-                myvars.para.simulate(max_iterations)
-                myvars.result = condition(myvars.para) is not None
-                # no need to lock (I think)
-                results[myvars.result_index] = myvars.result
-                if 0 == myvars.id:
-                    progress = int(100 * (rep + 1) / reps * num_threads)
-                    print("\rPerforming %d repeats of %d steps each: %d%% done..." % (reps, max_iterations, progress), end='')
     para.track_history(False)
-    results = [ None for _ in range(reps) ]
-    threads = [ Thread(target=thread_simulate, args=(i,)) for i in range(num_threads) ]
-    for thread in threads:
-        thread.start()
-    for t in threads:
-        t.join()
-    met_condition = sum(results)
-    return met_condition
+    with Pool(num_processes) as pool:
+        results = pool.map(partial(process_clone,
+                                   reps=reps,
+                                   max_iterations=max_iterations,
+                                   num_processes=num_processes,
+                                   criterion=criterion),
+                           [(rep, para.clone()) for rep in range(reps)],
+                           chunksize=reps // num_processes)
+    reps_met_criterion = sum(results)
+    return reps_met_criterion
