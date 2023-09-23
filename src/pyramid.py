@@ -226,26 +226,50 @@ class Paradigm:
             self.iterations += 1
 
     def is_pyramid(self):
-        """Check the central working hypothesis for the current state of the paradigm."""
-        def check(paradigm):
-            last_row_first_false = None
-            for row in paradigm:
-                first_false = None
-                try:
-                    first_false = row.index(False)
-                except ValueError:
-                    first_false = len(paradigm[0])
-                if not all(not cell for cell in row[first_false + 1:]):
-                    # discontiguous row
-                    return False
-                if last_row_first_false is not None and last_row_first_false > first_false:
-                    # row shorter than previous row
-                    return False
-                last_row_first_false = first_false
-            return True
-        assert self[0][0] is not None
+        """Check if the central working hypothesis holds for the current state of the paradigm."""
         if not self or not self[0]:
-            return self
+            return False
+        assert self[0][0] is not None
+        para_truth = self
+        if type(self[0][0]) is not bool:
+            para_truth = self.clone()
+            for row in range(len(self)):
+                for col in range(len(self[0])):
+                    para_truth[row][col] = 0.5 <= self[row][col]
+        last_row_first_false = None
+        for row in para_truth:
+            first_false = None
+            try:
+                first_false = row.index(False)
+            except ValueError:
+                first_false = len(para_truth[0])
+            if not all(not cell for cell in row[first_false + 1:]):
+                # discontiguous row
+                return False
+            if last_row_first_false is not None and last_row_first_false > first_false:
+                # row shorter than previous row
+                return False
+            last_row_first_false = first_false
+        return True
+
+    def is_pyramid_strict(self):
+        """Check if the central working hypothesis holds for the current state of the paradigm,
+        but make sure all cell values are ordered monotonously as well."""
+        if not self or not self[0]:
+            return False
+        assert self[0][0] is not None
+        for row in self:
+            for cell, next_cell in zip(row, row[1:]):
+                if cell < next_cell:
+                    return False
+        for row_i in range(len(self) - 1):
+            for col_i in range(len(self[0])):
+                if self[row_i][col_i] > self[row_i + 1][col_i]:
+                    return False
+        return True
+
+    def can_be_made_pyramid(self):
+        """Check if the paradigm can be rearranged to fit the central working hypothesis."""
         para_truth = self.clone()
         for row in range(len(self)):
             for col in range(len(self[0])):
@@ -275,26 +299,13 @@ class Paradigm:
                     if para_truth.state().col_labels:
                         next_para.state().col_labels[col] = para_truth.state().col_labels[permuted_col]
                     next_para[row][col] = para_truth[permuted_row][permuted_col]
-            if check(next_para):
+            if next_para.is_pyramid():
                 return next_para
         return None  # no solution
 
-    def is_pyramid_strict(self):
-        """Check the central working hypothesis for the current state of the paradigm,
+    def can_be_made_pyramid_strict(self):
+        """Check if the paradigm can be rearranged to fit the central working hypothesis,
         but make sure all cells are ordered monotonously as well."""
-        def check(paradigm):
-            for row in paradigm:
-                for cell, next_cell in zip(row, row[1:]):
-                    if cell < next_cell:
-                        return False
-            for row_i in range(len(paradigm) - 1):
-                for col_i in range(len(paradigm[0])):
-                    if paradigm[row_i][col_i] > paradigm[row_i + 1][col_i]:
-                        return False
-            return True
-        if not self or not self[0]:
-            return self
-        assert self[0][0] is not None
         if len(self) > 8 or len(self) > 8:
             # no way, don't even try, we might run out of memory
             raise ValueError('Input paradigm is too large, aborting calculation, sorry')
@@ -313,7 +324,7 @@ class Paradigm:
                     if self.state().col_labels:
                         next_para.state().col_labels[col] = self.state().col_labels[permuted_col]
                     next_para[row][col] = self[permuted_row][permuted_col]
-            if check(next_para):
+            if next_para.is_pyramid_strict():
                 return next_para
         return None
 

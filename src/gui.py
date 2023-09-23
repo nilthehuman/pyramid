@@ -95,7 +95,7 @@ class PyramidWindow(AnchorLayout):
     def show_overlay_grid(self):
         """Show paradigm rearranged according to our working hypothesis."""
         if not self.overlay:
-            para_rearranged = self.ids.grid.is_pyramid_strict()
+            para_rearranged = self.ids.grid.can_be_made_pyramid_strict()
             if para_rearranged:
                 self.overlay = para_rearranged
                 self.add_widget(self.overlay)

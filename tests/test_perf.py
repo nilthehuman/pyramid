@@ -18,7 +18,7 @@ def test_is_pyramid_fast_enough_positive():
     state = Paradigm.State(matrix=matrix)
     para = Paradigm(state=state)
     start = time()
-    assert para.is_pyramid()
+    assert para.can_be_made_pyramid()
     elapsed_time = time() - start
     assert elapsed_time < 2
 
@@ -35,7 +35,7 @@ def test_is_pyramid_fast_enough_negative():
     state = Paradigm.State(matrix=matrix)
     para = Paradigm(state=state)
     start = time()
-    assert not para.is_pyramid()
+    assert not para.can_be_made_pyramid()
     elapsed_time = time() - start
     assert elapsed_time < 2
 
@@ -50,7 +50,7 @@ def test_is_pyramid_strict_fast_enough_positive():
     state = Paradigm.State(matrix=matrix)
     para = Paradigm(state=state)
     start = time()
-    assert para.is_pyramid_strict()
+    assert para.can_be_made_pyramid_strict()
     elapsed_time = time() - start
     assert elapsed_time < 2
 
@@ -66,7 +66,7 @@ def test_is_pyramid_strict_fast_enough_negative():
     state = Paradigm.State(matrix=matrix)
     para = Paradigm(state=state)
     start = time()
-    assert not para.is_pyramid_strict()
+    assert not para.can_be_made_pyramid_strict()
     elapsed_time = time() - start
     assert elapsed_time < 2
 
