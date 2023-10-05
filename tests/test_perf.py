@@ -6,7 +6,7 @@ from time import time
 from ..src.pyramid import Paradigm
 
 
-def test_is_pyramid_fast_enough_positive():
+def test_is_closed_fast_enough_positive():
     matrix = [ [0.0, 0.1, 0.2, 0.3, 0.4],
                [0.5, 0.6, 0.7, 0.8, 0.9],
                [1.0, 0.9, 0.8, 0.7, 0.6],
@@ -18,12 +18,12 @@ def test_is_pyramid_fast_enough_positive():
     state = Paradigm.State(matrix=matrix)
     para = Paradigm(state=state)
     start = time()
-    assert para.can_be_made_pyramid()
+    assert para.can_be_made_closed()
     elapsed_time = time() - start
     assert elapsed_time < 2
 
 
-def test_is_pyramid_fast_enough_negative():
+def test_is_closed_fast_enough_negative():
     matrix = [ [0.0, 0.7, 0.2, 0.3, 0.1],
                [0.8, 0.6, 0.7, 0.5, 0.9],
                [1.0, 0.9, 0.8, 0.7, 0.6],
@@ -35,12 +35,12 @@ def test_is_pyramid_fast_enough_negative():
     state = Paradigm.State(matrix=matrix)
     para = Paradigm(state=state)
     start = time()
-    assert not para.can_be_made_pyramid()
+    assert not para.can_be_made_closed()
     elapsed_time = time() - start
     assert elapsed_time < 2
 
 
-def test_is_pyramid_strict_fast_enough_positive():
+def test_is_closed_strict_fast_enough_positive():
     matrix = [ [0.0, 0.1, 0.2, 0.3, 0.4],
                [0.5, 0.6, 0.7, 0.8, 0.9],
                [0.0, 0.1, 0.2, 0.3, 0.4],
@@ -50,13 +50,13 @@ def test_is_pyramid_strict_fast_enough_positive():
     state = Paradigm.State(matrix=matrix)
     para = Paradigm(state=state)
     start = time()
-    assert para.can_be_made_pyramid_strict()
+    assert para.can_be_made_closed_strict()
     elapsed_time = time() - start
     assert elapsed_time < 2
 
 
 @pytest.mark.xfail
-def test_is_pyramid_strict_fast_enough_negative():
+def test_is_closed_strict_fast_enough_negative():
     matrix = [ [0.0, 0.1, 0.2, 0.3, 0.4],
                [0.5, 0.6, 0.7, 0.8, 0.9],
                [1.0, 0.9, 0.8, 0.7, 0.6],
@@ -66,7 +66,7 @@ def test_is_pyramid_strict_fast_enough_negative():
     state = Paradigm.State(matrix=matrix)
     para = Paradigm(state=state)
     start = time()
-    assert not para.can_be_made_pyramid_strict()
+    assert not para.can_be_made_closed_strict()
     elapsed_time = time() - start
     assert elapsed_time < 2
 

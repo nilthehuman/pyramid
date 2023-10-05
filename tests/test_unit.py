@@ -9,7 +9,7 @@ def test_always_pass():
     assert True
 
 
-def test_is_pyramid_both_true():
+def test_is_closed_both_true():
     matrix = [ [1, 1, 1, 1, 0],
                [0, 0, 1, 0, 0],
                [0, 0, 1, 0, 0],
@@ -17,11 +17,11 @@ def test_is_pyramid_both_true():
                [0, 0, 0, 0, 0] ]
     state = Paradigm.State(matrix=matrix)
     para = Paradigm(state=state)
-    assert para.can_be_made_pyramid()
-    assert para.can_be_made_pyramid_strict()
+    assert para.can_be_made_closed()
+    assert para.can_be_made_closed_strict()
 
 
-def test_is_pyramid_both_false():
+def test_is_closed_both_false():
     matrix = [ [1, 1, 1, 1, 0],
                [0, 0, 1, 0, 1],
                [0, 0, 1, 0, 0],
@@ -29,11 +29,11 @@ def test_is_pyramid_both_false():
                [0, 0, 0, 0, 0] ]
     state = Paradigm.State(matrix=matrix)
     para = Paradigm(state=state)
-    assert not para.can_be_made_pyramid()
-    assert not para.can_be_made_pyramid_strict()
+    assert not para.can_be_made_closed()
+    assert not para.can_be_made_closed_strict()
 
 
-def test_is_pyramid_only_strict_false():
+def test_is_closed_only_strict_false():
     matrix = [ [0.6, 1, 1, 1, 0],
                [0.7, 1, 1, 1, 0],
                [1.0, 0, 0, 0, 0],
@@ -41,8 +41,8 @@ def test_is_pyramid_only_strict_false():
                [0.0, 0, 0, 0, 0] ]
     state = Paradigm.State(matrix=matrix)
     para = Paradigm(state=state)
-    assert para.can_be_made_pyramid()
-    assert not para.can_be_made_pyramid_strict()
+    assert para.can_be_made_closed()
+    assert not para.can_be_made_closed_strict()
 
 
 def test_nudge_once():

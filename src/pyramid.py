@@ -225,7 +225,7 @@ class Paradigm:
             self.step()
             self.iterations += 1
 
-    def is_pyramid(self):
+    def is_closed(self):
         """Check if the central working hypothesis holds for the current state of the paradigm."""
         if not self or not self[0]:
             return False
@@ -252,7 +252,7 @@ class Paradigm:
             last_row_first_false = first_false
         return True
 
-    def is_pyramid_strict(self):
+    def is_closed_strict(self):
         """Check if the central working hypothesis holds for the current state of the paradigm,
         but make sure all cell values are ordered monotonously as well."""
         if not self or not self[0]:
@@ -268,7 +268,7 @@ class Paradigm:
                     return False
         return True
 
-    def can_be_made_pyramid(self):
+    def can_be_made_closed(self):
         """Check if the paradigm can be rearranged to fit the central working hypothesis."""
         para_truth = self.clone()
         for row in range(len(self)):
@@ -299,11 +299,11 @@ class Paradigm:
                     if para_truth.state().col_labels:
                         next_para.state().col_labels[col] = para_truth.state().col_labels[permuted_col]
                     next_para[row][col] = para_truth[permuted_row][permuted_col]
-            if next_para.is_pyramid():
+            if next_para.is_closed():
                 return next_para
         return None  # no solution
 
-    def can_be_made_pyramid_strict(self):
+    def can_be_made_closed_strict(self):
         """Check if the paradigm can be rearranged to fit the central working hypothesis,
         but make sure all cells are ordered monotonously as well."""
         if len(self) > 8 or len(self) > 8:
@@ -324,14 +324,14 @@ class Paradigm:
                     if self.state().col_labels:
                         next_para.state().col_labels[col] = self.state().col_labels[permuted_col]
                     next_para[row][col] = self[permuted_row][permuted_col]
-            if next_para.is_pyramid_strict():
+            if next_para.is_closed_strict():
                 return next_para
         return None
 
 #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
 
 def default_criterion(para):
-    return para.is_pyramid_strict() is not None
+    return para.is_closed_strict() is not None
 
 def subproc_simulate(item, reps=None, max_iterations=None, num_processes=None, criterion=None, silent=False):
     """Number crunching function executed by CPU-bound subprocesses, runs one simulation
