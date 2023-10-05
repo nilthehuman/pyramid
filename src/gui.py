@@ -398,9 +398,14 @@ class WarningLabel(Label):
 
 class PyramidApp(App):
     def build(self):
-        state = Paradigm.State( row_labels=['ház', 'gáz', 'tűz', 'pénz'],
-                                col_labels=['-k', '-t', '-m', '-d'],
-                                matrix=[[1, 0, 0.4, 0.2], [1, 0, 1, 1], [1, 1, 1, 1], [1, 0, 1, 0.7]] )
+        state = Paradigm.State( row_labels=['bordó', 'millió', 'szigorú', 'józan', 'új'],
+                                col_labels=['-n', '-k', '-bb', '-t', '-nAk'],
+                                matrix=[ [0, 0, 0, 0, 0],
+                                         [1, 0, 0, 0, 0],
+                                         [1, 1, 0, 0, 0],
+                                         [1, 1, 1, 0, 0],
+                                         [1, 1, 1, 1, 0]
+                                       ] )
         para = Paradigm(state)
         para.track_history(True)
         root = PyramidWindow(para)
