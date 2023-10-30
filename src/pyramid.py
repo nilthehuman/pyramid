@@ -185,7 +185,7 @@ class Paradigm:
         row, col = self.pick_cell()
         if self.effect_direction == Paradigm.EffectDir.INWARD:
             # picked cell looks around, sees which way the average leans
-            # and is adjusted that way
+            # and is adjusted (probably) that way
             relevant_biases = [ self[row][col] ]
             for i in range(1, min(self.effect_radius + 1, max(len(self), len(self[0])))):
                 for y, x in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
@@ -193,7 +193,7 @@ class Paradigm:
                     current_col = col + i * x
                     if 0 <= current_row < len(self) and 0 <= current_col < len(self[0]):
                         relevant_biases.append(self[current_row][current_col])
-            outcome = 0.5 <= sum(relevant_biases) / len(relevant_biases)
+            outcome = random() < sum(relevant_biases) / len(relevant_biases)
             self.nudge(row, col, outcome)
         elif self.effect_direction == Paradigm.EffectDir.OUTWARD:
             # picked cell adjusts neighboring cells (probably) toward itself
