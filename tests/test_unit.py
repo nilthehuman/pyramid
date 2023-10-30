@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 
-from ..src.pyramid import Paradigm
+from ..src.pyramid import cells_from_floats, Paradigm
 
 
 def test_always_pass():
@@ -15,7 +15,7 @@ def test_is_closed_both_true():
                [0, 0, 1, 0, 0],
                [1, 1, 1, 1, 0],
                [0, 0, 0, 0, 0] ]
-    state = Paradigm.State(matrix=matrix)
+    state = Paradigm.State(matrix=cells_from_floats(matrix))
     para = Paradigm(state=state)
     assert para.can_be_made_closed()
     assert para.can_be_made_closed_strict()
@@ -27,7 +27,7 @@ def test_is_closed_both_false():
                [0, 0, 1, 0, 0],
                [1, 1, 1, 1, 0],
                [0, 0, 0, 0, 0] ]
-    state = Paradigm.State(matrix=matrix)
+    state = Paradigm.State(matrix=cells_from_floats(matrix))
     para = Paradigm(state=state)
     assert not para.can_be_made_closed()
     assert not para.can_be_made_closed_strict()
@@ -39,7 +39,7 @@ def test_is_closed_only_strict_false():
                [1.0, 0, 0, 0, 0],
                [1.0, 0, 0, 0, 0],
                [0.0, 0, 0, 0, 0] ]
-    state = Paradigm.State(matrix=matrix)
+    state = Paradigm.State(matrix=cells_from_floats(matrix))
     para = Paradigm(state=state)
     assert para.can_be_made_closed()
     assert not para.can_be_made_closed_strict()
@@ -49,7 +49,7 @@ def test_nudge_once():
     matrix = [ [0, 0, 0],
                [0, 0, 0],
                [0, 0, 0] ]
-    state = Paradigm.State(matrix=matrix)
+    state = Paradigm.State(matrix=cells_from_floats(matrix))
     para = Paradigm(state=state)
     para.nudge(1, 1, True)
     assert para[1][1] == 1
@@ -59,7 +59,7 @@ def test_nudge_twice():
     matrix = [ [0, 0, 0],
                [0, 0, 0],
                [0, 0, 0] ]
-    state = Paradigm.State(matrix=matrix)
+    state = Paradigm.State(matrix=cells_from_floats(matrix))
     para = Paradigm(state=state)
     para.nudge(1, 1, True)
     para.state().iteration += 1
@@ -69,7 +69,7 @@ def test_nudge_twice():
 
 def test_step_once():
     matrix = [ [0.001] ]
-    state = Paradigm.State(matrix=matrix)
+    state = Paradigm.State(matrix=cells_from_floats(matrix))
     para = Paradigm(state=state)
     para.step()
     assert para[0][0] < 0.001
@@ -77,7 +77,7 @@ def test_step_once():
 
 def test_step_twice():
     matrix = [ [0.5] ]
-    state = Paradigm.State(matrix=matrix)
+    state = Paradigm.State(matrix=cells_from_floats(matrix))
     para = Paradigm(state=state)
     para.step()
     after_first_step = para[0][0]
@@ -87,7 +87,7 @@ def test_step_twice():
 
 def test_step_once_and_undo():
     matrix = [ [0.5] ]
-    state = Paradigm.State(matrix=matrix)
+    state = Paradigm.State(matrix=cells_from_floats(matrix))
     para = Paradigm(state=state)
     para.track_history(True)
     para_orig = deepcopy(list(para))
@@ -98,7 +98,7 @@ def test_step_once_and_undo():
 
 def test_step_twice_and_undo():
     matrix = [ [0.5] ]
-    state = Paradigm.State(matrix=matrix)
+    state = Paradigm.State(matrix=cells_from_floats(matrix))
     para = Paradigm(state=state)
     para.track_history(True)
     para_orig = deepcopy(list(para))
@@ -115,7 +115,7 @@ def test_step_once_rewind_forward():
                [1, 0, 1, 0, 1],
                [0, 1, 0, 1, 0],
                [1, 0, 1, 0, 1] ]
-    state = Paradigm.State(matrix=matrix)
+    state = Paradigm.State(matrix=cells_from_floats(matrix))
     para = Paradigm(state=state)
     para.track_history(True)
     para_orig = deepcopy(list(para))
@@ -137,7 +137,7 @@ def test_step_twice_undo_rewind_forward():
                [1, 0, 1, 0, 1],
                [0, 1, 0, 1, 0],
                [1, 0, 1, 0, 1] ]
-    state = Paradigm.State(matrix=matrix)
+    state = Paradigm.State(matrix=cells_from_floats(matrix))
     para = Paradigm(state=state)
     para.track_history(True)
     para_orig = deepcopy(list(para))

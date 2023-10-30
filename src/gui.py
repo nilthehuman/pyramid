@@ -15,7 +15,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
 
-from .pyramid import Paradigm
+from .pyramid import Cell, cells_from_floats, Paradigm
 
 
 class KeyboardHandler(Widget):
@@ -283,7 +283,7 @@ class ParadigmGrid(Paradigm, GridLayout):
         """Set the bias of a cell in the underlying Paradigm object to a new value."""
         self.invalidate_future_history()
         self.store_snapshot()
-        self[row][col] = new_bias
+        self[row][col].value = new_bias
         # N.B. Kivy's add_widget function pushes widgets to the front of the child widget list
         self.children[- (row + 1) * (len(self[0]) + 1) - (col + 1) - 1].update()
 
@@ -339,8 +339,8 @@ class ParadigmCell(AnchorLayout, Button):
         if isinstance(bias, bool):
             self.text = str(bias)
         else:
-            assert isinstance(bias, (int, float))
-            self.text  = "%0.3g" % bias
+            assert isinstance(bias, Cell)
+            self.text  = "%0.2g" % round(bias.value, 2)
         lime       = Color(0.22, 0.8, 0.22)
         grapefruit = Color(0.9, 0.31, 0.3)
         self.background_color = [sum(x) for x in zip([bias * c for c in lime.rgb],
@@ -400,12 +400,13 @@ class PyramidApp(App):
     def build(self):
         state = Paradigm.State( row_labels=['bordó', 'millió', 'szigorú', 'józan', 'új'],
                                 col_labels=['-n', '-k', '-bb', '-t', '-nAk'],
-                                matrix=[ [0, 0, 0, 0, 0],
-                                         [1, 0, 0, 0, 0],
-                                         [1, 1, 0, 0, 0],
-                                         [1, 1, 1, 0, 0],
-                                         [1, 1, 1, 1, 0]
-                                       ] )
+                                matrix=cells_from_floats(
+                                           [ [0, 0, 0, 0, 0],
+                                             [1, 0, 0, 0, 0],
+                                             [1, 1, 0, 0, 0],
+                                             [1, 1, 1, 0, 0],
+                                             [1, 1, 1, 1, 0]
+                                           ]) )
         para = Paradigm(state)
         para.track_history(True)
         root = PyramidWindow(para)

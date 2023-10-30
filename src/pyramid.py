@@ -14,6 +14,79 @@ from re import search
 seed()
 
 
+class Cell:
+    """The struct that represents a single cell in the matrix holding a float value between 0 and 1
+    and an experience count."""
+
+    def __init__(self, val):
+        self.value = val
+        self.experience = 0
+
+    def __repr__(self):
+        return str(self.value)
+
+    def __eq__(self, other):
+        return self.value == other
+
+    def __bool__(self):
+        return bool(self.value)
+
+    def __float__(self):
+        return float(self.value)
+
+    def __lt__(self, other):
+        try:
+            return self.value < other
+        except TypeError:
+            return self.value < other.value
+
+    def __le__(self, other):
+        try:
+            assert False
+            return self.value <= other
+        except TypeError:
+            return self.value <= other.value
+
+    def __gt__(self, other):
+        try:
+            return self.value > other
+        except TypeError:
+            return self.value > other.value
+
+    def __ge__(self, other):
+        try:
+            return self.value >= other
+        except TypeError:
+            return self.value >= other.value
+
+    def __iadd__(self, delta):
+        self.value += delta
+        self.value = min(max(self.value, 0), 1)
+        return self
+
+    def __add__(self, other):
+        return self.value + other
+
+    def __radd__(self, other):
+        return self.value + other
+
+    def __sub__(self, other):
+        return self.value - other
+
+    def __rsub__(self, other):
+        return other - self.value
+
+    def __mul__(self, other):
+        return self.value * other
+
+
+def cells_from_floats(float_matrix):
+    """Convenience function to turn a 2D matrix of float values to a matrix of Cell objects."""
+    assert isinstance(float_matrix, list)
+    assert isinstance(float_matrix[0][0], (float, int))
+    return list(map(lambda row: list(map(Cell, row)), float_matrix))
+
+
 class Paradigm:
     """An m x n table of two orthogonal, multivalued morpho(phono)logical features that jointly determine
     the binary value of a third feature."""
@@ -32,7 +105,7 @@ class Paradigm:
         """Struct defining a discrete point along the simulation history. Does not include user settings."""
         row_labels: list[str] = field(default_factory=list)
         col_labels: list[str] = field(default_factory=list)
-        matrix: list[list[float]] = field(default_factory=list)
+        matrix: list[list[Cell]] = field(default_factory=list)
         iteration: int = 0
 
     def __init__(self, state=None, history=None, history_index=None):
@@ -89,7 +162,7 @@ class Paradigm:
         assert self[0][0] is None
         for row in range(len(self)):
             for col in range(len(self[0])):
-                self[row][col] = 1 if len(self) - row <= corner_rows and col < corner_cols else 0
+                self[row][col].value = 1 if len(self) - row <= corner_rows and col < corner_cols else 0
 
     def show_warning(_self, message):
         """Print a simple textual warning message."""
@@ -172,8 +245,9 @@ class Paradigm:
 
     def nudge(self, row, col, outcome):
         """Adjust the value of a single cell based on an outcome in a neighboring cell or cells."""
-        delta = (1 if outcome else -1) / (self.state().iteration + 1)
-        self[row][col] = min(max(self[row][col] + delta, 0), 1)
+        delta = (1 if outcome else -1) / (self[row][col].experience + 1)
+        self[row][col] += delta
+        self[row][col].experience += 1
 
     def step(self):
         """Perform a single iteration of the stochastic simulation."""
@@ -235,7 +309,7 @@ class Paradigm:
             para_truth = self.clone()
             for row in range(len(self)):
                 for col in range(len(self[0])):
-                    para_truth[row][col] = 0.5 <= self[row][col]
+                    para_truth[row][col].value = self[row][col] >= 0.5
         last_row_first_false = None
         for row in para_truth:
             first_false = None
@@ -273,7 +347,7 @@ class Paradigm:
         para_truth = self.clone()
         for row in range(len(self)):
             for col in range(len(self[0])):
-                para_truth[row][col] = 0.5 <= self[row][col]
+                para_truth[row][col].value = self[row][col] >= 0.5
         # isolate trivial (i.e. full or empty) rows and columns
         full_rows  = set(filter(lambda row: all(para_truth[row]), range(len(para_truth))))
         empty_rows = set(filter(lambda row: all(map(lambda x: not x, para_truth[row])), range(len(para_truth))))
