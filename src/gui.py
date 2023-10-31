@@ -18,6 +18,9 @@ from kivy.core.window import Window
 from .pyramid import Cell, cells_from_floats, Paradigm
 
 
+CURRENT_CELL_FRAME = None
+
+
 class KeyboardHandler(Widget):
     """Listens for keypresses in the application's window and dispatches the appropriate calls."""
 
@@ -206,6 +209,10 @@ class ParadigmGrid(Paradigm, GridLayout):
         clone = ParadigmGrid(para=new_para)
         return clone
 
+    def get_cell(self, row, col):
+        """Return the ParadigmCell widget corresponding to an underlying Paradigm cell."""
+        return self.children[- (row + 1) * (len(self[0]) + 1) - (col + 1) - 1]
+
     def show_warning(self, message):
         """Display a warning popup on the screen."""
         if not self.warning_label:
@@ -219,15 +226,37 @@ class ParadigmGrid(Paradigm, GridLayout):
             self.parent.remove_widget(self.warning_label)
             self.warning_label = None
 
+    def show_current_cell_frame(self, on=True):
+        """Enable/disable drawing a bright gold rectangle above the ParadigmCell that was chosen last."""
+        global CURRENT_CELL_FRAME
+        if on:
+            if not CURRENT_CELL_FRAME:
+                CURRENT_CELL_FRAME = CurrentCellFrame()
+            pick = self.state().last_pick
+            if pick:
+                if CURRENT_CELL_FRAME.parent:
+                    CURRENT_CELL_FRAME.parent.remove_widget(CURRENT_CELL_FRAME)
+                current_cell = self.get_cell(*pick)
+                current_cell.add_widget(CURRENT_CELL_FRAME)
+            else:
+                self.show_current_cell_frame(False)
+        else:
+            if CURRENT_CELL_FRAME:
+                if CURRENT_CELL_FRAME.parent:
+                    CURRENT_CELL_FRAME.parent.remove_widget(CURRENT_CELL_FRAME)
+                CURRENT_CELL_FRAME = None
+
     def step(self):
         """Perform one iteration of the simulation (thin wrapper around Paradigm.step)."""
         super().step()
         self.update_all_cells()
+        self.show_current_cell_frame(True)
 
     def undo_step(self):
         """Revert one iteration of the simulation (thin wrapper around Paradigm.undo_step)."""
         super().undo_step()
         self.update_all_cells()
+        self.show_current_cell_frame(True)
 
     def rewind_all(self):
         """Revert simulation all the way to initial state."""
@@ -235,6 +264,7 @@ class ParadigmGrid(Paradigm, GridLayout):
             self.start_stop_simulation()
         super().rewind_all()
         self.update_all_cells()
+        self.show_current_cell_frame(True)
 
     def forward_all(self):
         """Redo all iterations until the latest state."""
@@ -242,6 +272,7 @@ class ParadigmGrid(Paradigm, GridLayout):
             self.start_stop_simulation()
         super().forward_all()
         self.update_all_cells()
+        self.show_current_cell_frame(True)
 
     def start_stop_simulation(self):
         """Keep running the simulation until the same method is called again."""
@@ -258,6 +289,7 @@ class ParadigmGrid(Paradigm, GridLayout):
         """Callback to perform one batch of iterations of the simulation."""
         para_size = len(self) * len(self[0])
         self.simulate(batch_size=para_size)
+        self.show_current_cell_frame(False)
         self.update_all_cells()
 
     def update_label(self, row=None, col=None, text=None):
@@ -285,7 +317,7 @@ class ParadigmGrid(Paradigm, GridLayout):
         self.store_snapshot()
         self[row][col].value = new_bias
         # N.B. Kivy's add_widget function pushes widgets to the front of the child widget list
-        self.children[- (row + 1) * (len(self[0]) + 1) - (col + 1) - 1].update()
+        self.get_cell(row, col).update()
 
     def update_all_cells(self):
         """Sync all visual grid cells with the cells of the underlying Paradigm object."""
@@ -378,6 +410,10 @@ class CellEditText(TextInput):
         assert self == instance
         if focused is False:
             self.parent.remove_widget(self)
+
+
+class CurrentCellFrame(Widget):
+    pass
 
 
 class WarningLabel(Label):

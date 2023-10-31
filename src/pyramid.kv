@@ -80,6 +80,16 @@
     halign: 'center'
 
 
+<CurrentCellFrame>
+    size_hint: 1, 1
+    canvas.before:
+        Color:
+            rgb: 0.8, 0.95, 0.0
+        Line:
+            width: 2
+            points: self.x, self.y, self.x + self.width, self.y, self.x + self.width, self.y + self.height, self.x, self.y + self.height, self.x, self.y
+
+
 <WarningLabel>
     size_hint: None, None
     width: len(self.text) * 10

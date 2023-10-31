@@ -106,6 +106,7 @@ class Paradigm:
         row_labels: list[str] = field(default_factory=list)
         col_labels: list[str] = field(default_factory=list)
         matrix: list[list[Cell]] = field(default_factory=list)
+        last_pick: tuple[int, int] = field(default_factory=tuple)
         iteration: int = 0
 
     def __init__(self, state=None, history=None, history_index=None):
@@ -258,6 +259,7 @@ class Paradigm:
         self.store_snapshot()
         self.state().iteration += 1
         row, col = self.pick_cell()
+        self.state().last_pick = row, col
         if self.effect_direction == Paradigm.EffectDir.INWARD:
             # picked cell looks around, sees which way the average leans
             # and is adjusted (probably) that way
