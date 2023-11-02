@@ -34,7 +34,7 @@ class KeyboardHandler(Widget):
         """Catch and handle user keypresses corresponding to app functions."""
         if App.get_running_app().root.ids.grid.warning_label:
             if keycode[1] in ['escape', 'right', 'left', 'pageup', 'pagedown',
-                              'home', 'end', 'spacebar']:
+                              'home', 'end', 'spacebar', 'delete']:
                 App.get_running_app().root.ids.grid.hide_warning()
             if keycode[1] == 'escape':
                 return True
@@ -73,6 +73,10 @@ class KeyboardHandler(Widget):
         if keycode[1] == 'spacebar':
             # run simulation until spacebar pressed again
             App.get_running_app().root.ids.grid.start_stop_simulation()
+            return True
+        if keycode[1] == 'delete':
+            # forget rest of history from this point
+            App.get_running_app().root.ids.grid.delete_rest_of_history()
             return True
         if keycode[1] == 'shift' or keycode[1] == 'rshift':
             App.get_running_app().root.show_overlay_grid()
@@ -183,6 +187,7 @@ class HelpWindow(Label):
             Press [b]End[/b] or [b]Ctrl-RightArrow[/b] to skip to the last state of the simulation.
             Press [b]Home[/b] or [b]Ctrl-LeftArrow[/b] to skip to the initial state of the simulation.\n
             Press [b]Space[/b] to start or stop an open-ended simulation.\n
+            Press [b]Delete[/b] to clear history from the current state onward.\n
             Hold [b]Shift[/b] to see if the paradigm can be rearranged to be compact and monotonous.
             While holding [b]Shift[/b], press [b]Enter[/b] to keep the rearranged paradigm and replace
             the original paradigm with it.'''
@@ -296,6 +301,14 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         super().forward_all()
         self.update_all_cells()
         self.show_current_cell_frame(True)
+
+    def delete_rest_of_history(self):
+        """Get rid of history items forward from current state."""
+        if self.timed_callback:
+            self.start_stop_simulation()
+        super().delete_rest_of_history()
+        self.show_warning('Forward history cleared.')
+        self.warning_label.background_color = 0.4, 0.65, 0.1, 1
 
     def start_stop_simulation(self):
         """Keep running the simulation until the same method is called again."""

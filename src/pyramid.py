@@ -230,6 +230,11 @@ class ParadigmaticSystem:
         """Redo all steps done so far and return to last paradigmatic system state."""
         self.history_index = len(self.history) - 1
 
+    @with_history
+    def delete_rest_of_history(self):
+        """Drop the remaining states in the history forward from the current state."""
+        del self.history[self.history_index + 1:]
+
     def running(self):
         """Is the simulation currently in progress?"""
         return self.sim_status == ParadigmaticSystem.SimStatus.RUNNING
