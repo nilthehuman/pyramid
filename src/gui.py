@@ -36,6 +36,8 @@ class KeyboardHandler(Widget):
             if keycode[1] in ['escape', 'right', 'left', 'pageup', 'pagedown',
                               'home', 'end', 'spacebar']:
                 App.get_running_app().root.ids.grid.hide_warning()
+            if keycode[1] == 'escape':
+                return True
             # fallthrough on purpose
         if App.get_running_app().root.help_window:
             if keycode[1] == 'escape':
