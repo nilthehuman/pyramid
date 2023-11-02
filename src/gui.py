@@ -50,6 +50,16 @@ class KeyboardHandler(Widget):
             # revert last step of the simulation
             App.get_running_app().root.ids.grid.undo_step()
             return True
+        if keycode[1] == 'pagedown':
+            # redo ten steps of the simulation
+            for _ in range(0, 10):
+                App.get_running_app().root.ids.grid.step()
+            return True
+        if keycode[1] == 'pageup':
+            # undo ten steps of the simulation
+            for _ in range(0, 10):
+                App.get_running_app().root.ids.grid.undo_step()
+            return True
         if keycode[1] == 'home' or keycode[1] == 'left' and 'ctrl' in modifiers:
             # reset simulation to initial state
             App.get_running_app().root.ids.grid.rewind_all()
@@ -143,26 +153,22 @@ class HelpWindow(Label):
         # block click events from Widgets below
         self.bind(on_touch_down=lambda *_: True)
         self.bind(on_touch_up=self.toggle_help_window)
-        self.text = '''[size=20][b]Help[/b][/size]\n\n
-            Each matrix cell shows the prevalence (the "bias") of a certain
-            morphological phenomenon when the morphemes in its row and column
-            are combined. Bias values range from 0 to 1.\n
-            Click on any row or column label to edit the morpheme corresponding
-            to that row or column.\n
+        self.text = '''[size=20][b]Help[/b][/size]\n
+            Each matrix cell shows the prevalence (the "bias") of a certain morphological phenomenon
+            when the morphemes in its row and column are combined. Bias values range from 0 to 1.\n
+            Click on any row or column label to edit the morpheme corresponding to that row or column.
             Click on any paradigm cell to change the value of its bias.\n
-            Press [b]RightArrow (->)[/b] to perform one iteration of the
-            simulation.\n
-            Press [b]LeftArrow (<-)[/b] to undo one iteration of the
-            simulation.\n
-            Press [b]End[/b] or [b]Ctrl-RightArrow[/b] to skip to the last
-            state of the simulation.\n
-            Press [b]Home[/b] or [b]Ctrl-LeftArrow[/b] to skip to the initial
-            state of the simulation.\n
+            Press [b]RightArrow (->)[/b] to perform one iteration of the simulation.
+            Press [b]LeftArrow (<-)[/b] to undo one iteration of the simulation.\n
+            Press [b]PageDown[/b] to perform ten iterations of the simulation.
+            Press [b]PageUp[/b] to undo ten iterations of the simulation.\n
+            Press [b]End[/b] or [b]Ctrl-RightArrow[/b] to skip to the last state of the simulation.
+            Press [b]Home[/b] or [b]Ctrl-LeftArrow[/b] to skip to the initial state of the simulation.\n
             Press [b]Space[/b] to start or stop an open-ended simulation.\n
-            Hold [b]Shift[/b] to see if the paradigm can be rearranged to fit
-            the research project\'s working hypothesis.\n
-            While holding [b]Shift[/b], press [b]Enter[/b] to keep the
-            rearranged paradigm and replace the original paradigm with it.'''
+            Hold [b]Shift[/b] to see if the paradigm can be rearranged to fit the research project\'s
+            working hypothesis.\n
+            While holding [b]Shift[/b], press [b]Enter[/b] to keep the rearranged paradigm and replace
+            the original paradigm with it.'''
 
     def toggle_help_window(self, *args):
         """Show or hide fullscreen Label with help text."""
