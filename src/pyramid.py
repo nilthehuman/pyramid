@@ -20,7 +20,7 @@ class Cell:
 
     def __init__(self, val):
         self.value = val
-        self.experience = 0
+        self.experience = 1
 
     def __repr__(self):
         return str(self.value)
