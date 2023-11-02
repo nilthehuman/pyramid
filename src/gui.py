@@ -32,14 +32,14 @@ class KeyboardHandler(Widget):
 
     def on_keypressed(self, _keyboard, keycode, _text, modifiers):
         """Catch and handle user keypresses corresponding to app functions."""
+        if App.get_running_app().root.ids.grid.warning_label:
+            if keycode[1] in ['escape', 'right', 'left', 'pageup', 'pagedown',
+                              'home', 'end', 'spacebar']:
+                App.get_running_app().root.ids.grid.hide_warning()
+            # fallthrough on purpose
         if App.get_running_app().root.help_window:
             if keycode[1] == 'escape':
                 App.get_running_app().root.toggle_help_window()
-            # block all other keypresses too
-            return True
-        if App.get_running_app().root.ids.grid.warning_label:
-            if keycode[1] == 'escape':
-                App.get_running_app().root.ids.grid.hide_warning()
             # block all other keypresses too
             return True
         if keycode[1] == 'right' and 'ctrl' not in modifiers:
