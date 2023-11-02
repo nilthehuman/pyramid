@@ -114,14 +114,25 @@ class PyramidWindow(AnchorLayout):
 
     def show_overlay_grid(self):
         """Show paradigm rearranged to be compact and monotonous."""
-        if not self.overlay:
-            para_rearranged = self.ids.grid.can_be_made_closed_strict()
-            if para_rearranged:
-                self.overlay = para_rearranged
-                self.add_widget(self.overlay)
-                self.overlay.update_all_cells()
-            else:
-                self.ids.grid.show_warning('No solution, sorry :(')
+        if not self.overlay and not self.ids.grid.warning_label:
+            self.ids.grid.show_warning('Trying all permutations, hang tight...')
+            self.ids.grid.warning_label.background_color = 0.9, 0.45, 0.1, 1
+            self.ids.grid.warning_label.canvas.ask_update()  # not sure if this is necessary
+            # we need to give the Kivy event loop a bit of a headstart to draw the next frame
+            # before the number crunching starts and the UI hangs (possibly for several seconds)
+            Clock.schedule_once(self.find_rearranged_para, 0.1)
+
+    def find_rearranged_para(self, *_args):
+        """Callback to actually crunch the numbers and come up with a compact paradigm."""
+        para_rearranged = self.ids.grid.can_be_made_closed_strict()
+        self.ids.grid.hide_warning()
+        # FIXME: we're supposed to check if Shift is still being held at this point but I don't know how
+        if para_rearranged:
+            self.overlay = para_rearranged
+            self.add_widget(self.overlay)
+            self.overlay.update_all_cells()
+        else:
+            self.ids.grid.show_warning('No solution, sorry :(')
 
     def replace_para_with_overlay(self):
         """Overwrite the current state of the paradigm with the rearranged one

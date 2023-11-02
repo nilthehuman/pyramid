@@ -95,9 +95,10 @@
     width: len(self.text) * 10
     height: 75
     font_size: 20
+    background_color: 0.85, 0.25, 0.18, 1
     canvas.before:
         Color:
-            rgb: 0.85, 0.25, 0.18
+            rgba: self.background_color
         Rectangle:
             pos: self.pos
             size: self.size
