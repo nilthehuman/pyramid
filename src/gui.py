@@ -111,7 +111,7 @@ class PyramidWindow(AnchorLayout):
             self.help_window = None
 
     def show_overlay_grid(self):
-        """Show paradigm rearranged according to our working hypothesis."""
+        """Show paradigm rearranged to be compact and monotonous."""
         if not self.overlay:
             para_rearranged = self.ids.grid.can_be_made_closed_strict()
             if para_rearranged:
@@ -170,8 +170,7 @@ class HelpWindow(Label):
             Press [b]End[/b] or [b]Ctrl-RightArrow[/b] to skip to the last state of the simulation.
             Press [b]Home[/b] or [b]Ctrl-LeftArrow[/b] to skip to the initial state of the simulation.\n
             Press [b]Space[/b] to start or stop an open-ended simulation.\n
-            Hold [b]Shift[/b] to see if the paradigm can be rearranged to fit the research project\'s
-            working hypothesis.\n
+            Hold [b]Shift[/b] to see if the paradigm can be rearranged to be compact and monotonous.
             While holding [b]Shift[/b], press [b]Enter[/b] to keep the rearranged paradigm and replace
             the original paradigm with it.'''
 
