@@ -128,8 +128,13 @@ class PyramidWindow(AnchorLayout):
 
     def find_rearranged_para(self, *_args):
         """Callback to actually crunch the numbers and come up with a compact paradigmatic system."""
-        para_rearranged = self.ids.grid.can_be_made_closed_strict()
-        self.ids.grid.hide_warning()
+        try:
+            para_rearranged = self.ids.grid.can_be_made_closed_strict()
+            self.ids.grid.hide_warning()
+        except ValueError as error:
+            self.ids.grid.hide_warning()
+            self.ids.grid.show_warning(str(error))
+            return
         # FIXME: we're supposed to check if Shift is still being held at this point but I don't know how
         if para_rearranged:
             self.overlay = para_rearranged
