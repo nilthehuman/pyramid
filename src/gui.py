@@ -96,8 +96,13 @@ class PyramidWindow(AnchorLayout):
         self.overlay = None
         self.ids.grid.set_para(para)
 
-    def toggle_help_window(self, *_):
+    def toggle_help_window(self, *args):
         """Show or hide fullscreen Label with help text."""
+        if args and 1 < len(args[0]):
+            event = args[0][1]
+            if event.is_mouse_scrolling:
+                # don't dismiss on mousewheel event
+                return
         if not self.help_window:
             self.help_window = HelpWindow()
             self.add_widget(self.help_window)
@@ -142,7 +147,7 @@ class HelpButton(Button):
     # you can't bind to PyramidWindow in __init__ because of Kivy's initialization order
     def toggle_help_window(self, *args):
         """Show or hide fullscreen Label with help text."""
-        App.get_running_app().root.toggle_help_window(*args)
+        App.get_running_app().root.toggle_help_window(args)
         return True
 
 
