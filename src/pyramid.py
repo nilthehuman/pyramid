@@ -305,7 +305,7 @@ class ParadigmaticSystem:
             self.iterations += 1
 
     def is_closed(self):
-        """Check if the central working hypothesis holds for the current state of the paradigmatic system."""
+        """Check if the current state of the paradigmatic system is compactly arranged."""
         if not self or not self[0]:
             return False
         assert self[0][0] is not None
@@ -332,7 +332,7 @@ class ParadigmaticSystem:
         return True
 
     def is_closed_strict(self):
-        """Check if the central working hypothesis holds for the current state of the paradigmatic system,
+        """Check if the current state of the paradigmatic system is compactly arranged,
         but make sure all cell values are ordered monotonously as well."""
         if not self or not self[0]:
             return False
@@ -348,7 +348,7 @@ class ParadigmaticSystem:
         return True
 
     def can_be_made_closed(self):
-        """Check if the paradigmatic system can be rearranged to fit the central working hypothesis."""
+        """Check if the paradigmatic system can be rearranged to be compact."""
         para_truth = self.clone()
         for row in range(len(self)):
             for col in range(len(self[0])):
@@ -383,7 +383,7 @@ class ParadigmaticSystem:
         return None  # no solution
 
     def can_be_made_closed_strict(self):
-        """Check if the paradigmatic system can be rearranged to fit the central working hypothesis,
+        """Check if the paradigmatic system can be rearranged to be compact,
         but make sure all cells are ordered monotonously as well."""
         if len(self) > 8 or len(self) > 8:
             # no way, don't even try, we might run out of memory
