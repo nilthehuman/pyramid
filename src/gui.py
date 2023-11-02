@@ -15,7 +15,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
 
-from .pyramid import Cell, cells_from_floats, Paradigm
+from .pyramid import Cell, cells_from_floats, ParadigmaticSystem
 
 
 CURRENT_CELL_FRAME = None
@@ -83,7 +83,7 @@ class KeyboardHandler(Widget):
         return False
 
     def on_keyreleased(self, _keyboard, keycode):
-        """Remove overlay paradigm once user releases shift key."""
+        """Remove overlay ParadigmaticSystemGrid once user releases shift key."""
         if keycode[1] == 'shift' or keycode[1] == 'rshift':
             App.get_running_app().root.hide_overlay_grid()
             return True
@@ -113,7 +113,7 @@ class PyramidWindow(AnchorLayout):
             self.help_window = None
 
     def show_overlay_grid(self):
-        """Show paradigm rearranged to be compact and monotonous."""
+        """Show paradigmatic system rearranged to be compact and monotonous."""
         if not self.overlay and not self.ids.grid.warning_label:
             self.ids.grid.show_warning('Trying all permutations, hang tight...')
             self.ids.grid.warning_label.background_color = 0.9, 0.45, 0.1, 1
@@ -123,7 +123,7 @@ class PyramidWindow(AnchorLayout):
             Clock.schedule_once(self.find_rearranged_para, 0.1)
 
     def find_rearranged_para(self, *_args):
-        """Callback to actually crunch the numbers and come up with a compact paradigm."""
+        """Callback to actually crunch the numbers and come up with a compact paradigmatic system."""
         para_rearranged = self.ids.grid.can_be_made_closed_strict()
         self.ids.grid.hide_warning()
         # FIXME: we're supposed to check if Shift is still being held at this point but I don't know how
@@ -193,10 +193,10 @@ class HelpWindow(Label):
         return True
 
 
-class ParadigmGrid(Paradigm, GridLayout):
+class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
 
     def __init__(self, para=None, **kwargs):
-        Paradigm.__init__(self)
+        ParadigmaticSystem.__init__(self)
         GridLayout.__init__(self, **kwargs)
         self.warning_label = None
         self.timed_callback = None
@@ -215,25 +215,25 @@ class ParadigmGrid(Paradigm, GridLayout):
         if not self.children:
             self.add_widget(Widget())  # spacer in the top left corner
             for j, label in enumerate(para.state().col_labels):
-                self.col_text_inputs.append(ParadigmText(col=j, text=label))
+                self.col_text_inputs.append(ParadigmaticSystemText(col=j, text=label))
                 self.add_widget(self.col_text_inputs[-1])
             for i, (label, row) in enumerate(zip(para.state().row_labels, para)):
-                self.row_text_inputs.append(ParadigmText(row=i, text=label))
+                self.row_text_inputs.append(ParadigmaticSystemText(row=i, text=label))
                 self.add_widget(self.row_text_inputs[-1])
                 for j, value in enumerate(row):
-                    self.add_widget(ParadigmCell(i, j))
+                    self.add_widget(ParadigmaticSystemCell(i, j))
         self.update_all_cells()
 
     def clone(self):
-        """Return a copy of this ParadigmGrid object."""
-        new_para = Paradigm(state=self.para_state,
+        """Return a copy of this ParadigmaticSystemGrid object."""
+        new_para = ParadigmaticSystem(state=self.para_state,
                             history=self.history,
                             history_index=self.history_index)
-        clone = ParadigmGrid(para=new_para)
+        clone = ParadigmaticSystemGrid(para=new_para)
         return clone
 
     def get_cell(self, row, col):
-        """Return the ParadigmCell widget corresponding to an underlying Paradigm cell."""
+        """Return the ParadigmaticSystemCell widget corresponding to an underlying ParadigmaticSystem cell."""
         return self.children[- (row + 1) * (len(self[0]) + 1) - (col + 1) - 1]
 
     def show_warning(self, message):
@@ -250,7 +250,7 @@ class ParadigmGrid(Paradigm, GridLayout):
             self.warning_label = None
 
     def show_current_cell_frame(self, on=True):
-        """Enable/disable drawing a bright gold rectangle above the ParadigmCell that was chosen last."""
+        """Enable/disable drawing a bright gold rectangle above the ParadigmaticSystemCell that was chosen last."""
         global CURRENT_CELL_FRAME
         if on:
             if not CURRENT_CELL_FRAME:
@@ -270,13 +270,13 @@ class ParadigmGrid(Paradigm, GridLayout):
                 CURRENT_CELL_FRAME = None
 
     def step(self):
-        """Perform one iteration of the simulation (thin wrapper around Paradigm.step)."""
+        """Perform one iteration of the simulation (thin wrapper around ParadigmaticSystem.step)."""
         super().step()
         self.update_all_cells()
         self.show_current_cell_frame(True)
 
     def undo_step(self):
-        """Revert one iteration of the simulation (thin wrapper around Paradigm.undo_step)."""
+        """Revert one iteration of the simulation (thin wrapper around ParadigmaticSystem.undo_step)."""
         super().undo_step()
         self.update_all_cells()
         self.show_current_cell_frame(True)
@@ -335,7 +335,7 @@ class ParadigmGrid(Paradigm, GridLayout):
         assert len(self.state().col_labels) == len(set(self.state().col_labels))
 
     def update_cell(self, row, col, new_bias):
-        """Set the bias of a cell in the underlying Paradigm object to a new value."""
+        """Set the bias of a cell in the underlying ParadigmaticSystem object to a new value."""
         self.invalidate_future_history()
         self.store_snapshot()
         self[row][col].value = new_bias
@@ -343,9 +343,9 @@ class ParadigmGrid(Paradigm, GridLayout):
         self.get_cell(row, col).update()
 
     def update_all_cells(self):
-        """Sync all visual grid cells with the cells of the underlying Paradigm object."""
+        """Sync all visual grid cells with the cells of the underlying ParadigmaticSystem object."""
         for child in self.children:
-            if isinstance(child, ParadigmCell):
+            if isinstance(child, ParadigmaticSystemCell):
                 child.update()
             else:
                 # refresh all row and column labels as well
@@ -359,7 +359,7 @@ class ParadigmGrid(Paradigm, GridLayout):
                         assert type(child) == Widget
 
 
-class ParadigmText(TextInput):
+class ParadigmaticSystemText(TextInput):
 
     def __init__(self, row=None, col=None, **kwargs):
         super().__init__(**kwargs)
@@ -374,7 +374,7 @@ class ParadigmText(TextInput):
             self.parent.update_label(row=self.row, col=self.col, text=self.text)
 
 
-class ParadigmCell(AnchorLayout, Button):
+class ParadigmaticSystemCell(AnchorLayout, Button):
 
     def __init__(self, row, col, **kwargs):
         super().__init__(**kwargs)
@@ -389,7 +389,7 @@ class ParadigmCell(AnchorLayout, Button):
         textinput.focus = True
 
     def update(self):
-        """Sync this cell's content and color with the bias of the underlying Paradigm's cell."""
+        """Sync this cell's content and color with the bias of the underlying ParadigmaticSystem's cell."""
         bias = self.parent[self.row][self.col]
         if isinstance(bias, bool):
             self.text = str(bias)
@@ -457,16 +457,16 @@ class WarningLabel(Label):
 
 class PyramidApp(App):
     def build(self):
-        state = Paradigm.State( row_labels=['bordó', 'millió', 'szigorú', 'józan', 'új'],
-                                col_labels=['-n', '-k', '-bb', '-t', '-nAk'],
-                                matrix=cells_from_floats(
-                                           [ [0, 0, 0, 0, 0],
-                                             [1, 0, 0, 0, 0],
-                                             [1, 1, 0, 0, 0],
-                                             [1, 1, 1, 0, 0],
-                                             [1, 1, 1, 1, 0]
-                                           ]) )
-        para = Paradigm(state)
+        state = ParadigmaticSystem.State( row_labels=['bordó', 'millió', 'szigorú', 'józan', 'új'],
+                                          col_labels=['-n', '-k', '-bb', '-t', '-nAk'],
+                                          matrix=cells_from_floats(
+                                                     [ [0, 0, 0, 0, 0],
+                                                       [0, 0, 0, 0, 0],
+                                                       [1, 1, 1, 0, 0],
+                                                       [1, 1, 1, 0, 0],
+                                                       [1, 1, 1, 0, 0]
+                                                     ]) )
+        para = ParadigmaticSystem(state)
         para.track_history(True)
         root = PyramidWindow(para)
         self.keyboardhandler = KeyboardHandler()

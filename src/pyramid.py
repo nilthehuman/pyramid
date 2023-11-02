@@ -1,4 +1,4 @@
-"""The core class that implements most of the business logic: a generalized two-dimensional morphological paradigm."""
+"""The core class that implements most of the business logic: a generalized two-dimensional morphological paradigmatic system."""
 
 from copy import deepcopy
 from dataclasses import dataclass, field
@@ -87,7 +87,7 @@ def cells_from_floats(float_matrix):
     return list(map(lambda row: list(map(Cell, row)), float_matrix))
 
 
-class Paradigm:
+class ParadigmaticSystem:
     """An m x n table of two orthogonal, multivalued morpho(phono)logical features that jointly determine
     the binary value of a third feature."""
 
@@ -111,14 +111,14 @@ class Paradigm:
 
     def __init__(self, state=None, history=None, history_index=None):
         # default settings
-        self.effect_direction = Paradigm.EffectDir.INWARD
+        self.effect_direction = ParadigmaticSystem.EffectDir.INWARD
         self.effect_radius = 1
         self.include_cells_own_bias = True
         # housekeeping variables
         self.para_state = deepcopy(state)
         self.history = deepcopy(history)
         self.history_index = history_index
-        self.sim_status = Paradigm.SimStatus.STOPPED
+        self.sim_status = ParadigmaticSystem.SimStatus.STOPPED
         if history:
             assert state is None
             assert history_index is not None
@@ -132,7 +132,7 @@ class Paradigm:
                 for _ in state.row_labels:
                     self.para_state.matrix.append([None for _ in state.col_labels])
         else:
-            self.para_state = Paradigm.State()
+            self.para_state = ParadigmaticSystem.State()
 
     def state(self):
         """The current matrix of bias values."""
@@ -154,7 +154,7 @@ class Paradigm:
         return self.state().matrix[index]
 
     def clone(self):
-        """Return a copy of this Paradigm object."""
+        """Return a copy of this ParadigmaticSystem object."""
         return deepcopy(self)
 
     def initialize(self, corner_rows, corner_cols):
@@ -171,7 +171,7 @@ class Paradigm:
         warning(message)
 
     def track_history(self, on=True):
-        """Enable or disable keeping a history of previous paradigm states."""
+        """Enable or disable keeping a history of previous states of the paradigmatic system."""
         if on:
             if not self.history:
                 self.history = []
@@ -195,7 +195,7 @@ class Paradigm:
 
     @with_history
     def store_snapshot(self):
-        """Save a copy of the current state of the paradigm, to be restored later if needed."""
+        """Save a copy of the current state of the paradigmatic system, to be restored later if needed."""
         self.history.append(deepcopy(self.state()))
         self.history_index += 1
 
@@ -206,7 +206,7 @@ class Paradigm:
 
     @with_history
     def undo_step(self):
-        """Restore previous paradigm state from the history."""
+        """Restore previous paradigmatic system state from the history."""
         if 0 < self.history_index:
             self.history_index -= 1
         else:
@@ -214,7 +214,7 @@ class Paradigm:
 
     @with_history
     def redo_step(self):
-        """Restore next paradigm state from the history."""
+        """Restore next paradigmatic system state from the history."""
         if self.history_index < len(self.history) - 1:
             self.history_index += 1
         else:
@@ -222,25 +222,25 @@ class Paradigm:
 
     @with_history
     def rewind_all(self):
-        """Undo all steps done so far and return to initial paradigm state."""
+        """Undo all steps done so far and return to initial paradigmatic system state."""
         self.history_index = 0
 
     @with_history
     def forward_all(self):
-        """Redo all steps done so far and return to last paradigm state."""
+        """Redo all steps done so far and return to last paradigmatic system state."""
         self.history_index = len(self.history) - 1
 
     def running(self):
         """Is the simulation currently in progress?"""
-        return self.sim_status == Paradigm.SimStatus.RUNNING
+        return self.sim_status == ParadigmaticSystem.SimStatus.RUNNING
 
     def cancel(self):
         """Cancel running simulation."""
         if self.running():
-            self.sim_status = Paradigm.SimStatus.CANCELLED
+            self.sim_status = ParadigmaticSystem.SimStatus.CANCELLED
 
     def pick_cell(self):
-        """Select a uniformly random cell in the paradigm."""
+        """Select a uniformly random cell in the paradigmatic system."""
         row = randrange(len(self))
         col = randrange(len(self[0]))
         return row, col
@@ -260,7 +260,7 @@ class Paradigm:
         self.state().iteration += 1
         row, col = self.pick_cell()
         self.state().last_pick = row, col
-        if self.effect_direction == Paradigm.EffectDir.INWARD:
+        if self.effect_direction == ParadigmaticSystem.EffectDir.INWARD:
             # picked cell looks around, sees which way the average leans
             # and is adjusted (probably) that way
             relevant_biases = []
@@ -274,7 +274,7 @@ class Paradigm:
                         relevant_biases.append(self[current_row][current_col])
             outcome = random() < sum(relevant_biases) / len(relevant_biases)
             self.nudge(row, col, outcome)
-        elif self.effect_direction == Paradigm.EffectDir.OUTWARD:
+        elif self.effect_direction == ParadigmaticSystem.EffectDir.OUTWARD:
             # picked cell adjusts neighboring cells (probably) toward itself
             outcome = random() < self[row][col]
             self.nudge(row, col, outcome)
@@ -290,22 +290,22 @@ class Paradigm:
     def simulate(self, max_iterations=None, batch_size=None):
         """Run a predefined number of iterations of the simulation or until cancelled by the user."""
         assert max_iterations or batch_size
-        if self.sim_status == Paradigm.SimStatus.STOPPED:
-            self.sim_status = Paradigm.SimStatus.RUNNING
+        if self.sim_status == ParadigmaticSystem.SimStatus.STOPPED:
+            self.sim_status = ParadigmaticSystem.SimStatus.RUNNING
         if max_iterations is None:
             max_iterations = int(1e9)  # math.inf is not applicable
         if batch_size is None:
             batch_size = int(1e9)  # math.inf is not applicable
         self.iterations = 0
         for _ in range(batch_size):
-            if self.sim_status == Paradigm.SimStatus.CANCELLED or self.iterations >= max_iterations:
-                self.sim_status = Paradigm.SimStatus.STOPPED
+            if self.sim_status == ParadigmaticSystem.SimStatus.CANCELLED or self.iterations >= max_iterations:
+                self.sim_status = ParadigmaticSystem.SimStatus.STOPPED
                 break
             self.step()
             self.iterations += 1
 
     def is_closed(self):
-        """Check if the central working hypothesis holds for the current state of the paradigm."""
+        """Check if the central working hypothesis holds for the current state of the paradigmatic system."""
         if not self or not self[0]:
             return False
         assert self[0][0] is not None
@@ -332,7 +332,7 @@ class Paradigm:
         return True
 
     def is_closed_strict(self):
-        """Check if the central working hypothesis holds for the current state of the paradigm,
+        """Check if the central working hypothesis holds for the current state of the paradigmatic system,
         but make sure all cell values are ordered monotonously as well."""
         if not self or not self[0]:
             return False
@@ -348,7 +348,7 @@ class Paradigm:
         return True
 
     def can_be_made_closed(self):
-        """Check if the paradigm can be rearranged to fit the central working hypothesis."""
+        """Check if the paradigmatic system can be rearranged to fit the central working hypothesis."""
         para_truth = self.clone()
         for row in range(len(self)):
             for col in range(len(self[0])):
@@ -360,7 +360,7 @@ class Paradigm:
         empty_cols = set(filter(lambda col: all(map(lambda x: not x, (row[col] for row in para_truth))), range(len(para_truth[0]))))
         if len(para_truth) - len(full_rows) - len(empty_rows) > 8 or len(para_truth) - len(full_cols) - len(empty_cols) > 8:
             # no way, don't even try, we might run out of memory
-            raise ValueError('Input paradigm is too large, aborting calculation, sorry')
+            raise ValueError('Input paradigmatic system is too large, aborting calculation, sorry')
             return None
         # use brute force for now
         row_permutations = [tuple(empty_rows) + perm + tuple(full_rows) for perm in permutations(set(range(len(para_truth))) - set(full_rows) - set(empty_rows))]
@@ -383,11 +383,11 @@ class Paradigm:
         return None  # no solution
 
     def can_be_made_closed_strict(self):
-        """Check if the paradigm can be rearranged to fit the central working hypothesis,
+        """Check if the paradigmatic system can be rearranged to fit the central working hypothesis,
         but make sure all cells are ordered monotonously as well."""
         if len(self) > 8 or len(self) > 8:
             # no way, don't even try, we might run out of memory
-            raise ValueError('Input paradigm is too large, aborting calculation, sorry')
+            raise ValueError('Input paradigmatic system is too large, aborting calculation, sorry')
             return None
         # use brute force for now
         all_permutations = product(permutations(range(len(self))), permutations(range(len(self[0]))))
@@ -414,7 +414,7 @@ def default_criterion(para):
 
 def subproc_simulate(item, reps=None, max_iterations=None, num_processes=None, criterion=None, silent=False):
     """Number crunching function executed by CPU-bound subprocesses, runs one simulation
-    from the common starting paradigm and checks if it satisfies the criterion."""
+    from the common starting paradigmatic system and checks if it satisfies the criterion."""
     # the reps and num_processes arguments are only used in displaying progress
     assert max_iterations is not None
     assert num_processes is not None
