@@ -90,9 +90,21 @@ class ParadigmaticSystem:
     """An m x n table of two orthogonal, multivalued morpho(phono)logical features that jointly determine
     the binary value of a third feature."""
 
-    class EffectDir(Enum):
-        INWARD  = 1
-        OUTWARD = 2
+    @dataclass
+    class Settings:
+        """Struct to hold user settings i.e. the parameters of the stochastic simulation."""
+        class EffectDir(Enum):
+            INWARD  = 1
+            OUTWARD = 2
+        effect_direction: EffectDir = EffectDir.INWARD
+        effect_radius: float = 1
+        include_cells_own_bias: bool = True
+        no_edges: bool = True  # TODO implement
+        decaying_delta: bool = False
+        delta: float = 0.1
+        kappa: float = 1
+        tripartite_colors: bool = True
+        tripartite_cutoff: float = 0.8
 
     class SimStatus(Enum):
         STOPPED   = 1
@@ -109,15 +121,7 @@ class ParadigmaticSystem:
         iteration: int = 0
 
     def __init__(self, state=None, history=None, history_index=None):
-        # default settings
-        self.effect_direction = ParadigmaticSystem.EffectDir.INWARD
-        self.effect_radius = 1
-        self.include_cells_own_bias = True
-        self.decaying_delta = False
-        self.delta = 0.1
-        self.kappa = 1
-        self.tripartite_colors = True
-        self.tripartite_cutoff = 0.8
+        self.settings = ParadigmaticSystem.Settings()
         # housekeeping variables
         self.para_state = deepcopy(state)
         self.history = deepcopy(history)
@@ -258,12 +262,12 @@ class ParadigmaticSystem:
 
     def nudge(self, row, col, outcome):
         """Adjust the value of a single cell based on an outcome in a neighboring cell or cells."""
-        if self.decaying_delta:
-            assert self.kappa is not None
-            delta = (1 if outcome else -1) / (self[row][col].experience * self.kappa + 1)
+        if self.settings.decaying_delta:
+            assert self.settings.kappa is not None
+            delta = (1 if outcome else -1) / (self[row][col].experience * self.settings.kappa + 1)
         else:
-            assert self.delta is not None
-            delta = (1 if outcome else -1) * self.delta
+            assert self.settings.delta is not None
+            delta = (1 if outcome else -1) * self.settings.delta
         self[row][col] += delta
         self[row][col].experience += 1
 
@@ -276,13 +280,13 @@ class ParadigmaticSystem:
         self.state().iteration += 1
         row, col = self.pick_cell()
         self.state().last_pick = row, col
-        if self.effect_direction == ParadigmaticSystem.EffectDir.INWARD:
+        if self.settings.effect_direction == ParadigmaticSystem.Settings.EffectDir.INWARD:
             # picked cell looks around, sees which way the average leans
             # and is adjusted (probably) that way
             relevant_biases = []
-            if self.include_cells_own_bias:
+            if self.settings.include_cells_own_bias:
                 relevant_biases = [ self[row][col] ]
-            for i in range(1, min(self.effect_radius + 1, max(len(self), len(self[0])))):
+            for i in range(1, min(self.settings.effect_radius + 1, max(len(self), len(self[0])))):
                 for y, x in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
                     current_row = row + i * y
                     current_col = col + i * x
@@ -290,18 +294,18 @@ class ParadigmaticSystem:
                         relevant_biases.append(self[current_row][current_col])
             outcome = random() < sum(relevant_biases) / len(relevant_biases)
             self.nudge(row, col, outcome)
-        elif self.effect_direction == ParadigmaticSystem.EffectDir.OUTWARD:
+        elif self.settings.effect_direction == ParadigmaticSystem.Settings.EffectDir.OUTWARD:
             # picked cell adjusts neighboring cells (probably) toward itself
             outcome = random() < self[row][col]
             self.nudge(row, col, outcome)
-            for i in range(1, min(self.effect_radius + 1, max(len(self), len(self[0])))):
+            for i in range(1, min(self.settings.effect_radius + 1, max(len(self), len(self[0])))):
                 for y, x in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
                     current_row = row + i * y
                     current_col = col + i * x
                     if 0 <= current_row < len(self) and 0 <= current_col < len(self[0]):
                         self.nudge(current_row, current_col, outcome)
         else:
-            raise ValueError("The EffectDir enum has no such value")
+            raise ValueError("The EffectDir enum has no such value:", self.settings.effect_direction)
 
     def simulate(self, max_iterations=None, batch_size=None):
         """Run a predefined number of iterations of the simulation or until cancelled by the user."""
@@ -357,11 +361,11 @@ class ParadigmaticSystem:
         para_quant = self.clone()
         for row in range(len(self)):
             for col in range(len(self[0])):
-                if self[row][col] < 1 - self.tripartite_cutoff:
+                if self[row][col] < 1 - self.settings.tripartite_cutoff:
                     para_quant[row][col].value = 'A'
-                elif 1 - self.tripartite_cutoff <= self[row][col] <= self.tripartite_cutoff:
+                elif 1 - self.settings.tripartite_cutoff <= self[row][col] <= self.settings.tripartite_cutoff:
                     para_quant[row][col].value = 'AB'
-                elif self.tripartite_cutoff < self[row][col]:
+                elif self.settings.tripartite_cutoff < self[row][col]:
                     para_quant[row][col].value = 'B'
                 else:
                     assert False

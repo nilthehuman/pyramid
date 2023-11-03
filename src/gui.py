@@ -422,12 +422,13 @@ class ParadigmaticSystemCell(AnchorLayout, Button):
         grapefruit = Color(0.90, 0.31, 0.30)
         grey       = Color(0.50, 0.50, 0.50)
         lime       = Color(0.22, 0.80, 0.22)
-        if self.parent.tripartite_colors:
-            if cell < 1 - self.parent.tripartite_cutoff:
+        if self.parent.settings.tripartite_colors:
+            cutoff = self.parent.settings.tripartite_cutoff
+            if cell < 1 - cutoff:
                 self.background_color = grapefruit.rgb
-            elif 1 - self.parent.tripartite_cutoff <= cell <= self.parent.tripartite_cutoff:
+            elif 1 - cutoff <= cell <= cutoff:
                 self.background_color = grey.rgb
-            elif self.parent.tripartite_cutoff < cell:
+            elif cutoff < cell:
                 self.background_color = lime.rgb
             else:
                 assert False

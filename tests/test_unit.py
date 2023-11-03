@@ -43,7 +43,7 @@ def test_is_closed_only_strict_false():
                [1.0, 0.9, 1.0, 0.5, 0.0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    para.tripartite_cutoff = 0.8
+    para.settings.tripartite_cutoff = 0.8
     assert para.is_closed()
     assert para.is_closed_tripartite()
     assert not para.is_closed_strict()
@@ -57,7 +57,7 @@ def test_is_closed_tripartite_true():
                [1.0, 1.0, 0.9, 0.5, 0.0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    para.tripartite_cutoff = 0.8
+    para.settings.tripartite_cutoff = 0.8
     assert para.is_closed_tripartite()
 
 
@@ -69,7 +69,7 @@ def test_is_closed_tripartite_false():
                [1.0, 1.0, 0.9, 0.5, 0.0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    para.tripartite_cutoff = 0.8
+    para.settings.tripartite_cutoff = 0.8
     assert not para.is_closed_tripartite()
 
 
@@ -115,8 +115,8 @@ def test_nudge_once_with_delta():
                [0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    para.decaying_delta = False
-    para.delta = 0.1
+    para.settings.decaying_delta = False
+    para.settings.delta = 0.1
     para.nudge(1, 1, True)
     assert para[1][1] == 0.1
 
@@ -127,8 +127,8 @@ def test_nudge_twice_with_delta():
                [0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    para.decaying_delta = False
-    para.delta = 0.1
+    para.settings.decaying_delta = False
+    para.settings.delta = 0.1
     para.nudge(1, 1, True)
     para.state().iteration += 1
     para.nudge(1, 1, False)
@@ -141,8 +141,8 @@ def test_nudge_once_with_kappa():
                [0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    para.decaying_delta = True
-    para.kappa = 1
+    para.settings.decaying_delta = True
+    para.settings.kappa = 1
     para.nudge(1, 1, True)
     assert para[1][1] == 1/2
 
@@ -153,8 +153,8 @@ def test_nudge_twice_with_kappa():
                [0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    para.decaying_delta = True
-    para.kappa = 1
+    para.settings.decaying_delta = True
+    para.settings.kappa = 1
     para.nudge(1, 1, True)
     para.state().iteration += 1
     para.nudge(1, 1, False)
