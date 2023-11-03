@@ -59,7 +59,7 @@ class Cell:
             return self.value >= other.value
 
     def __iadd__(self, delta):
-        self.value += delta
+        self.value = round(self.value + delta, 2)
         self.value = min(max(self.value, 0), 1)
         return self
 
