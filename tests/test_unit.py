@@ -51,8 +51,9 @@ def test_nudge_once():
                [0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
+    para.kappa = 1
     para.nudge(1, 1, True)
-    assert para[1][1] == 1
+    assert para[1][1] == 1/2
 
 
 def test_nudge_twice():
@@ -61,10 +62,11 @@ def test_nudge_twice():
                [0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
+    para.kappa = 1
     para.nudge(1, 1, True)
     para.state().iteration += 1
     para.nudge(1, 1, False)
-    assert para[1][1] == 0.5
+    assert para[1][1] == 1/2 - 1/3
 
 
 def test_step_once():
