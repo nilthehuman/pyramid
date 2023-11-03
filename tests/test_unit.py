@@ -9,7 +9,71 @@ def test_always_pass():
     assert True
 
 
-def test_is_closed_both_true():
+def test_is_closed_all_true():
+    matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.6, 0.2, 0.0, 0.0],
+               [1.0, 0.8, 0.8, 0.0, 0.0],
+               [1.0, 1.0, 0.9, 0.5, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    assert para.is_closed()
+    assert para.is_closed_tripartite()
+    assert para.is_closed_strict()
+
+
+def test_is_closed_all_false():
+    matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.6, 0.2, 0.0, 0.0],
+               [0.3, 0.8, 0.8, 0.0, 0.0],
+               [1.0, 1.0, 0.9, 0.5, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    assert not para.is_closed()
+    assert not para.is_closed_tripartite()
+    assert not para.is_closed_strict()
+
+
+def test_is_closed_only_strict_false():
+    matrix = [ [0.1, 0.0, 0.0, 0.0, 0.0],
+               [0.0, 0.0, 0.0, 0.0, 0.0],
+               [0.5, 0.6, 0.7, 0.0, 0.0],
+               [1.0, 0.8, 0.8, 0.0, 0.0],
+               [1.0, 0.9, 1.0, 0.5, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.tripartite_cutoff = 0.8
+    assert para.is_closed()
+    assert para.is_closed_tripartite()
+    assert not para.is_closed_strict()
+
+
+def test_is_closed_tripartite_true():
+    matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.6, 0.2, 0.0, 0.0],
+               [1.0, 0.8, 0.8, 0.0, 0.0],
+               [1.0, 1.0, 0.9, 0.5, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.tripartite_cutoff = 0.8
+    assert para.is_closed_tripartite()
+
+
+def test_is_closed_tripartite_false():
+    matrix = [ [0.5, 0.0, 0.0, 0.0, 0.0],
+               [0.4, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.6, 0.5, 0.0, 0.0],
+               [0.9, 0.8, 0.1, 0.0, 0.0],
+               [1.0, 1.0, 0.9, 0.5, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.tripartite_cutoff = 0.8
+    assert not para.is_closed_tripartite()
+
+
+def test_can_be_made_closed_both_true():
     matrix = [ [1, 1, 1, 1, 0],
                [0, 0, 1, 0, 0],
                [0, 0, 1, 0, 0],
@@ -21,7 +85,7 @@ def test_is_closed_both_true():
     assert para.can_be_made_closed_strict()
 
 
-def test_is_closed_both_false():
+def test_can_be_made_closed_both_false():
     matrix = [ [1, 1, 1, 1, 0],
                [0, 0, 1, 0, 1],
                [0, 0, 1, 0, 0],
@@ -33,7 +97,7 @@ def test_is_closed_both_false():
     assert not para.can_be_made_closed_strict()
 
 
-def test_is_closed_only_strict_false():
+def test_can_be_made_closed_only_strict_false():
     matrix = [ [0.6, 1, 1, 1, 0],
                [0.7, 1, 1, 1, 0],
                [1.0, 0, 0, 0, 0],
