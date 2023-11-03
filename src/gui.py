@@ -407,17 +407,31 @@ class ParadigmaticSystemCell(AnchorLayout, Button):
         textinput.focus = True
 
     def update(self):
-        """Sync this cell's content and color with the bias of the underlying ParadigmaticSystem's cell."""
-        bias = self.parent[self.row][self.col]
-        if isinstance(bias, bool):
-            self.text = str(bias)
+        """Sync this cell's content and color with the bias of the corresponding cell in the ParadigmaticSystem."""
+        cell = self.parent[self.row][self.col]
+        if isinstance(cell, bool):
+            self.text = str(cell)
         else:
-            assert isinstance(bias, Cell)
-            self.text  = "%0.2g" % round(bias.value, 2)
-        lime       = Color(0.22, 0.8, 0.22)
-        grapefruit = Color(0.9, 0.31, 0.3)
-        self.background_color = [sum(x) for x in zip([bias * c for c in lime.rgb],
-                                                     [(1-bias) * c for c in grapefruit.rgb])]
+            assert isinstance(cell, Cell)
+            try:
+                self.text = "%0.2g" % round(cell.value, 2)
+            except TypeError:
+                self.text = cell.value
+        grapefruit = Color(0.90, 0.31, 0.30)
+        grey       = Color(0.50, 0.50, 0.50)
+        lime       = Color(0.22, 0.80, 0.22)
+        if self.parent.tripartite_colors:
+            if cell < 1 - self.parent.tripartite_cutoff:
+                self.background_color = grapefruit.rgb
+            elif 1 - self.parent.tripartite_cutoff <= cell <= self.parent.tripartite_cutoff:
+                self.background_color = grey.rgb
+            elif self.parent.tripartite_cutoff < cell:
+                self.background_color = lime.rgb
+            else:
+                assert False
+        else:
+            self.background_color = [sum(x) for x in zip([   cell  * c for c in lime.rgb],
+                                                         [(1-cell) * c for c in grapefruit.rgb])]
 
 
 class CellEditText(TextInput):

@@ -115,6 +115,8 @@ class ParadigmaticSystem:
         self.effect_radius = 1
         self.include_cells_own_bias = True
         self.kappa = 0.5
+        self.tripartite_colors = True
+        self.tripartite_cutoff = 0.8
         # housekeeping variables
         self.para_state = deepcopy(state)
         self.history = deepcopy(history)
@@ -335,6 +337,35 @@ class ParadigmaticSystem:
                 # row shorter than previous row
                 return False
             last_row_first_false = first_false
+        return True
+
+    def is_closed_tripartite(self):
+        """Check if the current state of the paradigmatic system is compactly arranged,
+        quantizing to three discrete values: A, A/B and B."""
+        if not self or not self[0]:
+            return False
+        assert self[0][0] is not None
+        assert type(self[0][0].value) in (int, float)
+        para_quant = self.clone()
+        for row in range(len(self)):
+            for col in range(len(self[0])):
+                if self[row][col] < 1 - self.tripartite_cutoff:
+                    para_quant[row][col].value = 'A'
+                elif 1 - self.tripartite_cutoff <= self[row][col] <= self.tripartite_cutoff:
+                    para_quant[row][col].value = 'AB'
+                elif self.tripartite_cutoff < self[row][col]:
+                    para_quant[row][col].value = 'B'
+                else:
+                    assert False
+        # TODO: optimize
+        for row in para_quant:
+            for cell, next_cell in zip(row, row[1:]):
+                if cell < next_cell:
+                    return False
+        for row_i in range(len(self) - 1):
+            for col_i in range(len(self[0])):
+                if para_quant[row_i][col_i] > para_quant[row_i + 1][col_i]:
+                    return False
         return True
 
     def is_closed_strict(self):
