@@ -416,7 +416,7 @@ class ParadigmaticSystemCell(AnchorLayout, Button):
         else:
             assert isinstance(cell, Cell)
             try:
-                self.text = "%0.2g" % round(cell.value, 2)
+                self.text = f"%0.2g" % round(cell.value, 2)
             except TypeError:
                 self.text = cell.value
         grapefruit = Color(0.90, 0.31, 0.30)

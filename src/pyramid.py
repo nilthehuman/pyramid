@@ -144,7 +144,9 @@ class ParadigmaticSystem:
         return self.para_state
 
     def __repr__(self):
-        return str(self.state().matrix)
+        def inner_str(row):
+            return str(', '.join(map(lambda x: f"%.2f" % x, row)))
+        return '\n'.join(map(inner_str, self.state().matrix))
 
     def __iter__(self):
         return self.state().matrix.__iter__()
