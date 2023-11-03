@@ -244,6 +244,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
 
     def get_cell(self, row, col):
         """Return the ParadigmaticSystemCell widget corresponding to an underlying ParadigmaticSystem cell."""
+        # N.B. Kivy's add_widget function pushes widgets to the front of the child widget list
         return self.children[- (row + 1) * (len(self[0]) + 1) - (col + 1) - 1]
 
     def show_warning(self, message):
@@ -357,7 +358,6 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         self.invalidate_future_history()
         self.store_snapshot()
         self[row][col].value = new_bias
-        # N.B. Kivy's add_widget function pushes widgets to the front of the child widget list
         self.get_cell(row, col).update()
 
     def update_all_cells(self):

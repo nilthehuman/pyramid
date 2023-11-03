@@ -369,7 +369,7 @@ class ParadigmaticSystem:
 
     def is_closed_strict(self):
         """Check if the current state of the paradigmatic system is compactly arranged,
-        but make sure all cell values are ordered monotonously as well."""
+        but make sure all cell values are ordered strictly monotonously as well."""
         if not self or not self[0]:
             return False
         assert self[0][0] is not None
@@ -420,7 +420,7 @@ class ParadigmaticSystem:
 
     def can_be_made_closed_strict(self):
         """Check if the paradigmatic system can be rearranged to be compact,
-        but make sure all cells are ordered monotonously as well."""
+        but make sure all cells are ordered strictly monotonously as well."""
         if len(self) > 8 or len(self) > 8:
             # no way, don't even try, we might run out of memory
             raise ValueError('Input paradigmatic system is too large, aborting calculation, sorry')
