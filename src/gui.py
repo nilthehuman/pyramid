@@ -220,6 +220,8 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         self.para_state = deepcopy(para.para_state)
         self.history = deepcopy(para.history)
         self.history_index = para.history_index
+        self.rows = len(para) + 1
+        self.cols = len(para[0]) + 1
         self.row_text_inputs = []
         self.col_text_inputs = []
         if not self.children:
@@ -489,16 +491,30 @@ class WarningLabel(Label):
 
 class PyramidApp(App):
     def build(self):
-        state = ParadigmaticSystem.State( row_labels=['bordó', 'millió', 'szigorú', 'józan', 'új'],
-                                          col_labels=['-n', '-k', '-bb', '-t', '-nAk'],
-                                          matrix=cells_from_floats(
-                                                     [ [0, 0, 0, 0, 0],
-                                                       [0, 0, 0, 0, 0],
-                                                       [1, 1, 1, 0, 0],
-                                                       [1, 1, 1, 0, 0],
-                                                       [1, 1, 1, 0, 0]
-                                                     ]) )
-        para = ParadigmaticSystem(state)
+        state_5x5 = ParadigmaticSystem.State( row_labels=['bordó', 'millió', 'szigorú', 'józan', 'új'],
+                                              col_labels=['-n', '-k', '-bb', '-t', '-nAk'],
+                                              matrix=cells_from_floats(
+                                                         [ [0, 0, 0, 0, 0],
+                                                           [0, 0, 0, 0, 0],
+                                                           [1, 1, 1, 0, 0],
+                                                           [1, 1, 1, 0, 0],
+                                                           [1, 1, 1, 0, 0]
+                                                         ]) )
+        state_10x10 = ParadigmaticSystem.State( row_labels=['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                                                col_labels=['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'],
+                                                matrix=cells_from_floats(
+                                                           [ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                                                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                                                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                                                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                                                             [1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+                                                             [1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+                                                             [1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+                                                             [1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+                                                             [1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+                                                             [1, 1, 1, 1, 1, 0, 0, 0, 0, 0]
+                                                           ]) )
+        para = ParadigmaticSystem(state_5x5)
         para.track_history(True)
         root = PyramidWindow(para)
         self.keyboardhandler = KeyboardHandler()
