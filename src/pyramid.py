@@ -42,7 +42,6 @@ class Cell:
 
     def __le__(self, other):
         try:
-            assert False
             return self.value <= other
         except TypeError:
             return self.value <= other.value
