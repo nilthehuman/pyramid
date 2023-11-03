@@ -109,23 +109,51 @@ def test_can_be_made_closed_only_strict_false():
     assert not para.can_be_made_closed_strict()
 
 
-def test_nudge_once():
+def test_nudge_once_with_delta():
     matrix = [ [0, 0, 0],
                [0, 0, 0],
                [0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
+    para.decaying_delta = False
+    para.delta = 0.1
+    para.nudge(1, 1, True)
+    assert para[1][1] == 0.1
+
+
+def test_nudge_twice_with_delta():
+    matrix = [ [0, 0, 0],
+               [0, 0, 0],
+               [0, 0, 0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.decaying_delta = False
+    para.delta = 0.1
+    para.nudge(1, 1, True)
+    para.state().iteration += 1
+    para.nudge(1, 1, False)
+    assert para[1][1] == 0
+
+
+def test_nudge_once_with_kappa():
+    matrix = [ [0, 0, 0],
+               [0, 0, 0],
+               [0, 0, 0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.decaying_delta = True
     para.kappa = 1
     para.nudge(1, 1, True)
     assert para[1][1] == 1/2
 
 
-def test_nudge_twice():
+def test_nudge_twice_with_kappa():
     matrix = [ [0, 0, 0],
                [0, 0, 0],
                [0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
+    para.decaying_delta = True
     para.kappa = 1
     para.nudge(1, 1, True)
     para.state().iteration += 1
@@ -146,9 +174,9 @@ def test_step_twice():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     para.step()
-    after_first_step = para[0][0]
+    assert round(float(para[0][0]), 1) in (0.4, 0.6)
     para.step()
-    assert (after_first_step - 0.5) * (para[0][0] - 0.5) > 0
+    assert round(float(para[0][0]), 1) in (0.3, 0.5, 0.7)
 
 
 def test_step_once_and_undo():
