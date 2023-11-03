@@ -114,6 +114,7 @@ class ParadigmaticSystem:
         self.effect_direction = ParadigmaticSystem.EffectDir.INWARD
         self.effect_radius = 1
         self.include_cells_own_bias = True
+        self.kappa = 0.5
         # housekeeping variables
         self.para_state = deepcopy(state)
         self.history = deepcopy(history)
@@ -252,7 +253,7 @@ class ParadigmaticSystem:
 
     def nudge(self, row, col, outcome):
         """Adjust the value of a single cell based on an outcome in a neighboring cell or cells."""
-        delta = (1 if outcome else -1) / (self[row][col].experience + 1)
+        delta = (1 if outcome else -1) / (self[row][col].experience * self.kappa + 1)
         self[row][col] += delta
         self[row][col].experience += 1
 
