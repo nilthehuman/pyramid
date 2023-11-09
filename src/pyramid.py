@@ -99,7 +99,7 @@ class ParadigmaticSystem:
         effect_direction: EffectDir = EffectDir.INWARD
         effect_radius: int = 1
         cells_own_weight: float = 1
-        no_edges: bool = True  # TODO implement
+        no_edges: bool = True  # add mock cells around the table so that all real cells have four neighbors
         decaying_delta: bool = False
         delta: float = 0.1
         kappa: float = 1
@@ -290,7 +290,12 @@ class ParadigmaticSystem:
                     current_col = col + i * x
                     if 0 <= current_row < len(self) and 0 <= current_col < len(self[0]):
                         relevant_biases.append(self[current_row][current_col])
-            outcome = random() < sum(relevant_biases) / len(relevant_biases)
+            def avg(lst):
+                return sum(lst) / len(lst)
+            if self.settings.no_edges and 1 < len(relevant_biases):
+                phony_cell_bias = avg(relevant_biases[1:])
+                relevant_biases += [phony_cell_bias] * (5 - len(relevant_biases))
+            outcome = random() < avg(relevant_biases)
             self.nudge(row, col, outcome)
         elif self.settings.effect_direction == ParadigmaticSystem.Settings.EffectDir.OUTWARD:
             # picked cell adjusts neighboring cells (probably) toward itself
