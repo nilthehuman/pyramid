@@ -97,7 +97,7 @@ class ParadigmaticSystem:
             INWARD  = 1
             OUTWARD = 2
         effect_direction: EffectDir = EffectDir.INWARD
-        effect_radius: float = 1
+        effect_radius: int = 1
         include_cells_own_bias: bool = True
         no_edges: bool = True  # TODO implement
         decaying_delta: bool = False
