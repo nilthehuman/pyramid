@@ -98,7 +98,7 @@ class ParadigmaticSystem:
             OUTWARD = 2
         effect_direction: EffectDir = EffectDir.INWARD
         effect_radius: int = 1
-        include_cells_own_bias: bool = True
+        cells_own_weight: float = 1
         no_edges: bool = True  # TODO implement
         decaying_delta: bool = False
         delta: float = 0.1
@@ -283,9 +283,7 @@ class ParadigmaticSystem:
         if self.settings.effect_direction == ParadigmaticSystem.Settings.EffectDir.INWARD:
             # picked cell looks around, sees which way the average leans
             # and is adjusted (probably) that way
-            relevant_biases = []
-            if self.settings.include_cells_own_bias:
-                relevant_biases = [ self[row][col] ]
+            relevant_biases = [ self[row][col] * self.settings.cells_own_weight ]
             for i in range(1, min(self.settings.effect_radius + 1, max(len(self), len(self[0])))):
                 for y, x in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
                     current_row = row + i * y
