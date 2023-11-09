@@ -158,7 +158,7 @@ def test_nudge_twice_with_kappa():
     para.nudge(1, 1, True)
     para.state().iteration += 1
     para.nudge(1, 1, False)
-    assert para[1][1] == 1/2 - 1/3
+    assert para[1][1] == round(1/2 - 1/3, 2)
 
 
 def test_step_once():
