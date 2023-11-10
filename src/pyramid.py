@@ -87,8 +87,7 @@ def cells_from_floats(float_matrix):
 
 
 class ParadigmaticSystem:
-    """An m x n table of two orthogonal, multivalued morpho(phono)logical features that jointly determine
-    the binary value of a third feature."""
+    """An m x n table of stems and suffixes that jointly determine the binary value of a morphological feature."""
 
     @dataclass
     class Settings:
@@ -125,7 +124,7 @@ class ParadigmaticSystem:
 
     @dataclass
     class State:
-        """Struct defining a discrete point along the simulation history. Does not include user settings."""
+        """Struct defining a point between steps along the simulation timeline. Does not include user settings."""
         row_labels: list[str] = field(default_factory=list)
         col_labels: list[str] = field(default_factory=list)
         matrix: list[list[Cell]] = field(default_factory=list)
