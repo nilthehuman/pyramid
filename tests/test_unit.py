@@ -253,3 +253,33 @@ def test_step_twice_undo_rewind_forward():
     assert para_middle == list(para)
     para.undo_step()
     assert para_orig == list(para)
+
+
+def test_sim_result_all_monotonous():
+    matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.6, 0.2, 0.0, 0.0],
+               [1.0, 0.8, 0.8, 0.0, 0.0],
+               [1.0, 1.0, 0.9, 0.5, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.settings.delta = 0
+    para.settings.criterion = ParadigmaticSystem.is_closed_strict
+    para.simulate(max_iterations=100)
+    assert para.state().sim_result.monotonous_states == 100
+    assert para.state().sim_result.total_states == 100
+
+
+def test_sim_result_none_monotonous():
+    matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.0, 0.0, 0.0],
+               [0.3, 0.7, 1.0, 0.0, 0.0],
+               [1.0, 1.0, 0.5, 0.1, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.settings.delta = 0
+    para.settings.criterion = ParadigmaticSystem.is_closed_strict
+    para.simulate(max_iterations=100)
+    assert para.state().sim_result.monotonous_states == 0
+    assert para.state().sim_result.total_states == 100

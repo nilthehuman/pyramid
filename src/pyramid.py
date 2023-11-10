@@ -105,11 +105,23 @@ class ParadigmaticSystem:
         kappa: float = 1
         tripartite_colors: bool = True
         tripartite_cutoff: float = 0.8
+        # TODO: add type hint
+        criterion = None  # the property of the ParadigmaticSystem to check after each step
 
     class SimStatus(Enum):
         STOPPED   = 1
         RUNNING   = 2
         CANCELLED = 3
+
+    @dataclass
+    class SimResult:
+        """Struct written by the simulate method tallying the number of monotonous vs non-monotonous states."""
+        #conjunctive_states: int = 0  # TODO implement
+        #conjunctive_changes: int = 0
+        monotonous_states: int = 0
+        monotonous_changes: int = 0
+        total_states: int = 0
+        total_changes: int = 0
 
     @dataclass
     class State:
@@ -119,6 +131,8 @@ class ParadigmaticSystem:
         matrix: list[list[Cell]] = field(default_factory=list)
         last_pick: tuple[int, int] = field(default_factory=tuple)
         iteration: int = 0
+        # TODO: add type hint
+        sim_result = None  # the tally of states during simulation satisfying the criterion
 
     def __init__(self, state=None, history=None, history_index=None):
         self.settings = ParadigmaticSystem.Settings()
@@ -141,6 +155,7 @@ class ParadigmaticSystem:
                     self.para_state.matrix.append([None for _ in state.col_labels])
         else:
             self.para_state = ParadigmaticSystem.State()
+        self.state().sim_result = ParadigmaticSystem.SimResult()
 
     def state(self):
         """The current matrix of bias values."""
@@ -309,10 +324,15 @@ class ParadigmaticSystem:
                         self.nudge(current_row, current_col, outcome)
         else:
             raise ValueError("The EffectDir enum has no such value:", self.settings.effect_direction)
+        if self.settings.criterion is not None:
+            if self.settings.criterion(self):
+                self.state().sim_result.monotonous_states += 1
+            self.state().sim_result.total_states += 1
 
     def simulate(self, max_iterations=None, batch_size=None):
         """Run a predefined number of iterations of the simulation or until cancelled by the user."""
         assert max_iterations or batch_size
+        assert self.state().sim_result is not None
         if self.sim_status == ParadigmaticSystem.SimStatus.STOPPED:
             self.sim_status = ParadigmaticSystem.SimStatus.RUNNING
         if max_iterations is None:

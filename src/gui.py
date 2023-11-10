@@ -517,6 +517,7 @@ class PyramidApp(App):
                                                              [1, 1, 1, 1, 1, 0, 0, 0, 0, 0]
                                                            ]) )
         para = ParadigmaticSystem(state_5x5)
+        para.settings.criterion = ParadigmaticSystem.is_closed_tripartite
         para.track_history(True)
         root = PyramidWindow(para)
         self.keyboardhandler = KeyboardHandler()
