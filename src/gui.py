@@ -326,7 +326,6 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
             assert self.running()
             self.timed_callback.cancel()
             self.timed_callback = None
-            self.cancel()
         else:
             self.run_batch(0)
             self.timed_callback = Clock.schedule_interval(self.run_batch, 0.1)
@@ -339,11 +338,14 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         self.show_current_cell_frame(False)
 
     def simulate(self):
+        if self.state().total_steps >= self.settings.max_steps:
+            self.show_warning("Maximum number of steps reached.")
+            return
         self.show_info("Simulation running...")
         Clock.schedule_once(self.run_simulation, 0.1)
 
     def run_simulation(self, _elapsed_time):
-        super().simulate()
+        super().simulate(max_steps=self.settings.max_steps)
         self.hide_warning()
 
     def update_label(self, row=None, col=None, text=None):

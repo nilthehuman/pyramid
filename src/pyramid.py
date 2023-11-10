@@ -111,9 +111,8 @@ class ParadigmaticSystem:
         monotonic_criterion   = None
 
     class SimStatus(Enum):
-        STOPPED   = 1
-        RUNNING   = 2
-        CANCELLED = 3
+        STOPPED = 1
+        RUNNING = 2
 
     @dataclass
     class SimResult:
@@ -266,11 +265,6 @@ class ParadigmaticSystem:
         """Is the simulation currently in progress?"""
         return self.sim_status == ParadigmaticSystem.SimStatus.RUNNING
 
-    def cancel(self):
-        """Cancel running simulation."""
-        if self.running():
-            self.sim_status = ParadigmaticSystem.SimStatus.CANCELLED
-
     def pick_cell(self):
         """Select a uniformly random cell in the paradigmatic system."""
         row = randrange(len(self))
@@ -358,17 +352,17 @@ class ParadigmaticSystem:
         assert self.state().sim_result is not None
         if self.sim_status == ParadigmaticSystem.SimStatus.STOPPED:
             self.sim_status = ParadigmaticSystem.SimStatus.RUNNING
-        if max_steps is None:
-            max_steps = self.settings.max_steps
         if batch_size is None:
             batch_size = int(1e9)  # math.inf is not applicable
-        self.total_steps = 0
         for _ in range(batch_size):
-            if self.sim_status == ParadigmaticSystem.SimStatus.CANCELLED or self.total_steps >= max_steps:
+            if max_steps is not None and self.state().total_steps >= max_steps:
+                print("max_steps:", max_steps)
+                print("tot_steps:", self.state().total_steps)
+                print("sim status:", self.sim_status)
                 self.sim_status = ParadigmaticSystem.SimStatus.STOPPED
+                print("sim status after:", self.sim_status)
                 break
             self.step()
-            self.total_steps += 1
 
     def is_conjunctive_lax(self):
         """Check if the current state of the paradigmatic system shows a rectangular pattern."""
