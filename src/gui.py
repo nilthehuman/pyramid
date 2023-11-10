@@ -137,7 +137,7 @@ class PyramidWindow(AnchorLayout):
             return
         # FIXME: we're supposed to check if Shift is still being held at this point but I don't know how
         if para_rearranged:
-            self.overlay = para_rearranged
+            self.overlay = ParadigmaticSystemGrid(para=para_rearranged)
             self.add_widget(self.overlay)
             self.overlay.update_all_cells()
         else:
@@ -236,14 +236,6 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
                 for j, value in enumerate(row):
                     self.add_widget(ParadigmaticSystemCell(i, j))
         self.update_all_cells()
-
-    def clone(self):
-        """Return a copy of this ParadigmaticSystemGrid object."""
-        new_para = ParadigmaticSystem(state=self.para_state,
-                            history=self.history,
-                            history_index=self.history_index)
-        clone = ParadigmaticSystemGrid(para=new_para)
-        return clone
 
     def get_cell(self, row, col):
         """Return the ParadigmaticSystemCell widget corresponding to an underlying ParadigmaticSystem cell."""

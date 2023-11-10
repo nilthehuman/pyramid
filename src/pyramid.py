@@ -180,8 +180,8 @@ class ParadigmaticSystem:
         return self.state().matrix[index]
 
     def clone(self):
-        """Return a copy of this ParadigmaticSystem object."""
-        return deepcopy(self)
+        """Return a copy of this ParadigmaticSystem object without the history."""
+        return ParadigmaticSystem(state=deepcopy(self.state()))
 
     def initialize(self, corner_rows, corner_cols):
         """Fill the bottom left corner of the given size with 1's, the rest of the table with 0's."""
@@ -440,7 +440,6 @@ class ParadigmaticSystem:
         for row in range(len(self)):
             for col in range(len(self[0])):
                 para_quant[row][col] = self.quantize(row, col)
-        # TODO: optimize
         for row in para_quant:
             for cell, next_cell in zip(row, row[1:]):
                 if cell < next_cell:
