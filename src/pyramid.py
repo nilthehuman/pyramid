@@ -410,8 +410,6 @@ class ParadigmaticSystem:
     def is_monotonic_tripartite(self):
         """Check if the current state of the paradigmatic system is compactly arranged,
         quantizing to three discrete values: A, A/B and B."""
-        if not self or not self[0]:
-            return False
         assert self[0][0] is not None
         assert type(self[0][0].value) in (int, float)
         para_quant = self.clone()
@@ -445,8 +443,6 @@ class ParadigmaticSystem:
     def is_monotonic_strict(self):
         """Check if the current state of the paradigmatic system is compactly arranged,
         but make sure all cell values are ordered strictly monotonically as well."""
-        if not self or not self[0]:
-            return False
         assert self[0][0] is not None
         for row in self:
             for cell, next_cell in zip(row, row[1:]):
