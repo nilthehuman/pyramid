@@ -220,6 +220,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         self.para_state = deepcopy(para.para_state)
         self.history = deepcopy(para.history)
         self.history_index = para.history_index
+        self.settings = deepcopy(para.settings)
         self.rows = len(para) + 1
         self.cols = len(para[0]) + 1
         self.row_text_inputs = []
