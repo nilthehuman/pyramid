@@ -123,8 +123,7 @@ class PyramidWindow(AnchorLayout):
     def show_overlay_grid(self):
         """Show paradigmatic system rearranged to be compact and monotonic."""
         if not self.overlay and not self.ids.grid.warning_label:
-            self.ids.grid.show_warning('Trying all permutations, hang tight...')
-            self.ids.grid.warning_label.background_color = 0.9, 0.45, 0.1, 1
+            self.ids.grid.show_info('Trying all permutations, hang tight...')
             self.ids.grid.warning_label.canvas.ask_update()  # not sure if this is necessary
             # we need to give the Kivy event loop a bit of a headstart to draw the next frame
             # before the number crunching starts and the UI hangs (possibly for several seconds)
@@ -253,6 +252,13 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
             self.warning_label.text = message
             self.parent.add_widget(self.warning_label)
 
+    def show_info(self, message):
+        """Display a popup on screen about some expected event."""
+        if not self.warning_label:
+            self.warning_label = InfoLabel()
+            self.warning_label.text = message
+            self.parent.add_widget(self.warning_label)
+
     def hide_warning(self):
         """Remove warning popup."""
         if self.warning_label:
@@ -312,8 +318,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         if self.timed_callback:
             self.start_stop_simulation()
         super().delete_rest_of_history()
-        self.show_warning('Forward history cleared.')
-        self.warning_label.background_color = 0.4, 0.65, 0.1, 1
+        self.show_info('Forward history cleared.')
 
     def start_stop_simulation(self):
         """Keep running the simulation until the same method is called again."""
@@ -328,13 +333,13 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
 
     def run_batch(self, _elapsed_time):
         """Callback to perform one batch of iterations of the simulation."""
-        para_size = len(self) * len(self[0])
-        self.simulate(batch_size=para_size)
+        #para_size = len(self) * len(self[0])
+        super().simulate(batch_size=50)
+        # FIXME: is this really supposed to happen here?
         self.show_current_cell_frame(False)
-        self.update_all_cells()
 
     def simulate(self):
-        self.show_warning("Simulation running...")
+        self.show_info("Simulation running...")
         Clock.schedule_once(self.run_simulation, 0.1)
 
     def run_simulation(self, _elapsed_time):
@@ -493,6 +498,10 @@ class WarningLabel(Label):
         self.parent.ids.grid.hide_warning()
         #App.get_running_app().root.toggle_help_window(*args)
         return True
+
+
+class InfoLabel(WarningLabel):
+    pass
 
 
 class PyramidApp(App):
