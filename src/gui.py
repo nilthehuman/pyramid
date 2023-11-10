@@ -62,6 +62,14 @@ class KeyboardHandler(Widget):
             for _ in range(0, 10):
                 App.get_running_app().root.ids.grid.undo_step()
             return True
+        if keycode[1] == 'left' and 'ctrl' in modifiers:
+            # seek to last color change
+            App.get_running_app().root.ids.grid.seek_prev_change()
+            return True
+        if keycode[1] == 'right' and 'ctrl' in modifiers:
+            # seek to next color change
+            App.get_running_app().root.ids.grid.seek_next_change()
+            return True
         if keycode[1] == 'home' or keycode[1] == 'left' and 'ctrl' in modifiers:
             # reset simulation to initial state
             App.get_running_app().root.ids.grid.rewind_all()
@@ -192,8 +200,10 @@ class HelpWindow(Label):
             Press [b]LeftArrow (<-)[/b] to undo one iteration of the simulation.\n
             Press [b]PageDown[/b] to perform ten iterations of the simulation.
             Press [b]PageUp[/b] to undo ten iterations of the simulation.\n
-            Press [b]End[/b] or [b]Ctrl-RightArrow[/b] to skip to the last state of the simulation.
-            Press [b]Home[/b] or [b]Ctrl-LeftArrow[/b] to skip to the initial state of the simulation.\n
+            Press [b]Ctrl-RightArrow[/b] to skip to the next cell color change.
+            Press [b]Ctrl-LeftArrow[/b] to rewind to the last cell color change.\n
+            Press [b]End[/b] to skip to the last state of the simulation.
+            Press [b]Home[/b] to skip to the initial state of the simulation.\n
             Press the [b]S key[/b] to run the simulation to the predefined limit.
             Press [b]Space[/b] to start or stop an open-ended simulation.\n
             Press [b]Delete[/b] to clear history from the current state onward.\n

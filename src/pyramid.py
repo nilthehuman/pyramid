@@ -257,6 +257,34 @@ class ParadigmaticSystem:
         self.history_index = len(self.history) - 1
 
     @with_history
+    def seek_prev_change(self):
+        """Jump to the last state where a cell changed its color."""
+        current_As  = sum(list(self.quantize(c) for c in row).count('A')  for row in self)
+        current_ABs = sum(list(self.quantize(c) for c in row).count('AB') for row in self)
+        current_Bs  = sum(list(self.quantize(c) for c in row).count('B')  for row in self)
+        change = False
+        while not change and self.history_index > 0:
+            self.undo_step()
+            former_As  = sum(list(self.quantize(c) for c in row).count('A')  for row in self)
+            former_ABs = sum(list(self.quantize(c) for c in row).count('AB') for row in self)
+            former_Bs  = sum(list(self.quantize(c) for c in row).count('B')  for row in self)
+            change = former_As != current_As or former_ABs != current_ABs or former_Bs != current_Bs
+
+    @with_history
+    def seek_next_change(self):
+        """Jump to the next state where a cell changed its color."""
+        current_As  = sum(list(self.quantize(c) for c in row).count('A')  for row in self)
+        current_ABs = sum(list(self.quantize(c) for c in row).count('AB') for row in self)
+        current_Bs  = sum(list(self.quantize(c) for c in row).count('B')  for row in self)
+        change = False
+        while not change:
+            self.step()
+            former_As  = sum(list(self.quantize(c) for c in row).count('A')  for row in self)
+            former_ABs = sum(list(self.quantize(c) for c in row).count('AB') for row in self)
+            former_Bs  = sum(list(self.quantize(c) for c in row).count('B')  for row in self)
+            change = former_As != current_As or former_ABs != current_ABs or former_Bs != current_Bs
+
+    @with_history
     def delete_rest_of_history(self):
         """Drop the remaining states in the history forward from the current state."""
         del self.history[self.history_index + 1:]
@@ -271,12 +299,17 @@ class ParadigmaticSystem:
         col = randrange(len(self[0]))
         return row, col
 
-    def quantize(self, row, col):
-        if self[row][col] < 1 - self.settings.tripartite_cutoff:
+    def quantize(self, row, col=None):
+        """Determine which morphological pattern a given cell follows, or if it vacillates."""
+        if type(row) is Cell:
+            bias = row
+        else:
+            bias = self[row][col]
+        if bias < 1 - self.settings.tripartite_cutoff:
             return 'A'
-        elif 1 - self.settings.tripartite_cutoff <= self[row][col] <= self.settings.tripartite_cutoff:
+        elif 1 - self.settings.tripartite_cutoff <= bias <= self.settings.tripartite_cutoff:
             return 'AB'
-        elif self.settings.tripartite_cutoff < self[row][col]:
+        elif self.settings.tripartite_cutoff < bias:
             return 'B'
         else:
             assert False
