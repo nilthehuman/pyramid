@@ -70,6 +70,10 @@ class KeyboardHandler(Widget):
             # reset simulation to latest state
             App.get_running_app().root.ids.grid.forward_all()
             return True
+        if keycode[1] == 's':
+            # run the predefined number of steps (max_steps)
+            App.get_running_app().root.ids.grid.simulate()
+            return True
         if keycode[1] == 'spacebar':
             # run simulation until spacebar pressed again
             App.get_running_app().root.ids.grid.start_stop_simulation()
@@ -328,6 +332,14 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         self.simulate(batch_size=para_size)
         self.show_current_cell_frame(False)
         self.update_all_cells()
+
+    def simulate(self):
+        self.show_warning("Simulation running...")
+        Clock.schedule_once(self.run_simulation, 0.1)
+
+    def run_simulation(self, _elapsed_time):
+        super().simulate()
+        self.hide_warning()
 
     def update_label(self, row=None, col=None, text=None):
         """Set the user's desired string as row or column label in the paradigm."""

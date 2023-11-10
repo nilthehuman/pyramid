@@ -104,6 +104,7 @@ class ParadigmaticSystem:
         kappa: float = 1
         tripartite_colors: bool = True
         tripartite_cutoff: float = 0.8
+        max_steps: int = 1000
         # properties of the ParadigmaticSystem to check after each step
         # TODO: add type hints
         conjunctive_criterion = None
@@ -131,7 +132,7 @@ class ParadigmaticSystem:
         col_labels: list[str] = field(default_factory=list)
         matrix: list[list[Cell]] = field(default_factory=list)
         last_pick: tuple[int, int] = field(default_factory=tuple)
-        iteration: int = 0
+        total_steps: int = 0
         # TODO: add type hint
         sim_result = None  # the tally of states during simulation satisfying the criteria
 
@@ -306,7 +307,7 @@ class ParadigmaticSystem:
             self.redo_step()
             return
         self.store_snapshot()
-        self.state().iteration += 1
+        self.state().total_steps += 1
         row, col = self.pick_cell()
         self.state().last_pick = row, col
         if self.settings.effect_direction == ParadigmaticSystem.Settings.EffectDir.INWARD:
@@ -352,23 +353,22 @@ class ParadigmaticSystem:
         if changed:
             self.state().sim_result.total_changes += 1
 
-    def simulate(self, max_iterations=None, batch_size=None):
+    def simulate(self, max_steps=None, batch_size=None):
         """Run a predefined number of iterations of the simulation or until cancelled by the user."""
-        assert max_iterations or batch_size
         assert self.state().sim_result is not None
         if self.sim_status == ParadigmaticSystem.SimStatus.STOPPED:
             self.sim_status = ParadigmaticSystem.SimStatus.RUNNING
-        if max_iterations is None:
-            max_iterations = int(1e9)  # math.inf is not applicable
+        if max_steps is None:
+            max_steps = self.settings.max_steps
         if batch_size is None:
             batch_size = int(1e9)  # math.inf is not applicable
-        self.iterations = 0
+        self.total_steps = 0
         for _ in range(batch_size):
-            if self.sim_status == ParadigmaticSystem.SimStatus.CANCELLED or self.iterations >= max_iterations:
+            if self.sim_status == ParadigmaticSystem.SimStatus.CANCELLED or self.total_steps >= max_steps:
                 self.sim_status = ParadigmaticSystem.SimStatus.STOPPED
                 break
             self.step()
-            self.iterations += 1
+            self.total_steps += 1
 
     def is_conjunctive_lax(self):
         """Check if the current state of the paradigmatic system shows a rectangular pattern."""
@@ -535,15 +535,15 @@ class ParadigmaticSystem:
 def default_criterion(para):
     return para.is_monotonic_strict() is not None
 
-def subproc_simulate(item, reps=None, max_iterations=None, num_processes=None, criterion=None, silent=False):
+def subproc_simulate(item, reps=None, max_steps=None, num_processes=None, criterion=None, silent=False):
     """Number crunching function executed by CPU-bound subprocesses, runs one simulation
     from the common starting paradigmatic system and checks if it satisfies the criterion."""
     # the reps and num_processes arguments are only used in displaying progress
-    assert max_iterations is not None
+    assert max_steps is not None
     assert num_processes is not None
     assert criterion is not None
     current_rep, para = item
-    para.simulate(max_iterations)
+    para.simulate(max_steps)
     result = criterion(para)
     if num_processes and not silent:
         # is this the first process in the pool?
@@ -551,18 +551,18 @@ def subproc_simulate(item, reps=None, max_iterations=None, num_processes=None, c
             # report progress live
             progress = (current_rep + 1) * num_processes
             if reps is not None:
-                print("\rPerforming %d repeats with %d steps each: %d repeats done." % (reps, max_iterations, progress), end='')
+                print("\rPerforming %d repeats with %d steps each: %d repeats done." % (reps, max_steps, progress), end='')
             else:
-                print("\rPerforming simulation with %d steps each: %d repeats done." % (max_iterations, progress), end='')
+                print("\rPerforming simulation with %d steps each: %d repeats done." % (max_steps, progress), end='')
     return result
 
-def repeat_simulation(para, reps, max_iterations, num_processes=4, criterion=default_criterion):
+def repeat_simulation(para, reps, max_steps, num_processes=4, criterion=default_criterion):
     """Run several simulations from the same starting state and aggregate the results."""
     para.track_history(False)
     with Pool(num_processes) as pool:
         results = pool.map(partial(subproc_simulate,
                                    reps=reps,
-                                   max_iterations=max_iterations,
+                                   max_steps=max_steps,
                                    num_processes=num_processes,
                                    criterion=criterion),
                            [(rep, para.clone()) for rep in range(reps)],
