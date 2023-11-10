@@ -183,6 +183,14 @@ class ParadigmaticSystem:
         """Return a copy of this ParadigmaticSystem object without the history."""
         return ParadigmaticSystem(state=deepcopy(self.state()))
 
+    def clone_quantized(self):
+        """Return a copy of this ParadigmaticSystem mapped to the { A, AB, B } set."""
+        para_quant = self.clone()
+        for row in range(len(self)):
+            for col in range(len(self[0])):
+                para_quant[row][col] = self.quantize(row, col)
+        return para_quant
+
     def initialize(self, corner_rows, corner_cols):
         """Fill the bottom left corner of the given size with 1's, the rest of the table with 0's."""
         assert 0 < corner_rows < len(self)
@@ -259,30 +267,22 @@ class ParadigmaticSystem:
     @with_history
     def seek_prev_change(self):
         """Jump to the last state where a cell changed its color."""
-        current_As  = sum(list(self.quantize(c) for c in row).count('A')  for row in self)
-        current_ABs = sum(list(self.quantize(c) for c in row).count('AB') for row in self)
-        current_Bs  = sum(list(self.quantize(c) for c in row).count('B')  for row in self)
+        para_quant = self.clone_quantized()
         change = False
         while not change and self.history_index > 0:
+            row, col = self.state().last_pick
             self.undo_step()
-            former_As  = sum(list(self.quantize(c) for c in row).count('A')  for row in self)
-            former_ABs = sum(list(self.quantize(c) for c in row).count('AB') for row in self)
-            former_Bs  = sum(list(self.quantize(c) for c in row).count('B')  for row in self)
-            change = former_As != current_As or former_ABs != current_ABs or former_Bs != current_Bs
+            change = para_quant[row][col] != self.quantize(row, col)
 
     @with_history
     def seek_next_change(self):
-        """Jump to the next state where a cell changed its color."""
-        current_As  = sum(list(self.quantize(c) for c in row).count('A')  for row in self)
-        current_ABs = sum(list(self.quantize(c) for c in row).count('AB') for row in self)
-        current_Bs  = sum(list(self.quantize(c) for c in row).count('B')  for row in self)
+        """Jump to the next state where a cell changes its color."""
+        para_quant = self.clone_quantized()
         change = False
         while not change:
             self.step()
-            former_As  = sum(list(self.quantize(c) for c in row).count('A')  for row in self)
-            former_ABs = sum(list(self.quantize(c) for c in row).count('AB') for row in self)
-            former_Bs  = sum(list(self.quantize(c) for c in row).count('B')  for row in self)
-            change = former_As != current_As or former_ABs != current_ABs or former_Bs != current_Bs
+            row, col = self.state().last_pick
+            change = para_quant[row][col] != self.quantize(row, col)
 
     @with_history
     def delete_rest_of_history(self):
@@ -299,12 +299,9 @@ class ParadigmaticSystem:
         col = randrange(len(self[0]))
         return row, col
 
-    def quantize(self, row, col=None):
+    def quantize(self, row, col):
         """Determine which morphological pattern a given cell follows, or if it vacillates."""
-        if type(row) is Cell:
-            bias = row
-        else:
-            bias = self[row][col]
+        bias = self[row][col]
         if bias < 1 - self.settings.tripartite_cutoff:
             return 'A'
         elif 1 - self.settings.tripartite_cutoff <= bias <= self.settings.tripartite_cutoff:

@@ -276,13 +276,14 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
             self.parent.remove_widget(self.warning_label)
             self.warning_label = None
 
-    def show_current_cell_frame(self, on=True):
+    def show_current_cell_frame(self, on=True, pick=None):
         """Enable/disable drawing a bright gold rectangle above the ParadigmaticSystemCell that was chosen last."""
         global CURRENT_CELL_FRAME
         if on:
             if not CURRENT_CELL_FRAME:
                 CURRENT_CELL_FRAME = CurrentCellFrame()
-            pick = self.state().last_pick
+            if not pick:
+                pick = self.state().last_pick
             if pick:
                 if CURRENT_CELL_FRAME.parent:
                     CURRENT_CELL_FRAME.parent.remove_widget(CURRENT_CELL_FRAME)
@@ -322,6 +323,22 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
             self.start_stop_simulation()
         super().forward_all()
         self.update_all_cells()
+        self.show_current_cell_frame(True)
+
+    def seek_prev_change(self):
+        """Jump to the last state where a cell changed its color."""
+        if self.timed_callback:
+            self.start_stop_simulation()
+        super().seek_prev_change()
+        if 0 < self.history_index < len(self.history) - 1:
+            frame_pick = self.history[self.history_index + 1].last_pick
+            self.show_current_cell_frame(True, pick=frame_pick)
+
+    def seek_next_change(self):
+        """Jump to the next state where a cell changes its color."""
+        if self.timed_callback:
+            self.start_stop_simulation()
+        super().seek_next_change()
         self.show_current_cell_frame(True)
 
     def delete_rest_of_history(self):
