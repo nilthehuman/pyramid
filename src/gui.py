@@ -194,6 +194,7 @@ class HelpWindow(Label):
             Press [b]PageUp[/b] to undo ten iterations of the simulation.\n
             Press [b]End[/b] or [b]Ctrl-RightArrow[/b] to skip to the last state of the simulation.
             Press [b]Home[/b] or [b]Ctrl-LeftArrow[/b] to skip to the initial state of the simulation.\n
+            Press the [b]S key[/b] to run the simulation to the predefined limit.
             Press [b]Space[/b] to start or stop an open-ended simulation.\n
             Press [b]Delete[/b] to clear history from the current state onward.\n
             Hold [b]Shift[/b] to see if the paradigm can be rearranged to be compact and monotonic.
