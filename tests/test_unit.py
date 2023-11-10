@@ -182,7 +182,7 @@ def test_nudge_twice_with_delta():
     para.settings.decaying_delta = False
     para.settings.delta = 0.1
     para.nudge(1, 1, True)
-    para.state().iteration += 1
+    para.state().total_steps += 1
     para.nudge(1, 1, False)
     assert para[1][1] == 0
 
@@ -208,7 +208,7 @@ def test_nudge_twice_with_kappa():
     para.settings.decaying_delta = True
     para.settings.kappa = 1
     para.nudge(1, 1, True)
-    para.state().iteration += 1
+    para.state().total_steps += 1
     para.nudge(1, 1, False)
     assert para[1][1] == round(1/2 - 1/3, 2)
 
@@ -317,7 +317,7 @@ def test_sim_result_all_conjunctive_strict():
     para = ParadigmaticSystem(state=state)
     para.settings.delta = 0
     para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_strict
-    para.simulate(max_iterations=100)
+    para.simulate(max_steps=100)
     assert para.state().sim_result.conjunctive_states == 100
     assert para.state().sim_result.total_states == 100
 
@@ -332,7 +332,7 @@ def test_sim_result_none_conjunctive_strict():
     para = ParadigmaticSystem(state=state)
     para.settings.delta = 0
     para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_strict
-    para.simulate(max_iterations=100)
+    para.simulate(max_steps=100)
     assert para.state().sim_result.conjunctive_states == 0
     assert para.state().sim_result.total_states == 100
 
@@ -347,7 +347,7 @@ def test_sim_result_all_monotonic_strict():
     para = ParadigmaticSystem(state=state)
     para.settings.delta = 0
     para.settings.monotonic_criterion = ParadigmaticSystem.is_monotonic_strict
-    para.simulate(max_iterations=100)
+    para.simulate(max_steps=100)
     assert para.state().sim_result.monotonic_states == 100
     assert para.state().sim_result.total_states == 100
 
@@ -362,7 +362,7 @@ def test_sim_result_none_monotonic_strict():
     para = ParadigmaticSystem(state=state)
     para.settings.delta = 0
     para.settings.monotonic_criterion = ParadigmaticSystem.is_monotonic_strict
-    para.simulate(max_iterations=100)
+    para.simulate(max_steps=100)
     assert para.state().sim_result.monotonic_states == 0
     assert para.state().sim_result.total_states == 100
 
@@ -377,7 +377,7 @@ def test_sim_result_all_conjunctive_tripartite():
     para = ParadigmaticSystem(state=state)
     para.settings.delta = 0
     para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_tripartite
-    para.simulate(max_iterations=100)
+    para.simulate(max_steps=100)
     assert para.state().sim_result.conjunctive_states == 100
     assert para.state().sim_result.total_states == 100
 
@@ -392,7 +392,7 @@ def test_sim_result_none_conjunctive_tripartite():
     para = ParadigmaticSystem(state=state)
     para.settings.delta = 0
     para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_tripartite
-    para.simulate(max_iterations=100)
+    para.simulate(max_steps=100)
     assert para.state().sim_result.conjunctive_states == 0
     assert para.state().sim_result.total_states == 100
 
@@ -407,7 +407,7 @@ def test_sim_result_all_monotonic_tripartite():
     para = ParadigmaticSystem(state=state)
     para.settings.delta = 0
     para.settings.monotonic_criterion = ParadigmaticSystem.is_monotonic_tripartite
-    para.simulate(max_iterations=100)
+    para.simulate(max_steps=100)
     assert para.state().sim_result.monotonic_states == 100
     assert para.state().sim_result.total_states == 100
 
@@ -422,6 +422,6 @@ def test_sim_result_none_monotonic_tripartite():
     para = ParadigmaticSystem(state=state)
     para.settings.delta = 0
     para.settings.monotonic_criterion = ParadigmaticSystem.is_monotonic_tripartite
-    para.simulate(max_iterations=100)
+    para.simulate(max_steps=100)
     assert para.state().sim_result.monotonic_states == 0
     assert para.state().sim_result.total_states == 100
