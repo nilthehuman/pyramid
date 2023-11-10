@@ -18,7 +18,7 @@ def test_is_monotonic_fast_enough_positive():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     start = time()
-    assert para.can_be_made_monotonic()
+    assert para.can_be_made_monotonic_lax()
     elapsed_time = time() - start
     assert elapsed_time < 2
 
@@ -35,7 +35,7 @@ def test_is_monotonic_fast_enough_negative():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     start = time()
-    assert not para.can_be_made_monotonic()
+    assert not para.can_be_made_monotonic_lax()
     elapsed_time = time() - start
     assert elapsed_time < 2
 

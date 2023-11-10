@@ -346,7 +346,7 @@ class ParadigmaticSystem:
             self.step()
             self.iterations += 1
 
-    def is_monotonic(self):
+    def is_monotonic_lax(self):
         """Check if the current state of the paradigmatic system is compactly arranged."""
         assert self[0][0] is not None
         para_truth = self
@@ -416,7 +416,7 @@ class ParadigmaticSystem:
                     return False
         return True
 
-    def can_be_made_monotonic(self):
+    def can_be_made_monotonic_lax(self):
         """Check if the paradigmatic system can be rearranged to be compact."""
         para_truth = self.clone()
         for row in range(len(self)):
@@ -447,7 +447,7 @@ class ParadigmaticSystem:
                     if para_truth.state().col_labels:
                         next_para.state().col_labels[col] = para_truth.state().col_labels[permuted_col]
                     next_para[row][col] = para_truth[permuted_row][permuted_col]
-            if next_para.is_monotonic():
+            if next_para.is_monotonic_lax():
                 return next_para
         return None  # no solution
 

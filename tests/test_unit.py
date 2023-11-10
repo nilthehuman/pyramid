@@ -17,7 +17,7 @@ def test_is_monotonic_all_true():
                [1.0, 1.0, 0.9, 0.5, 0.0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    assert para.is_monotonic()
+    assert para.is_monotonic_lax()
     assert para.is_monotonic_tripartite()
     assert para.is_monotonic_strict()
 
@@ -30,7 +30,7 @@ def test_is_monotonic_all_false():
                [1.0, 1.0, 0.9, 0.5, 0.0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    assert not para.is_monotonic()
+    assert not para.is_monotonic_lax()
     assert not para.is_monotonic_tripartite()
     assert not para.is_monotonic_strict()
 
@@ -44,7 +44,7 @@ def test_is_monotonic_only_strict_false():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     para.settings.tripartite_cutoff = 0.8
-    assert para.is_monotonic()
+    assert para.is_monotonic_lax()
     assert para.is_monotonic_tripartite()
     assert not para.is_monotonic_strict()
 
@@ -81,7 +81,7 @@ def test_can_be_made_monotonic_both_true():
                [0, 0, 0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    assert para.can_be_made_monotonic()
+    assert para.can_be_made_monotonic_lax()
     assert para.can_be_made_monotonic_strict()
 
 
@@ -93,7 +93,7 @@ def test_can_be_made_monotonic_both_false():
                [0, 0, 0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    assert not para.can_be_made_monotonic()
+    assert not para.can_be_made_monotonic_lax()
     assert not para.can_be_made_monotonic_strict()
 
 
@@ -105,7 +105,7 @@ def test_can_be_made_monotonic_only_strict_false():
                [0.0, 0, 0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    assert para.can_be_made_monotonic()
+    assert para.can_be_made_monotonic_lax()
     assert not para.can_be_made_monotonic_strict()
 
 
