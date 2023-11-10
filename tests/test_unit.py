@@ -9,6 +9,58 @@ def test_always_pass():
     assert True
 
 
+def test_is_conjunctive_all_true():
+    matrix = [ [0.0, 0.0, 0.0, 0.0, 0.0],
+               [0.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 0.0, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    assert para.is_conjunctive_lax()
+    assert para.is_conjunctive_tripartite()
+    assert para.is_conjunctive_strict()
+
+
+def test_is_conjunctive_only_lax_true_1():
+    matrix = [ [0.0, 0.0, 0.0, 0.0, 0.0],
+               [0.4, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 0.0, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    assert para.is_conjunctive_lax()
+    assert not para.is_conjunctive_tripartite()
+    assert not para.is_conjunctive_strict()
+
+
+def test_is_conjunctive_only_lax_true_2():
+    matrix = [ [0.0, 0.0, 0.3, 0.0, 0.0],
+               [0.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.8, 0.2, 0.0],
+               [1.0, 1.0, 0.6, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 0.0, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    assert para.is_conjunctive_lax()
+    assert not para.is_conjunctive_tripartite()
+    assert not para.is_conjunctive_strict()
+
+
+def test_is_conjunctive_all_false():
+    matrix = [ [0.0, 0.0, 0.0, 0.0, 0.0],
+               [0.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.2, 1.0, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 0.0, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    assert not para.is_conjunctive_lax()
+    assert not para.is_conjunctive_tripartite()
+    assert not para.is_conjunctive_strict()
+
+
 def test_is_monotonic_all_true():
     matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.0, 0.0, 0.0, 0.0],

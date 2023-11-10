@@ -346,6 +346,32 @@ class ParadigmaticSystem:
             self.step()
             self.iterations += 1
 
+    def is_conjunctive_lax(self):
+        """Check if the current state of the paradigmatic system shows a rectangular pattern."""
+        assert self[0][0] is not None
+        para_truth = self
+        if type(self[0][0]) is not bool:
+            para_truth = self.clone()
+            for row in range(len(self)):
+                for col in range(len(self[0])):
+                    para_truth[row][col].value = self[row][col] >= 0.5
+        rectangle_first_false = None
+        for row in para_truth:
+            first_false = None
+            try:
+                first_false = row.index(False)
+            except ValueError:
+                first_false = len(para_truth[0])
+            if not all(not cell for cell in row[first_false + 1:]):
+                # discontiguous row
+                return False
+            if rectangle_first_false is not None and rectangle_first_false != first_false:
+                # row out of sync with previous rows
+                return False
+            if first_false != 0:
+                rectangle_first_false = first_false
+        return True
+
     def is_monotonic_lax(self):
         """Check if the current state of the paradigmatic system is compactly arranged."""
         assert self[0][0] is not None
@@ -370,6 +396,16 @@ class ParadigmaticSystem:
                 return False
             last_row_first_false = first_false
         return True
+
+    def is_conjunctive_tripartite(self):
+        """Check if the current state of the paradigmatic system shows a rectangular pattern,
+        quantizing to three discrete values: A, A/B and B."""
+        assert self[0][0] is not None
+        def vacillates(bias):
+            return 1 - self.settings.tripartite_cutoff <= bias <= self.settings.tripartite_cutoff
+        if any(map(lambda row: any(vacillates(x) for x in row), self)):
+            return False
+        return self.is_conjunctive_lax()
 
     def is_monotonic_tripartite(self):
         """Check if the current state of the paradigmatic system is compactly arranged,
@@ -399,6 +435,12 @@ class ParadigmaticSystem:
                 if para_quant[row_i][col_i] > para_quant[row_i + 1][col_i]:
                     return False
         return True
+
+    def is_conjunctive_strict(self):
+        """Check if the current state of the paradigmatic system shows a rectangular pattern,
+        while also ordered strictly monotonically as well."""
+        assert self[0][0] is not None
+        return self.is_conjunctive_tripartite() and self.is_monotonic_strict()
 
     def is_monotonic_strict(self):
         """Check if the current state of the paradigmatic system is compactly arranged,
