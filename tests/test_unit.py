@@ -9,7 +9,7 @@ def test_always_pass():
     assert True
 
 
-def test_is_closed_all_true():
+def test_is_monotonic_all_true():
     matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.6, 0.2, 0.0, 0.0],
@@ -17,12 +17,12 @@ def test_is_closed_all_true():
                [1.0, 1.0, 0.9, 0.5, 0.0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    assert para.is_closed()
-    assert para.is_closed_tripartite()
-    assert para.is_closed_strict()
+    assert para.is_monotonic()
+    assert para.is_monotonic_tripartite()
+    assert para.is_monotonic_strict()
 
 
-def test_is_closed_all_false():
+def test_is_monotonic_all_false():
     matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.6, 0.2, 0.0, 0.0],
@@ -30,12 +30,12 @@ def test_is_closed_all_false():
                [1.0, 1.0, 0.9, 0.5, 0.0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    assert not para.is_closed()
-    assert not para.is_closed_tripartite()
-    assert not para.is_closed_strict()
+    assert not para.is_monotonic()
+    assert not para.is_monotonic_tripartite()
+    assert not para.is_monotonic_strict()
 
 
-def test_is_closed_only_strict_false():
+def test_is_monotonic_only_strict_false():
     matrix = [ [0.1, 0.0, 0.0, 0.0, 0.0],
                [0.0, 0.0, 0.0, 0.0, 0.0],
                [0.5, 0.6, 0.7, 0.0, 0.0],
@@ -44,12 +44,12 @@ def test_is_closed_only_strict_false():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     para.settings.tripartite_cutoff = 0.8
-    assert para.is_closed()
-    assert para.is_closed_tripartite()
-    assert not para.is_closed_strict()
+    assert para.is_monotonic()
+    assert para.is_monotonic_tripartite()
+    assert not para.is_monotonic_strict()
 
 
-def test_is_closed_tripartite_true():
+def test_is_monotonic_tripartite_true():
     matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.6, 0.2, 0.0, 0.0],
@@ -58,10 +58,10 @@ def test_is_closed_tripartite_true():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     para.settings.tripartite_cutoff = 0.8
-    assert para.is_closed_tripartite()
+    assert para.is_monotonic_tripartite()
 
 
-def test_is_closed_tripartite_false():
+def test_is_monotonic_tripartite_false():
     matrix = [ [0.5, 0.0, 0.0, 0.0, 0.0],
                [0.4, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.6, 0.5, 0.0, 0.0],
@@ -70,10 +70,10 @@ def test_is_closed_tripartite_false():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     para.settings.tripartite_cutoff = 0.8
-    assert not para.is_closed_tripartite()
+    assert not para.is_monotonic_tripartite()
 
 
-def test_can_be_made_closed_both_true():
+def test_can_be_made_monotonic_both_true():
     matrix = [ [1, 1, 1, 1, 0],
                [0, 0, 1, 0, 0],
                [0, 0, 1, 0, 0],
@@ -81,11 +81,11 @@ def test_can_be_made_closed_both_true():
                [0, 0, 0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    assert para.can_be_made_closed()
-    assert para.can_be_made_closed_strict()
+    assert para.can_be_made_monotonic()
+    assert para.can_be_made_monotonic_strict()
 
 
-def test_can_be_made_closed_both_false():
+def test_can_be_made_monotonic_both_false():
     matrix = [ [1, 1, 1, 1, 0],
                [0, 0, 1, 0, 1],
                [0, 0, 1, 0, 0],
@@ -93,11 +93,11 @@ def test_can_be_made_closed_both_false():
                [0, 0, 0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    assert not para.can_be_made_closed()
-    assert not para.can_be_made_closed_strict()
+    assert not para.can_be_made_monotonic()
+    assert not para.can_be_made_monotonic_strict()
 
 
-def test_can_be_made_closed_only_strict_false():
+def test_can_be_made_monotonic_only_strict_false():
     matrix = [ [0.6, 1, 1, 1, 0],
                [0.7, 1, 1, 1, 0],
                [1.0, 0, 0, 0, 0],
@@ -105,8 +105,8 @@ def test_can_be_made_closed_only_strict_false():
                [0.0, 0, 0, 0, 0] ]
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
-    assert para.can_be_made_closed()
-    assert not para.can_be_made_closed_strict()
+    assert para.can_be_made_monotonic()
+    assert not para.can_be_made_monotonic_strict()
 
 
 def test_nudge_once_with_delta():
@@ -255,7 +255,7 @@ def test_step_twice_undo_rewind_forward():
     assert para_orig == list(para)
 
 
-def test_sim_result_all_monotonous():
+def test_sim_result_all_monotonic():
     matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.6, 0.2, 0.0, 0.0],
@@ -264,13 +264,13 @@ def test_sim_result_all_monotonous():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     para.settings.delta = 0
-    para.settings.criterion = ParadigmaticSystem.is_closed_strict
+    para.settings.criterion = ParadigmaticSystem.is_monotonic_strict
     para.simulate(max_iterations=100)
-    assert para.state().sim_result.monotonous_states == 100
+    assert para.state().sim_result.monotonic_states == 100
     assert para.state().sim_result.total_states == 100
 
 
-def test_sim_result_none_monotonous():
+def test_sim_result_none_monotonic():
     matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 1.0, 0.0, 0.0, 0.0],
@@ -279,7 +279,7 @@ def test_sim_result_none_monotonous():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     para.settings.delta = 0
-    para.settings.criterion = ParadigmaticSystem.is_closed_strict
+    para.settings.criterion = ParadigmaticSystem.is_monotonic_strict
     para.simulate(max_iterations=100)
-    assert para.state().sim_result.monotonous_states == 0
+    assert para.state().sim_result.monotonic_states == 0
     assert para.state().sim_result.total_states == 100

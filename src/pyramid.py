@@ -114,11 +114,11 @@ class ParadigmaticSystem:
 
     @dataclass
     class SimResult:
-        """Struct written by the simulate method tallying the number of monotonous vs non-monotonous states."""
+        """Struct written by the simulate method tallying the number of monotonic vs non-monotonic states."""
         #conjunctive_states: int = 0  # TODO implement
         #conjunctive_changes: int = 0
-        monotonous_states: int = 0
-        monotonous_changes: int = 0
+        monotonic_states: int = 0
+        monotonic_changes: int = 0
         total_states: int = 0
         total_changes: int = 0
 
@@ -325,7 +325,7 @@ class ParadigmaticSystem:
             raise ValueError("The EffectDir enum has no such value:", self.settings.effect_direction)
         if self.settings.criterion is not None:
             if self.settings.criterion(self):
-                self.state().sim_result.monotonous_states += 1
+                self.state().sim_result.monotonic_states += 1
             self.state().sim_result.total_states += 1
 
     def simulate(self, max_iterations=None, batch_size=None):
@@ -346,10 +346,8 @@ class ParadigmaticSystem:
             self.step()
             self.iterations += 1
 
-    def is_closed(self):
+    def is_monotonic(self):
         """Check if the current state of the paradigmatic system is compactly arranged."""
-        if not self or not self[0]:
-            return False
         assert self[0][0] is not None
         para_truth = self
         if type(self[0][0]) is not bool:
@@ -373,7 +371,7 @@ class ParadigmaticSystem:
             last_row_first_false = first_false
         return True
 
-    def is_closed_tripartite(self):
+    def is_monotonic_tripartite(self):
         """Check if the current state of the paradigmatic system is compactly arranged,
         quantizing to three discrete values: A, A/B and B."""
         if not self or not self[0]:
@@ -402,9 +400,9 @@ class ParadigmaticSystem:
                     return False
         return True
 
-    def is_closed_strict(self):
+    def is_monotonic_strict(self):
         """Check if the current state of the paradigmatic system is compactly arranged,
-        but make sure all cell values are ordered strictly monotonously as well."""
+        but make sure all cell values are ordered strictly monotonically as well."""
         if not self or not self[0]:
             return False
         assert self[0][0] is not None
@@ -418,7 +416,7 @@ class ParadigmaticSystem:
                     return False
         return True
 
-    def can_be_made_closed(self):
+    def can_be_made_monotonic(self):
         """Check if the paradigmatic system can be rearranged to be compact."""
         para_truth = self.clone()
         for row in range(len(self)):
@@ -449,13 +447,13 @@ class ParadigmaticSystem:
                     if para_truth.state().col_labels:
                         next_para.state().col_labels[col] = para_truth.state().col_labels[permuted_col]
                     next_para[row][col] = para_truth[permuted_row][permuted_col]
-            if next_para.is_closed():
+            if next_para.is_monotonic():
                 return next_para
         return None  # no solution
 
-    def can_be_made_closed_strict(self):
+    def can_be_made_monotonic_strict(self):
         """Check if the paradigmatic system can be rearranged to be compact,
-        but make sure all cells are ordered strictly monotonously as well."""
+        but make sure all cells are ordered strictly monotonically as well."""
         if len(self) > 8 or len(self) > 8:
             # no way, don't even try, we might run out of memory
             raise ValueError('Input paradigmatic system is too large, aborting calculation, sorry')
@@ -474,14 +472,14 @@ class ParadigmaticSystem:
                     if self.state().col_labels:
                         next_para.state().col_labels[col] = self.state().col_labels[permuted_col]
                     next_para[row][col] = self[permuted_row][permuted_col]
-            if next_para.is_closed_strict():
+            if next_para.is_monotonic_strict():
                 return next_para
         return None
 
 #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
 
 def default_criterion(para):
-    return para.is_closed_strict() is not None
+    return para.is_monotonic_strict() is not None
 
 def subproc_simulate(item, reps=None, max_iterations=None, num_processes=None, criterion=None, silent=False):
     """Number crunching function executed by CPU-bound subprocesses, runs one simulation

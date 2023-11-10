@@ -117,7 +117,7 @@ class PyramidWindow(AnchorLayout):
             self.help_window = None
 
     def show_overlay_grid(self):
-        """Show paradigmatic system rearranged to be compact and monotonous."""
+        """Show paradigmatic system rearranged to be compact and monotonic."""
         if not self.overlay and not self.ids.grid.warning_label:
             self.ids.grid.show_warning('Trying all permutations, hang tight...')
             self.ids.grid.warning_label.background_color = 0.9, 0.45, 0.1, 1
@@ -129,7 +129,7 @@ class PyramidWindow(AnchorLayout):
     def find_rearranged_para(self, *_args):
         """Callback to actually crunch the numbers and come up with a compact paradigmatic system."""
         try:
-            para_rearranged = self.ids.grid.can_be_made_closed_strict()
+            para_rearranged = self.ids.grid.can_be_made_monotonic_strict()
             self.ids.grid.hide_warning()
         except ValueError as error:
             self.ids.grid.hide_warning()
@@ -193,7 +193,7 @@ class HelpWindow(Label):
             Press [b]Home[/b] or [b]Ctrl-LeftArrow[/b] to skip to the initial state of the simulation.\n
             Press [b]Space[/b] to start or stop an open-ended simulation.\n
             Press [b]Delete[/b] to clear history from the current state onward.\n
-            Hold [b]Shift[/b] to see if the paradigm can be rearranged to be compact and monotonous.
+            Hold [b]Shift[/b] to see if the paradigm can be rearranged to be compact and monotonic.
             While holding [b]Shift[/b], press [b]Enter[/b] to keep the rearranged paradigm and replace
             the original paradigm with it.'''
 
@@ -517,7 +517,7 @@ class PyramidApp(App):
                                                              [1, 1, 1, 1, 1, 0, 0, 0, 0, 0]
                                                            ]) )
         para = ParadigmaticSystem(state_5x5)
-        para.settings.criterion = ParadigmaticSystem.is_closed_tripartite
+        para.settings.criterion = ParadigmaticSystem.is_monotonic_tripartite
         para.track_history(True)
         root = PyramidWindow(para)
         self.keyboardhandler = KeyboardHandler()

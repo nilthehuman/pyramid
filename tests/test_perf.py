@@ -6,7 +6,7 @@ from time import time
 from ..src.pyramid import cells_from_floats, ParadigmaticSystem
 
 
-def test_is_closed_fast_enough_positive():
+def test_is_monotonic_fast_enough_positive():
     matrix = [ [0.0, 0.1, 0.2, 0.3, 0.4],
                [0.5, 0.6, 0.7, 0.8, 0.9],
                [1.0, 0.9, 0.8, 0.7, 0.6],
@@ -18,12 +18,12 @@ def test_is_closed_fast_enough_positive():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     start = time()
-    assert para.can_be_made_closed()
+    assert para.can_be_made_monotonic()
     elapsed_time = time() - start
     assert elapsed_time < 2
 
 
-def test_is_closed_fast_enough_negative():
+def test_is_monotonic_fast_enough_negative():
     matrix = [ [0.0, 0.7, 0.2, 0.3, 0.1],
                [0.8, 0.6, 0.7, 0.5, 0.9],
                [1.0, 0.9, 0.8, 0.7, 0.6],
@@ -35,12 +35,12 @@ def test_is_closed_fast_enough_negative():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     start = time()
-    assert not para.can_be_made_closed()
+    assert not para.can_be_made_monotonic()
     elapsed_time = time() - start
     assert elapsed_time < 2
 
 
-def test_is_closed_strict_fast_enough_positive():
+def test_is_monotonic_strict_fast_enough_positive():
     matrix = [ [0.0, 0.1, 0.2, 0.3, 0.4],
                [0.5, 0.6, 0.7, 0.8, 0.9],
                [0.0, 0.1, 0.2, 0.3, 0.4],
@@ -50,13 +50,13 @@ def test_is_closed_strict_fast_enough_positive():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     start = time()
-    assert para.can_be_made_closed_strict()
+    assert para.can_be_made_monotonic_strict()
     elapsed_time = time() - start
     assert elapsed_time < 2
 
 
 @pytest.mark.xfail
-def test_is_closed_strict_fast_enough_negative():
+def test_is_monotonic_strict_fast_enough_negative():
     matrix = [ [0.0, 0.1, 0.2, 0.3, 0.4],
                [0.5, 0.6, 0.7, 0.8, 0.9],
                [1.0, 0.9, 0.8, 0.7, 0.6],
@@ -66,7 +66,7 @@ def test_is_closed_strict_fast_enough_negative():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     start = time()
-    assert not para.can_be_made_closed_strict()
+    assert not para.can_be_made_monotonic_strict()
     elapsed_time = time() - start
     assert elapsed_time < 2
 
