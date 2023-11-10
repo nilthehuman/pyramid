@@ -48,7 +48,7 @@ class KeyboardHandler(Widget):
             # run a single step of the simulation
             App.get_running_app().root.ids.grid.step()
             return True
-        if keycode[1] == 'left' and 'ctrl' not in modifiers:
+        if keycode[1] == 'left' and 'ctrl' not in modifiers or keycode[1] == 'backspace':
             # revert last step of the simulation
             App.get_running_app().root.ids.grid.undo_step()
             return True
