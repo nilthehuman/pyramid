@@ -104,8 +104,10 @@ class ParadigmaticSystem:
         kappa: float = 1
         tripartite_colors: bool = True
         tripartite_cutoff: float = 0.8
-        # TODO: add type hint
-        criterion = None  # the property of the ParadigmaticSystem to check after each step
+        # properties of the ParadigmaticSystem to check after each step
+        # TODO: add type hints
+        conjunctive_criterion = None
+        monotonic_criterion   = None
 
     class SimStatus(Enum):
         STOPPED   = 1
@@ -115,12 +117,12 @@ class ParadigmaticSystem:
     @dataclass
     class SimResult:
         """Struct written by the simulate method tallying the number of monotonic vs non-monotonic states."""
-        #conjunctive_states: int = 0  # TODO implement
-        #conjunctive_changes: int = 0
-        monotonic_states: int = 0
-        monotonic_changes: int = 0
-        total_states: int = 0
-        total_changes: int = 0
+        conjunctive_states:  int = 0
+        conjunctive_changes: int = 0
+        monotonic_states:    int = 0
+        monotonic_changes:   int = 0
+        total_states:        int = 0
+        total_changes:       int = 0
 
     @dataclass
     class State:
@@ -131,7 +133,7 @@ class ParadigmaticSystem:
         last_pick: tuple[int, int] = field(default_factory=tuple)
         iteration: int = 0
         # TODO: add type hint
-        sim_result = None  # the tally of states during simulation satisfying the criterion
+        sim_result = None  # the tally of states during simulation satisfying the criteria
 
     def __init__(self, state=None, history=None, history_index=None):
         self.settings = ParadigmaticSystem.Settings()
@@ -274,8 +276,19 @@ class ParadigmaticSystem:
         col = randrange(len(self[0]))
         return row, col
 
+    def quantize(self, row, col):
+        if self[row][col] < 1 - self.settings.tripartite_cutoff:
+            return 'A'
+        elif 1 - self.settings.tripartite_cutoff <= self[row][col] <= self.settings.tripartite_cutoff:
+            return 'AB'
+        elif self.settings.tripartite_cutoff < self[row][col]:
+            return 'B'
+        else:
+            assert False
+
     def nudge(self, row, col, outcome):
         """Adjust the value of a single cell based on an outcome in a neighboring cell or cells."""
+        quant_before = self.quantize(row, col)
         if self.settings.decaying_delta:
             assert self.settings.kappa is not None
             delta = (1 if outcome else -1) / (self[row][col].experience * self.settings.kappa + 1)
@@ -284,6 +297,8 @@ class ParadigmaticSystem:
             delta = (1 if outcome else -1) * self.settings.delta
         self[row][col] += delta
         self[row][col].experience += 1
+        quant_after = self.quantize(row, col)
+        return quant_before != quant_after
 
     def step(self):
         """Perform a single iteration of the stochastic simulation."""
@@ -310,23 +325,32 @@ class ParadigmaticSystem:
                 phony_cell_bias = avg(relevant_biases[1:])
                 relevant_biases += [phony_cell_bias] * (5 - len(relevant_biases))
             outcome = random() < avg(relevant_biases)
-            self.nudge(row, col, outcome)
+            changed = self.nudge(row, col, outcome)
         elif self.settings.effect_direction == ParadigmaticSystem.Settings.EffectDir.OUTWARD:
             # picked cell adjusts neighboring cells (probably) toward itself
             outcome = random() < self[row][col]
-            self.nudge(row, col, outcome)
+            changed = self.nudge(row, col, outcome)
             for i in range(1, min(self.settings.effect_radius + 1, max(len(self), len(self[0])))):
                 for y, x in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
                     current_row = row + i * y
                     current_col = col + i * x
                     if 0 <= current_row < len(self) and 0 <= current_col < len(self[0]):
-                        self.nudge(current_row, current_col, outcome)
+                        changed |= self.nudge(current_row, current_col, outcome)
         else:
             raise ValueError("The EffectDir enum has no such value:", self.settings.effect_direction)
-        if self.settings.criterion is not None:
-            if self.settings.criterion(self):
+        if self.settings.conjunctive_criterion is not None:
+            if self.settings.conjunctive_criterion(self):
+                self.state().sim_result.conjunctive_states += 1
+                if changed:
+                    self.state().sim_result.conjunctive_changes += 1
+        if self.settings.monotonic_criterion is not None:
+            if self.settings.monotonic_criterion(self):
                 self.state().sim_result.monotonic_states += 1
-            self.state().sim_result.total_states += 1
+                if changed:
+                    self.state().sim_result.monotonic_changes += 1
+        self.state().sim_result.total_states += 1
+        if changed:
+            self.state().sim_result.total_changes += 1
 
     def simulate(self, max_iterations=None, batch_size=None):
         """Run a predefined number of iterations of the simulation or until cancelled by the user."""
@@ -415,14 +439,7 @@ class ParadigmaticSystem:
         para_quant = self.clone()
         for row in range(len(self)):
             for col in range(len(self[0])):
-                if self[row][col] < 1 - self.settings.tripartite_cutoff:
-                    para_quant[row][col].value = 'A'
-                elif 1 - self.settings.tripartite_cutoff <= self[row][col] <= self.settings.tripartite_cutoff:
-                    para_quant[row][col].value = 'AB'
-                elif self.settings.tripartite_cutoff < self[row][col]:
-                    para_quant[row][col].value = 'B'
-                else:
-                    assert False
+                para_quant[row][col] = self.quantize(row, col)
         # TODO: optimize
         for row in para_quant:
             for cell, next_cell in zip(row, row[1:]):

@@ -307,7 +307,37 @@ def test_step_twice_undo_rewind_forward():
     assert para_orig == list(para)
 
 
-def test_sim_result_all_monotonic():
+def test_sim_result_all_conjunctive_strict():
+    matrix = [ [1.0, 1.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.0, 0.0, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.settings.delta = 0
+    para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_strict
+    para.simulate(max_iterations=100)
+    assert para.state().sim_result.conjunctive_states == 100
+    assert para.state().sim_result.total_states == 100
+
+
+def test_sim_result_none_conjunctive_strict():
+    matrix = [ [0.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.2, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 1.0, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.settings.delta = 0
+    para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_strict
+    para.simulate(max_iterations=100)
+    assert para.state().sim_result.conjunctive_states == 0
+    assert para.state().sim_result.total_states == 100
+
+
+def test_sim_result_all_monotonic_strict():
     matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.6, 0.2, 0.0, 0.0],
@@ -316,13 +346,13 @@ def test_sim_result_all_monotonic():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     para.settings.delta = 0
-    para.settings.criterion = ParadigmaticSystem.is_monotonic_strict
+    para.settings.monotonic_criterion = ParadigmaticSystem.is_monotonic_strict
     para.simulate(max_iterations=100)
     assert para.state().sim_result.monotonic_states == 100
     assert para.state().sim_result.total_states == 100
 
 
-def test_sim_result_none_monotonic():
+def test_sim_result_none_monotonic_strict():
     matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 0.0, 0.0, 0.0, 0.0],
                [1.0, 1.0, 0.0, 0.0, 0.0],
@@ -331,7 +361,67 @@ def test_sim_result_none_monotonic():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     para.settings.delta = 0
-    para.settings.criterion = ParadigmaticSystem.is_monotonic_strict
+    para.settings.monotonic_criterion = ParadigmaticSystem.is_monotonic_strict
+    para.simulate(max_iterations=100)
+    assert para.state().sim_result.monotonic_states == 0
+    assert para.state().sim_result.total_states == 100
+
+
+def test_sim_result_all_conjunctive_tripartite():
+    matrix = [ [1.0, 1.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.0, 0.0, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.settings.delta = 0
+    para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_tripartite
+    para.simulate(max_iterations=100)
+    assert para.state().sim_result.conjunctive_states == 100
+    assert para.state().sim_result.total_states == 100
+
+
+def test_sim_result_none_conjunctive_tripartite():
+    matrix = [ [0.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.2, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 0.0, 0.0],
+               [1.0, 1.0, 1.0, 1.0, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.settings.delta = 0
+    para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_tripartite
+    para.simulate(max_iterations=100)
+    assert para.state().sim_result.conjunctive_states == 0
+    assert para.state().sim_result.total_states == 100
+
+
+def test_sim_result_all_monotonic_tripartite():
+    matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.6, 0.2, 0.0, 0.0],
+               [1.0, 0.8, 0.8, 0.0, 0.0],
+               [1.0, 1.0, 0.9, 0.5, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.settings.delta = 0
+    para.settings.monotonic_criterion = ParadigmaticSystem.is_monotonic_tripartite
+    para.simulate(max_iterations=100)
+    assert para.state().sim_result.monotonic_states == 100
+    assert para.state().sim_result.total_states == 100
+
+
+def test_sim_result_none_monotonic_tripartite():
+    matrix = [ [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 0.0, 0.0, 0.0, 0.0],
+               [1.0, 1.0, 0.0, 0.0, 0.0],
+               [0.3, 0.7, 1.0, 0.0, 0.0],
+               [1.0, 1.0, 0.5, 0.1, 0.0] ]
+    state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
+    para = ParadigmaticSystem(state=state)
+    para.settings.delta = 0
+    para.settings.monotonic_criterion = ParadigmaticSystem.is_monotonic_tripartite
     para.simulate(max_iterations=100)
     assert para.state().sim_result.monotonic_states == 0
     assert para.state().sim_result.total_states == 100
