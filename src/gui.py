@@ -358,11 +358,19 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
             self.timed_callback.cancel()
             self.timed_callback = None
         else:
-            self.run_batch(0)
-            self.timed_callback = Clock.schedule_interval(self.run_batch, 0.1)
+            if self.state().total_steps >= self.settings.max_steps:
+                self.show_warning("Maximum number of steps reached.")
+            else:
+                self.sim_status = ParadigmaticSystem.SimStatus.RUNNING
+                self.run_batch(0)
+                self.timed_callback = Clock.schedule_interval(self.run_batch, 0.1)
 
     def run_batch(self, _elapsed_time):
         """Callback to perform the next batch of iterations of an open-ended simulation."""
+        if not self.running():
+            self.timed_callback.cancel()
+            self.timed_callback = None
+            return
         #para_size = len(self) * len(self[0])
         super().simulate(batch_size=50)
         # FIXME: is this really supposed to happen here?
@@ -378,7 +386,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
 
     def run_simulation(self, _elapsed_time):
         """Callback to run the simulation up to the predefined number of maximum steps."""
-        super().simulate(max_steps=self.settings.max_steps)
+        super().simulate()
         self.hide_warning()
 
     def update_label(self, row=None, col=None, text=None):

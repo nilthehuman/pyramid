@@ -280,7 +280,7 @@ class ParadigmaticSystem:
         """Jump to the next state where a cell changes its color."""
         para_quant = self.clone_quantized()
         change = False
-        while not change:
+        while not change and self.history_index < self.settings.max_steps:
             self.step()
             row, col = self.state().last_pick
             change = para_quant[row][col] != self.quantize(row, col)
@@ -328,6 +328,9 @@ class ParadigmaticSystem:
 
     def step(self):
         """Perform a single iteration of the stochastic simulation."""
+        if self.state().total_steps == self.settings.max_steps:
+            self.show_warning("Maximum number of steps reached.")
+            return
         if self.history and self.history_index < len(self.history) - 1:
             self.redo_step()
             return
@@ -378,7 +381,7 @@ class ParadigmaticSystem:
         if changed:
             self.state().sim_result.total_changes += 1
 
-    def simulate(self, max_steps=None, batch_size=None):
+    def simulate(self, batch_size=None):
         """Run a predefined number of iterations of the simulation or until cancelled by the user."""
         assert self.state().sim_result is not None
         if self.sim_status == ParadigmaticSystem.SimStatus.STOPPED:
@@ -386,7 +389,7 @@ class ParadigmaticSystem:
         if batch_size is None:
             batch_size = int(1e9)  # math.inf is not applicable
         for _ in range(batch_size):
-            if max_steps is not None and self.state().total_steps >= max_steps:
+            if self.settings.max_steps is not None and self.state().total_steps >= self.settings.max_steps:
                 self.sim_status = ParadigmaticSystem.SimStatus.STOPPED
                 break
             self.step()
