@@ -14,8 +14,24 @@
         anchor_x: 'left'
         anchor_y: 'top'
         HelpButton:
-    ParadigmaticSystemGrid:
-        id: grid
+    AnchorLayout:
+        size_hint: 1, 1
+        anchor_x: 'left'
+        anchor_y: 'center'
+        SettingsAndResultsLabel:
+            id: settings_results_label
+    AnchorLayout:
+        size_hint: 1, 1
+        anchor_x: 'right'
+        anchor_y: 'center'
+        AnchorLayout:
+            id: grid_anchor
+            size_hint: None, 0.8
+            width: self.height
+            anchor_x: 'center'
+            anchor_y: 'center'
+            ParadigmaticSystemGrid:
+                id: grid
 
 
 <HelpButton>
@@ -41,7 +57,7 @@
 
 
 <ParadigmaticSystemGrid>
-    size_hint: None, 0.8
+    size_hint: None, 1
     width: self.height
     cols: self.cols
     rows: self.rows
@@ -111,3 +127,9 @@
 
 <InfoLabel>
     background_color: 0.4, 0.75, 0.15, 1
+
+
+<SettingsAndResultsLabel>
+    size_hint: 0.4, 1
+    font_size: 16
+    markup: True

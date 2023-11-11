@@ -1,6 +1,7 @@
 """The program's graphical frontend, eventually."""
 
 from copy import deepcopy
+from textwrap import dedent
 
 from kivy import require as kivy_require
 kivy_require('2.1.0')
@@ -113,6 +114,7 @@ class PyramidWindow(AnchorLayout):
         self.help_window = None
         self.overlay = None
         self.ids.grid.set_para(para)
+        self.ids.settings_results_label.update()
 
     def toggle_help_window(self, *args):
         """Show or hide fullscreen Label with help text."""
@@ -149,7 +151,7 @@ class PyramidWindow(AnchorLayout):
         # FIXME: we're supposed to check if Shift is still being held at this point but I don't know how
         if para_rearranged:
             self.overlay = ParadigmaticSystemGrid(para=para_rearranged)
-            self.add_widget(self.overlay)
+            self.ids.grid_anchor.add_widget(self.overlay)
             self.overlay.update_all_cells()
         else:
             self.ids.grid.show_warning('No solution, sorry :(')
@@ -165,7 +167,7 @@ class PyramidWindow(AnchorLayout):
     def hide_overlay_grid(self):
         """Hide the rearranged paradigm and show the original again."""
         if self.overlay:
-            self.remove_widget(self.overlay)
+            self.ids.grid_anchor.remove_widget(self.overlay)
             self.overlay = None
         else:
             self.ids.grid.hide_warning()
@@ -191,7 +193,8 @@ class HelpWindow(Label):
         # block click events from Widgets below
         self.bind(on_touch_down=lambda *_: True)
         self.bind(on_touch_up=self.toggle_help_window)
-        self.text = '''[size=20][b]Help[/b][/size]\n
+        self.text = dedent('''\
+            [size=20][b]Help[/b][/size]\n
             Each matrix cell shows the prevalence (the "bias") of a certain morphological phenomenon
             when the morphemes in its row and column are combined. Bias values range from 0 to 1.\n
             Click on any row or column label to edit the morpheme corresponding to that row or column.
@@ -209,7 +212,7 @@ class HelpWindow(Label):
             Press [b]Delete[/b] to clear history from the current state onward.\n
             Hold [b]Shift[/b] to see if the paradigm can be rearranged to be compact and monotonic.
             While holding [b]Shift[/b], press [b]Enter[/b] to keep the rearranged paradigm and replace
-            the original paradigm with it.'''
+            the original paradigm with it.''')
 
     def toggle_help_window(self, *args):
         """Show or hide fullscreen Label with help text."""
@@ -417,6 +420,8 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
                     except (AttributeError, TypeError):
                         # this must be the blank spaceholder widget in the top left corner
                         assert type(child) == Widget
+        if App.get_running_app().root:
+            App.get_running_app().root.ids.settings_results_label.update()
 
 
 class ParadigmaticSystemText(TextInput):
@@ -532,6 +537,33 @@ class WarningLabel(Label):
 
 class InfoLabel(WarningLabel):
     pass
+
+
+class SettingsAndResultsLabel(Label):
+
+    def update(self):
+        "Display latest information about the simulation's state and settings."
+        settings = self.parent.parent.ids.grid.settings
+        results = self.parent.parent.ids.grid.state().sim_result
+        text = (f'''[size=20][b]______ Settings ______[/b][/size]
+            effect_direction = {settings.effect_direction}
+            effect_radius = {settings.effect_radius}
+            cells_own_weight = {settings.cells_own_weight}
+            no_edges = {settings.no_edges}\n''' +
+            (f'kappa = {settings.kappa}\n' if settings.decaying_delta else f'delta = {settings.delta}\n') +
+            f'tripartite_colors = {settings.tripartite_colors}\n' +
+            (f'tripartite_cutoff = {settings.tripartite_cutoff}\n' if settings.tripartite_colors else '') +
+            f'''max_steps = {settings.max_steps}
+
+            [size=20][b]______ Results ______[/b][/size]
+            conjunctive_states = {results.conjunctive_states}
+            monotonic_states = {results.monotonic_states}
+            total_states = {results.total_states}
+            conjunctive_changes = {results.conjunctive_changes}
+            monotonic_changes = {results.monotonic_changes}
+            total_changes = {results.total_changes}
+            ''')
+        self.text = '\n'.join(line.strip() for line in text.split('\n'))
 
 
 class PyramidApp(App):
