@@ -602,7 +602,7 @@ class PyramidApp(App):
                                                              [1, 1, 1, 1, 1, 0, 0, 0, 0, 0]
                                                            ]) )
         para = ParadigmaticSystem(state_5x5)
-        para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_strict
+        para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_tripartite
         para.settings.monotonic_criterion = ParadigmaticSystem.is_monotonic_tripartite
         para.track_history(True)
         root = PyramidWindow(para)
