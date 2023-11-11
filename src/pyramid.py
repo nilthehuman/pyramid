@@ -386,11 +386,7 @@ class ParadigmaticSystem:
             batch_size = int(1e9)  # math.inf is not applicable
         for _ in range(batch_size):
             if max_steps is not None and self.state().total_steps >= max_steps:
-                print("max_steps:", max_steps)
-                print("tot_steps:", self.state().total_steps)
-                print("sim status:", self.sim_status)
                 self.sim_status = ParadigmaticSystem.SimStatus.STOPPED
-                print("sim status after:", self.sim_status)
                 break
             self.step()
 
