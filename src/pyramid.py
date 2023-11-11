@@ -1,4 +1,5 @@
-"""The core class that implements most of the business logic: a generalized two-dimensional morphological paradigmatic system."""
+"""The core classes that implements most of the business logic:
+a generalized two-dimensional morphological paradigmatic system."""
 
 from copy import deepcopy
 from dataclasses import dataclass, field

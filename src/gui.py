@@ -1,4 +1,4 @@
-"""The program's graphical frontend, eventually."""
+"""The application's graphical frontend."""
 
 from copy import deepcopy
 from textwrap import dedent
@@ -362,13 +362,14 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
             self.timed_callback = Clock.schedule_interval(self.run_batch, 0.1)
 
     def run_batch(self, _elapsed_time):
-        """Callback to perform one batch of iterations of the simulation."""
+        """Callback to perform the next batch of iterations of an open-ended simulation."""
         #para_size = len(self) * len(self[0])
         super().simulate(batch_size=50)
         # FIXME: is this really supposed to happen here?
         self.show_current_cell_frame(False)
 
     def simulate(self):
+        """Run the simulation until the maximum number of steps is reached."""
         if self.state().total_steps >= self.settings.max_steps:
             self.show_warning("Maximum number of steps reached.")
             return
@@ -376,6 +377,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         Clock.schedule_once(self.run_simulation, 0.1)
 
     def run_simulation(self, _elapsed_time):
+        """Callback to run the simulation up to the predefined number of maximum steps."""
         super().simulate(max_steps=self.settings.max_steps)
         self.hide_warning()
 
