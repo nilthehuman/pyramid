@@ -372,7 +372,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
             self.timed_callback = None
             return
         #para_size = len(self) * len(self[0])
-        super().simulate(batch_size=50)
+        super().simulate(batch_size=30)
         # FIXME: is this really supposed to happen here?
         self.show_current_cell_frame(False)
 
