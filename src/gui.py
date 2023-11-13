@@ -557,8 +557,7 @@ class WarningLabel(Label):
     # you can't bind to PyramidWindow in __init__ because of Kivy's initialization order
     def dismiss_warning(self, *args):
         """Remove warning label from the screen."""
-        self.parent.ids.grid.hide_warning()
-        #App.get_running_app().root.toggle_help_window(*args)
+        App.get_running_app().root.ids.grid.hide_warning()
         return True
 
 
