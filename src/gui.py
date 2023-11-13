@@ -281,10 +281,12 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
 
     def show_info(self, message):
         """Display a popup on screen about some expected event."""
-        if not self.warning_label:
-            self.warning_label = InfoLabel()
-            self.warning_label.text = message
-            self.parent.add_widget(self.warning_label)
+        # FIXME: this is probably bad UI design, but an info label always replaces a warning
+        if self.warning_label:
+            self.hide_warning()
+        self.warning_label = InfoLabel()
+        self.warning_label.text = message
+        self.parent.add_widget(self.warning_label)
 
     def hide_warning(self):
         """Remove warning popup."""
