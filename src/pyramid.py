@@ -381,15 +381,19 @@ class ParadigmaticSystem:
         if changed:
             self.state().sim_result.total_changes += 1
 
-    def simulate(self, batch_size=None):
+    def simulate(self, max_steps=None, batch_size=None):
         """Run a predefined number of iterations of the simulation or until cancelled by the user."""
         assert self.state().sim_result is not None
         if self.sim_status == ParadigmaticSystem.SimStatus.STOPPED:
             self.sim_status = ParadigmaticSystem.SimStatus.RUNNING
+        if max_steps:
+            max_steps = min(max_steps, self.settings.max_steps)
+        else:
+            max_steps = self.settings.max_steps
         if batch_size is None:
             batch_size = int(1e9)  # math.inf is not applicable
         for _ in range(batch_size):
-            if self.settings.max_steps is not None and self.state().total_steps >= self.settings.max_steps:
+            if max_steps is not None and self.state().total_steps >= max_steps:
                 self.sim_status = ParadigmaticSystem.SimStatus.STOPPED
                 break
             self.step()
