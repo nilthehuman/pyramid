@@ -423,10 +423,11 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
 
     def update_cell(self, row, col, new_bias):
         """Set the bias of a cell in the underlying ParadigmaticSystem object to a new value."""
-        self.invalidate_future_history()
-        self.store_snapshot()
-        self[row][col].value = new_bias
-        self.get_cell(row, col).update()
+        if self[row][col].value != new_bias:
+            self.invalidate_future_history()
+            self.store_snapshot()
+            self[row][col].value = new_bias
+            self.get_cell(row, col).update()
 
     def update_all_cells(self):
         """Sync all visual grid cells with the cells of the underlying ParadigmaticSystem object."""
