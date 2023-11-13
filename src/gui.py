@@ -27,12 +27,23 @@ class KeyboardHandler(Widget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.enabled = True
         self.keyboard = Window.request_keyboard(lambda: True, self)
         self.keyboard.bind(on_key_down=self.on_keypressed)
         self.keyboard.bind(on_key_up=self.on_keyreleased)
 
+    def disable(self):
+        """Temporarily pause the KeyboardHandler, do nothing until reenabled."""
+        self.enabled = False
+
+    def enable(self):
+        """Reenable the KeyboardHandler, listen for keypresses again."""
+        self.enabled = True
+
     def on_keypressed(self, _keyboard, keycode, _text, modifiers):
         """Catch and handle user keypresses corresponding to app functions."""
+        if not self.enabled:
+            return False
         if App.get_running_app().root.ids.grid.warning_label:
             if keycode[1] in ['escape', 'right', 'left', 'pageup', 'pagedown',
                               'home', 'end', 'spacebar', 'delete']:
@@ -124,11 +135,13 @@ class PyramidWindow(AnchorLayout):
                 # don't dismiss on mousewheel event
                 return
         if not self.help_window:
+            self.keyboardhandler.disable()
             self.help_window = HelpWindow()
             self.add_widget(self.help_window)
         else:
             self.remove_widget(self.help_window)
             self.help_window = None
+            self.keyboardhandler.enable()
 
     def show_overlay_grid(self):
         """Show paradigmatic system rearranged to be compact and monotonic."""
@@ -496,10 +509,11 @@ class CellEditText(TextInput):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.bind(on_text_validate=self.text_validated)
+        App.get_running_app().root.keyboardhandler.disable()
+        self.bind(on_text_validate=self.set_new_value)
         self.bind(focus=self.focus_changed)
 
-    def text_validated(self, instance):
+    def set_new_value(self, instance):
         """Set a new bias value in the cell once the user finished typing."""
         assert self == instance
         try:
@@ -519,10 +533,12 @@ class CellEditText(TextInput):
                 pass
 
     def focus_changed(self, instance, focused=None):
-        """Remove this TextInput box if the user has clicked elsewhere."""
+        """Get rid of this TextInput box if the user has clicked elsewhere."""
         assert self == instance
         if focused is False:
+            self.set_new_value(self)
             self.parent.remove_widget(self)
+            App.get_running_app().root.keyboardhandler.enable()
 
 
 class CurrentCellFrame(Widget):
@@ -606,7 +622,7 @@ class PyramidApp(App):
         para.settings.monotonic_criterion = ParadigmaticSystem.is_monotonic_tripartite
         para.track_history(True)
         root = PyramidWindow(para)
-        self.keyboardhandler = KeyboardHandler()
+        root.keyboardhandler = KeyboardHandler()
         return root
 
 
