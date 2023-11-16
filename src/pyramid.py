@@ -2,13 +2,15 @@
 a generalized two-dimensional morphological paradigmatic system."""
 
 from copy import deepcopy
-from dataclasses import dataclass, field
+from csv import DictWriter
+from dataclasses import asdict, dataclass, field, fields
 from enum import Enum
 from functools import partial
 from itertools import permutations, product
 from logging import warning
 from math import ceil
 from multiprocessing import Pool
+from os.path import isfile
 from random import seed, random, randrange
 from re import search
 
@@ -397,6 +399,27 @@ class ParadigmaticSystem:
                 self.sim_status = ParadigmaticSystem.SimStatus.STOPPED
                 break
             self.step()
+
+    def export_results(self, filename):
+        """Write the current tally along with settings to a CSV file."""
+        csv_fields = [f.name for f in fields(ParadigmaticSystem.Settings) + fields(ParadigmaticSystem.SimResult)]
+        header = ','.join(csv_fields)
+        file_has_header = False
+        if isfile(filename):
+            with open(filename, 'r', encoding='utf-8') as csv_file:
+                first_line = csv_file.readline().strip()
+                if first_line == header:
+                    file_has_header = True
+                else:
+                    # this does not seem to be our kind of file
+                    raise FileExistsError("A file with the same name already exists " +
+                                          "and it lacks the right CSV header")
+        with open(filename, 'a', encoding='utf-8') as csv_file:
+            csv_writer = DictWriter(csv_file, csv_fields)
+            if not file_has_header:
+                csv_writer.writeheader()
+            data = asdict(self.settings) | asdict(self.state().sim_result)
+            csv_writer.writerow(data)
 
     def is_conjunctive_lax(self):
         """Check if the current state of the paradigmatic system shows a rectangular pattern."""

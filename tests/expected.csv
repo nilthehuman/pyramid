@@ -1,0 +1,2 @@
+effect_direction,effect_radius,cells_own_weight,no_edges,decaying_delta,delta,kappa,tripartite_colors,tripartite_cutoff,max_steps,conjunctive_states,conjunctive_changes,monotonic_states,monotonic_changes,total_states,total_changes
+EffectDir.INWARD,1,1,True,False,0.1,1,True,0.8,1000,0,0,0,0,0,0

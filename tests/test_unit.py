@@ -1,6 +1,8 @@
 """Unit tests to check basic expected behaviors."""
 
 from copy import deepcopy
+from filecmp import cmp
+from os import remove
 
 from ..src.pyramid import cells_from_floats, ParadigmaticSystem
 
@@ -425,3 +427,12 @@ def test_sim_result_none_monotonic_tripartite():
     para.simulate(max_steps=100)
     assert para.state().sim_result.monotonic_states == 0
     assert para.state().sim_result.total_states == 100
+
+
+def test_export_result():
+    para = ParadigmaticSystem()
+    output_filename = 'test_output.csv'
+    expected_output_filename = 'tests/expected.csv'
+    para.export_results(output_filename)
+    assert cmp(output_filename, expected_output_filename, shallow=False)
+    remove(output_filename)

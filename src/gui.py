@@ -90,6 +90,10 @@ class KeyboardHandler(Widget):
             # reset simulation to latest state
             App.get_running_app().root.ids.grid.forward_all()
             return True
+        if keycode[1] == 'w':
+            # write the current results to file (hard-wired filepath for now)
+            App.get_running_app().root.ids.grid.export_results('results.csv')
+            return True
         if keycode[1] == 's':
             # run the predefined number of steps (max_steps)
             App.get_running_app().root.ids.grid.simulate()
