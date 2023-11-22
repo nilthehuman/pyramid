@@ -8,11 +8,12 @@ from enum import Enum
 from functools import partial
 from itertools import permutations, product
 from logging import warning
-from math import ceil
+from math import ceil, inf, log
 from multiprocessing import Pool
 from os.path import isfile
 from random import seed, random, randrange
 from re import search
+
 
 seed()
 
@@ -108,7 +109,7 @@ class ParadigmaticSystem:
         tripartite_colors: bool = True
         tripartite_cutoff: float = 0.8
         max_steps: int = 1000
-        # properties of the ParadigmaticSystem to check after each step
+        # the properties of the ParadigmaticSystem to check after each step
         # TODO: add type hints
         conjunctive_criterion = None
         monotonic_criterion   = None
@@ -402,7 +403,7 @@ class ParadigmaticSystem:
 
     def export_results(self, filename):
         """Write the current tally along with settings to a CSV file."""
-        csv_fields = [f.name for f in fields(ParadigmaticSystem.Settings) + fields(ParadigmaticSystem.SimResult)]
+        csv_fields = [f.name for f in fields(ParadigmaticSystem.Settings) + fields(ParadigmaticSystem.SimResult)] + ['conjunctive_log_odds', 'monotonic_log_odds']
         header = ','.join(csv_fields)
         file_has_header = False
         if isfile(filename):
@@ -419,6 +420,18 @@ class ParadigmaticSystem:
             if not file_has_header:
                 csv_writer.writeheader()
             data = asdict(self.settings) | asdict(self.state().sim_result)
+            try:
+                data['conjunctive_log_odds'] = log(float(data['conjunctive_states']) / (data['total_states'] - data['conjunctive_states']))
+            except ValueError:
+                data['conjunctive_log_odds'] = -inf
+            except ZeroDivisionError:
+                data['conjunctive_log_odds'] = inf
+            try:
+                data['monotonic_log_odds'] = log(float(data['monotonic_states']) / (data['total_states'] - data['monotonic_states']))
+            except ValueError:
+                data['monotonic_log_odds'] = -inf
+            except ZeroDivisionError:
+                data['monotonic_log_odds'] = inf
             csv_writer.writerow(data)
 
     def is_conjunctive_lax(self):
