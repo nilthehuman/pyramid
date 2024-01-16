@@ -187,6 +187,15 @@ class ParadigmaticSystem:
         """Return a copy of this ParadigmaticSystem object without the history."""
         return ParadigmaticSystem(state=deepcopy(self.state()))
 
+    def clone_binary(self):
+        """Return a copy of this ParadigmaticSystem with each cell's preference
+        rounded to False or True."""
+        para_binary = self.clone()
+        for row in range(len(self)):
+            for col in range(len(self[0])):
+                para_binary[row][col].value = self[row][col] >= 0.5
+        return para_binary
+
     def clone_quantized(self):
         """Return a copy of this ParadigmaticSystem mapped to the { A, AB, B } set."""
         para_quant = self.clone()
@@ -434,22 +443,19 @@ class ParadigmaticSystem:
                 data['monotonic_log_odds'] = inf
             csv_writer.writerow(data)
 
-    def is_conjunctive_lax(self):
+    def is_conjunctive_binary(self):
         """Check if the current state of the paradigmatic system shows a rectangular pattern."""
         assert self[0][0] is not None
-        para_truth = self
+        para_binary = self
         if type(self[0][0]) is not bool:
-            para_truth = self.clone()
-            for row in range(len(self)):
-                for col in range(len(self[0])):
-                    para_truth[row][col].value = self[row][col] >= 0.5
+            para_binary = self.clone_binary()
         rectangle_first_false = None
-        for row in para_truth:
+        for row in para_binary:
             first_false = None
             try:
                 first_false = row.index(False)
             except ValueError:
-                first_false = len(para_truth[0])
+                first_false = len(para_binary[0])
             if not all(not cell for cell in row[first_false + 1:]):
                 # discontiguous row
                 return False
@@ -460,22 +466,19 @@ class ParadigmaticSystem:
                 rectangle_first_false = first_false
         return True
 
-    def is_monotonic_lax(self):
+    def is_monotonic_binary(self):
         """Check if the current state of the paradigmatic system is compactly arranged."""
         assert self[0][0] is not None
-        para_truth = self
+        para_binary = self
         if type(self[0][0]) is not bool:
-            para_truth = self.clone()
-            for row in range(len(self)):
-                for col in range(len(self[0])):
-                    para_truth[row][col].value = self[row][col] >= 0.5
+            para_binary = self.clone_binary()
         last_row_first_false = None
-        for row in para_truth:
+        for row in para_binary:
             first_false = None
             try:
                 first_false = row.index(False)
             except ValueError:
-                first_false = len(para_truth[0])
+                first_false = len(para_binary[0])
             if not all(not cell for cell in row[first_false + 1:]):
                 # discontiguous row
                 return False
@@ -493,17 +496,14 @@ class ParadigmaticSystem:
             return 1 - self.settings.tripartite_cutoff <= bias <= self.settings.tripartite_cutoff
         if any(map(lambda row: any(vacillates(x) for x in row), self)):
             return False
-        return self.is_conjunctive_lax()
+        return self.is_conjunctive_binary()
 
     def is_monotonic_tripartite(self):
         """Check if the current state of the paradigmatic system is compactly arranged,
         quantizing to three discrete values: A, A/B and B."""
         assert self[0][0] is not None
         assert type(self[0][0].value) in (int, float)
-        para_quant = self.clone()
-        for row in range(len(self)):
-            for col in range(len(self[0])):
-                para_quant[row][col] = self.quantize(row, col)
+        para_quant = self.clone_quantized()
         for row in para_quant:
             for cell, next_cell in zip(row, row[1:]):
                 if cell < next_cell:
@@ -534,38 +534,35 @@ class ParadigmaticSystem:
                     return False
         return True
 
-    def can_be_made_monotonic_lax(self):
+    def can_be_made_monotonic_binary(self):
         """Check if the paradigmatic system can be rearranged to be compact."""
-        para_truth = self.clone()
-        for row in range(len(self)):
-            for col in range(len(self[0])):
-                para_truth[row][col].value = self[row][col] >= 0.5
+        para_binary = self.clone_binary()
         # isolate trivial (i.e. full or empty) rows and columns
-        full_rows  = set(filter(lambda row: all(para_truth[row]), range(len(para_truth))))
-        empty_rows = set(filter(lambda row: all(map(lambda x: not x, para_truth[row])), range(len(para_truth))))
-        full_cols  = set(filter(lambda col: all(row[col] for row in para_truth), range(len(para_truth[0]))))
-        empty_cols = set(filter(lambda col: all(map(lambda x: not x, (row[col] for row in para_truth))), range(len(para_truth[0]))))
-        if len(para_truth) - len(full_rows) - len(empty_rows) > 8 or len(para_truth) - len(full_cols) - len(empty_cols) > 8:
+        full_rows  = set(filter(lambda row: all(para_binary[row]), range(len(para_binary))))
+        empty_rows = set(filter(lambda row: all(map(lambda x: not x, para_binary[row])), range(len(para_binary))))
+        full_cols  = set(filter(lambda col: all(row[col] for row in para_binary), range(len(para_binary[0]))))
+        empty_cols = set(filter(lambda col: all(map(lambda x: not x, (row[col] for row in para_binary))), range(len(para_binary[0]))))
+        if len(para_binary) - len(full_rows) - len(empty_rows) > 8 or len(para_binary) - len(full_cols) - len(empty_cols) > 8:
             # no way, don't even try, we might run out of memory
             raise ValueError('Input paradigmatic system is too large, aborting calculation, sorry')
             return None
         # use brute force for now
-        row_permutations = [tuple(empty_rows) + perm + tuple(full_rows) for perm in permutations(set(range(len(para_truth))) - set(full_rows) - set(empty_rows))]
-        col_permutations = [tuple(full_cols) + perm + tuple(empty_cols) for perm in permutations(set(range(len(para_truth[0]))) - set(full_cols) - set(empty_cols))]
+        row_permutations = [tuple(empty_rows) + perm + tuple(full_rows) for perm in permutations(set(range(len(para_binary))) - set(full_rows) - set(empty_rows))]
+        col_permutations = [tuple(full_cols) + perm + tuple(empty_cols) for perm in permutations(set(range(len(para_binary[0]))) - set(full_cols) - set(empty_cols))]
         all_permutations = product(row_permutations, col_permutations)
         next_para = self.clone()
         next_para.store_snapshot()
         for row_permutation, col_permutation in all_permutations:
-            for row in range(len(para_truth)):
-                for col in range(len(para_truth[0])):
+            for row in range(len(para_binary)):
+                for col in range(len(para_binary[0])):
                     permuted_row = row_permutation[row]
                     permuted_col = col_permutation[col]
-                    if para_truth.state().row_labels:
-                        next_para.state().row_labels[row] = para_truth.state().row_labels[permuted_row]
-                    if para_truth.state().col_labels:
-                        next_para.state().col_labels[col] = para_truth.state().col_labels[permuted_col]
-                    next_para[row][col] = para_truth[permuted_row][permuted_col]
-            if next_para.is_monotonic_lax():
+                    if para_binary.state().row_labels:
+                        next_para.state().row_labels[row] = para_binary.state().row_labels[permuted_row]
+                    if para_binary.state().col_labels:
+                        next_para.state().col_labels[col] = para_binary.state().col_labels[permuted_col]
+                    next_para[row][col] = para_binary[permuted_row][permuted_col]
+            if next_para.is_monotonic_binary():
                 return next_para
         return None  # no solution
 
