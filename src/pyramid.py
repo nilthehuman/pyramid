@@ -569,6 +569,12 @@ class ParadigmaticSystem:
                 return next_para
         return None  # no solution
 
+    def can_be_made_monotonic_tripartite(self):
+        """Check if the paradigmatic system can be rearranged to be compact,
+        quantizing to three discrete values: A, A/B and B."""
+        para_quant = self.clone_quantized()
+        return para_quant.can_be_made_monotonic_strict()
+
     def can_be_made_monotonic_strict(self):
         """Check if the paradigmatic system can be rearranged to be compact,
         but make sure all cells are ordered strictly monotonically as well."""

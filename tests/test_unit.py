@@ -127,7 +127,7 @@ def test_is_monotonic_tripartite_false():
     assert not para.is_monotonic_tripartite()
 
 
-def test_can_be_made_monotonic_both_true():
+def test_can_be_made_monotonic_all_true():
     matrix = [ [1, 1, 1, 1, 0],
                [0, 0, 1, 0, 0],
                [0, 0, 1, 0, 0],
@@ -136,10 +136,11 @@ def test_can_be_made_monotonic_both_true():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     assert para.can_be_made_monotonic_lax()
+    assert para.can_be_made_monotonic_tripartite()
     assert para.can_be_made_monotonic_strict()
 
 
-def test_can_be_made_monotonic_both_false():
+def test_can_be_made_monotonic_all_false():
     matrix = [ [1, 1, 1, 1, 0],
                [0, 0, 1, 0, 1],
                [0, 0, 1, 0, 0],
@@ -148,10 +149,11 @@ def test_can_be_made_monotonic_both_false():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     assert not para.can_be_made_monotonic_lax()
+    assert not para.can_be_made_monotonic_tripartite()
     assert not para.can_be_made_monotonic_strict()
 
 
-def test_can_be_made_monotonic_only_strict_false():
+def test_can_be_made_monotonic_only_lax_true():
     matrix = [ [0.6, 1, 1, 1, 0],
                [0.7, 1, 1, 1, 0],
                [1.0, 0, 0, 0, 0],
@@ -160,6 +162,7 @@ def test_can_be_made_monotonic_only_strict_false():
     state = ParadigmaticSystem.State(matrix=cells_from_floats(matrix))
     para = ParadigmaticSystem(state=state)
     assert para.can_be_made_monotonic_lax()
+    assert not para.can_be_made_monotonic_tripartite()
     assert not para.can_be_made_monotonic_strict()
 
 
