@@ -159,14 +159,16 @@ class PyramidWindow(AnchorLayout):
     def find_rearranged_para(self, *_args):
         """Callback to actually crunch the numbers and come up with a compact paradigmatic system."""
         try:
-            para_rearranged = self.ids.grid.can_be_made_monotonic_strict()
+            good_permutation = self.ids.grid.can_be_made_monotonic_strict()
             self.ids.grid.hide_warning()
         except ValueError as error:
             self.ids.grid.hide_warning()
             self.ids.grid.show_warning(str(error))
             return
         # FIXME: we're supposed to check if Shift is still being held at this point but I don't know how
-        if para_rearranged:
+        if good_permutation:
+            para_rearranged = self.ids.grid.clone()
+            para_rearranged.permute(self.ids.grid, *good_permutation)
             self.overlay = ParadigmaticSystemGrid(para=para_rearranged)
             self.ids.grid_anchor.add_widget(self.overlay)
             self.overlay.update_all_cells()
@@ -251,6 +253,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         """Create text fields and buttons if needed and load the contents of the new paradigm we have been handed."""
         if not para:
             return
+        assert isinstance(para, ParadigmaticSystem)
         self.para_state = deepcopy(para.para_state)
         self.history = deepcopy(para.history)
         self.history_index = para.history_index

@@ -142,25 +142,38 @@ class ParadigmaticSystem:
     def __init__(self, state=None, history=None, history_index=None):
         self.settings = ParadigmaticSystem.Settings()
         # housekeeping variables
-        self.para_state = deepcopy(state)
-        self.history = deepcopy(history)
-        self.history_index = history_index
+        self.para_state = None
+        self.history = None
+        self.history_index = None
+        self.set_state(state, history, history_index)
         self.sim_status = ParadigmaticSystem.SimStatus.STOPPED
+        self.state().sim_result = ParadigmaticSystem.SimResult()
+
+    def set_state(self, state=None, history=None, history_index=None):
+        """The chief part of __init__: store state values in member variables."""
         if history:
+            # replace all of current history
             assert state is None
             assert history_index is not None
+            self.history = deepcopy(history)
             self.history_index = history_index
         elif state:
+            # keep current history, replace only last state
             assert history_index is None
             assert state.row_labels is None or len(state.row_labels) == len(set(state.row_labels))
             assert state.col_labels is None or len(state.col_labels) == len(set(state.col_labels))
+            self.para_state = deepcopy(state)
             # load initial state
             if not state.matrix:
                 for _ in state.row_labels:
                     self.para_state.matrix.append([None for _ in state.col_labels])
         else:
             self.para_state = ParadigmaticSystem.State()
-        self.state().sim_result = ParadigmaticSystem.SimResult()
+
+    # FIXME: this is probably unnecessary, safe to remove
+    # def set_para(self, other):
+    #     """Copy labels and matrix contents from the other object."""
+    #     self.set_state(other.para_state, other.history, other.history_index)
 
     def state(self):
         """The current matrix of bias values."""
@@ -193,7 +206,7 @@ class ParadigmaticSystem:
         para_binary = self.clone()
         for row in range(len(self)):
             for col in range(len(self[0])):
-                para_binary[row][col].value = self[row][col] >= 0.5
+                para_binary[row][col] = self[row][col] >= 0.5
         return para_binary
 
     def clone_quantized(self):
@@ -385,7 +398,12 @@ class ParadigmaticSystem:
                 if changed:
                     self.state().sim_result.conjunctive_changes += 1
         if self.settings.monotonic_criterion is not None:
-            if self.settings.monotonic_criterion(self):
+            if rearranged := self.settings.monotonic_criterion(self):
+                row_permutation, col_permutation = rearranged
+                # change to the new arrangement and keep the monotonic property
+                if (row_permutation != list(range(len(row_permutation))) or
+                    col_permutation != list(range(len(col_permutation)))):
+                    self.permute(self, row_permutation, col_permutation)
                 self.state().sim_result.monotonic_states += 1
                 if changed:
                     self.state().sim_result.monotonic_changes += 1
@@ -534,6 +552,26 @@ class ParadigmaticSystem:
                     return False
         return True
 
+    def permute(self, original_para, row_permutation, col_permutation):
+        """Destructively assign a permutation of the state of the original paradigm."""
+        if self is original_para:
+            # avoid changing matrix while iterating through it
+            original_para = self.clone()
+        for row in range(len(original_para)):
+            for col in range(len(original_para[0])):
+                permuted_row = row_permutation[row]
+                permuted_col = col_permutation[col]
+                if original_para.state().row_labels:
+                    self.state().row_labels[row] = original_para.state().row_labels[permuted_row]
+                if original_para.state().col_labels:
+                    self.state().col_labels[col] = original_para.state().col_labels[permuted_col]
+                self[row][col] = original_para[permuted_row][permuted_col]
+        if len(original_para.state().last_pick):
+            # point to the new cell
+            new_row = row_permutation[original_para.state().last_pick[0]]
+            new_col = col_permutation[original_para.state().last_pick[1]]
+            self.state().last_pick = (new_row, new_col)
+
     def can_be_made_monotonic_binary(self):
         """Check if the paradigmatic system can be rearranged to be compact."""
         para_binary = self.clone_binary()
@@ -553,17 +591,9 @@ class ParadigmaticSystem:
         next_para = self.clone()
         next_para.store_snapshot()
         for row_permutation, col_permutation in all_permutations:
-            for row in range(len(para_binary)):
-                for col in range(len(para_binary[0])):
-                    permuted_row = row_permutation[row]
-                    permuted_col = col_permutation[col]
-                    if para_binary.state().row_labels:
-                        next_para.state().row_labels[row] = para_binary.state().row_labels[permuted_row]
-                    if para_binary.state().col_labels:
-                        next_para.state().col_labels[col] = para_binary.state().col_labels[permuted_col]
-                    next_para[row][col] = para_binary[permuted_row][permuted_col]
+            next_para.permute(self, row_permutation, col_permutation)
             if next_para.is_monotonic_binary():
-                return next_para
+                return (row_permutation, col_permutation)
         return None  # no solution
 
     def can_be_made_monotonic_tripartite(self):
@@ -584,17 +614,9 @@ class ParadigmaticSystem:
         next_para = self.clone()
         next_para.store_snapshot()
         for row_permutation, col_permutation in all_permutations:
-            for row in range(len(self)):
-                for col in range(len(self[0])):
-                    permuted_row = row_permutation[row]
-                    permuted_col = col_permutation[col]
-                    if self.state().row_labels:
-                        next_para.state().row_labels[row] = self.state().row_labels[permuted_row]
-                    if self.state().col_labels:
-                        next_para.state().col_labels[col] = self.state().col_labels[permuted_col]
-                    next_para[row][col] = self[permuted_row][permuted_col]
+            next_para.permute(self, row_permutation, col_permutation)
             if next_para.is_monotonic_strict():
-                return next_para
+                return (row_permutation, col_permutation)
         return None
 
 #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
