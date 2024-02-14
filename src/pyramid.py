@@ -398,15 +398,25 @@ class ParadigmaticSystem:
                 if changed:
                     self.state().sim_result.conjunctive_changes += 1
         if self.settings.monotonic_criterion is not None:
-            if rearranged := self.settings.monotonic_criterion(self):
-                row_permutation, col_permutation = rearranged
-                # change to the new arrangement and keep the monotonic property
-                if (row_permutation != list(range(len(row_permutation))) or
-                    col_permutation != list(range(len(col_permutation)))):
-                    self.permute(self, row_permutation, col_permutation)
-                self.state().sim_result.monotonic_states += 1
-                if changed:
-                    self.state().sim_result.monotonic_changes += 1
+            monotonic = self.settings.monotonic_criterion(self)
+            if type(monotonic) is bool:
+                # monotonic_criterion is an "is_..." kind of criterion,
+                # so no rearranging required by the user
+                if monotonic:
+                    self.state().sim_result.monotonic_states += 1
+            else:
+                # monotonic_criterion is a "can_be_made_..." kind of criterion,
+                # so rearranged matrices are also checked
+                assert type(monotonic) is tuple or monotonic is None
+                if monotonic is not None:
+                    row_permutation, col_permutation = monotonic
+                    # change to the new arrangement and keep the monotonic property
+                    if (row_permutation != list(range(len(row_permutation))) or
+                        col_permutation != list(range(len(col_permutation)))):
+                        self.permute(self, row_permutation, col_permutation)
+                    self.state().sim_result.monotonic_states += 1
+                    if changed:
+                        self.state().sim_result.monotonic_changes += 1
         self.state().sim_result.total_states += 1
         if changed:
             self.state().sim_result.total_changes += 1
