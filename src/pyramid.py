@@ -121,6 +121,8 @@ class ParadigmaticSystem:
     @dataclass
     class SimResult:
         """Struct written by the simulate method tallying the number of monotonic vs non-monotonic states."""
+        current_state_conjunctive: bool = True
+        current_state_monotonic:   bool = True
         conjunctive_states:  int = 0
         conjunctive_changes: int = 0
         monotonic_states:    int = 0
@@ -392,24 +394,29 @@ class ParadigmaticSystem:
                         changed |= self.nudge(current_row, current_col, outcome)
         else:
             raise ValueError("The EffectDir enum has no such value:", self.settings.effect_direction)
+        self.eval_criteria(changed)
+
+    def eval_criteria(self, changed=False):
+        """Check the preselected criteria for the lastest state of the matrix."""
         if self.settings.conjunctive_criterion is not None:
-            if self.settings.conjunctive_criterion(self):
+            self.state().sim_result.current_state_conjunctive = self.settings.conjunctive_criterion(self)
+            if self.state().sim_result.current_state_conjunctive:
                 self.state().sim_result.conjunctive_states += 1
                 if changed:
                     self.state().sim_result.conjunctive_changes += 1
         if self.settings.monotonic_criterion is not None:
-            monotonic = self.settings.monotonic_criterion(self)
-            if type(monotonic) is bool:
+            self.state().sim_result.current_state_monotonic = self.settings.monotonic_criterion(self)
+            if type(self.state().sim_result.current_state_monotonic) is bool:
                 # monotonic_criterion is an "is_..." kind of criterion,
                 # so no rearranging required by the user
-                if monotonic:
+                if self.state().sim_result.current_state_monotonic:
                     self.state().sim_result.monotonic_states += 1
             else:
                 # monotonic_criterion is a "can_be_made_..." kind of criterion,
                 # so rearranged matrices are also checked
-                assert type(monotonic) is tuple or monotonic is None
-                if monotonic is not None:
-                    row_permutation, col_permutation = monotonic
+                assert type(self.state().sim_result.current_state_monotonic) is tuple or self.state().sim_result.current_state_monotonic is None
+                if self.state().sim_result.current_state_monotonic is not None:
+                    row_permutation, col_permutation = self.state().sim_result.current_state_monotonic
                     # change to the new arrangement and keep the monotonic property
                     if (row_permutation != list(range(len(row_permutation))) or
                         col_permutation != list(range(len(col_permutation)))):

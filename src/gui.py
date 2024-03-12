@@ -130,6 +130,8 @@ class PyramidWindow(AnchorLayout):
         self.overlay = None
         self.ids.grid.set_para(para)
         self.ids.settings_results_label.update()
+        self.ids.conjunctive_label.update()
+        self.ids.monotonic_label.update()
 
     def toggle_help_window(self, *args):
         """Show or hide fullscreen Label with help text."""
@@ -455,6 +457,8 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
                         assert type(child) == Widget
         if App.get_running_app().root:
             App.get_running_app().root.ids.settings_results_label.update()
+            App.get_running_app().root.ids.conjunctive_label.update()
+            App.get_running_app().root.ids.monotonic_label.update()
 
 
 class ParadigmaticSystemText(TextInput):
@@ -541,6 +545,10 @@ class CellEditText(TextInput):
             except NameError:
                 self.parent.parent.show_warning("Matrix values are supposed to be numeric or Boolean.")
                 pass
+        # TODO: this bit should probably be factored out
+        App.get_running_app().root.ids.grid.eval_criteria()
+        App.get_running_app().root.ids.conjunctive_label.update()
+        App.get_running_app().root.ids.monotonic_label.update()
 
     def focus_changed(self, instance, focused=None):
         """Get rid of this TextInput box if the user has clicked elsewhere."""
@@ -574,10 +582,31 @@ class InfoLabel(WarningLabel):
     pass
 
 
+class CriterionLabel(Label):
+
+    # you can't bind to PyramidWindow in __init__ because of Kivy's initialization order
+    def update(self):
+        """Set label according to the current status of the criterion."""
+        # this relative reference thing is getting a bit out of hand...
+        results = self.parent.parent.parent.parent.ids.grid.state().sim_result
+        if self.criterion_name == 'conjunctive':
+            satisfied = results.current_state_conjunctive
+        elif self.criterion_name == 'monotonic':
+            satisfied = results.current_state_monotonic
+        else:
+            assert False
+        if satisfied:
+            self.text = self.criterion_name.upper()
+            self.background_color = Color(0.4, 0.75, 0.15).rgba
+        else:
+            self.text = 'NOT ' + self.criterion_name.upper()
+            self.background_color = Color(0.85, 0.25, 0.18).rgba
+
+
 class SettingsAndResultsLabel(Label):
 
     def update(self):
-        "Display latest information about the simulation's state and settings."
+        """Display latest information about the simulation's state and settings."""
         settings = self.parent.parent.ids.grid.settings
         results = self.parent.parent.ids.grid.state().sim_result
         text = (f'''[size=20][b]______ Settings ______[/b][/size]

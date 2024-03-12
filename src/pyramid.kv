@@ -23,6 +23,25 @@
     AnchorLayout:
         size_hint: 1, 1
         anchor_x: 'right'
+        anchor_y: 'top'
+        AnchorLayout:
+            size_hint: None, 0.8
+            width: self.height
+            anchor_x: 'center'
+            anchor_y: 'top'
+            BoxLayout:
+                size_hint: None, None
+                size: self.minimum_size
+                spacing: 20
+                CriterionLabel:
+                    id: conjunctive_label
+                    criterion_name: 'conjunctive'
+                CriterionLabel:
+                    id: monotonic_label
+                    criterion_name: 'monotonic'
+    AnchorLayout:
+        size_hint: 1, 1
+        anchor_x: 'right'
         anchor_y: 'center'
         AnchorLayout:
             id: grid_anchor
@@ -127,6 +146,25 @@
 
 <InfoLabel>
     background_color: 0.4, 0.75, 0.15, 1
+
+
+<CriterionLabel>
+    size_hint: None, None
+    width: 200
+    height: 40
+    font_size: 18
+    background_color: 0.4, 0.75, 0.15, 1
+    canvas.before:
+        Color:
+            rgba: self.background_color
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgb: 0, 0, 0
+        Line:
+            width: 1
+            rectangle: self.x, self.y, self.width, self.height
 
 
 <SettingsAndResultsLabel>
