@@ -213,6 +213,18 @@ class PyramidWindow(AnchorLayout):
             self.ids.grid.hide_warning()
 
 
+class ScaledFontBehavior:
+
+    def __init__(self, **_kwargs):
+        self.orig_font_size = self.font_size
+        self.resize_text()
+        Window.bind(size=self.resize_text)
+
+    def resize_text(self, *_args):
+        """Adjust font size proportionally to Window size."""
+        self.font_size = int(self.orig_font_size * Window.height / 600)
+
+
 class HelpButton(Button):
 
     def __init__(self, **kwargs):
@@ -226,15 +238,16 @@ class HelpButton(Button):
         return True
 
 
-class HelpWindow(Label):
+class HelpWindow(ScaledFontBehavior, Label):
 
     def __init__(self, para=None, **kwargs):
-        super().__init__(**kwargs)
+        super(ScaledFontBehavior, self).__init__(**kwargs)
+        super(HelpWindow, self).__init__()
         # block click events from Widgets below
         self.bind(on_touch_down=lambda *_: True)
         self.bind(on_touch_up=self.toggle_help_window)
         self.text = dedent('''\
-            [size=20][b]Help[/b][/size]\n
+            [size=32][b]Help[/b][/size]\n
             Each matrix cell shows the prevalence (the "bias") of a certain morphological phenomenon
             when the morphemes in its row and column are combined. Bias values range from 0 to 1.\n
             Click on any row or column label to edit the morpheme corresponding to that row or column.
@@ -262,24 +275,30 @@ class HelpWindow(Label):
 
 class ControlPanel(BoxLayout):
 
+    class ControlPanelButton(ScaledFontBehavior, Button):
+
+        def __init__(self, **kwargs):
+            super(ScaledFontBehavior, self).__init__(**kwargs)
+            super(ControlPanel.ControlPanelButton, self).__init__()
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        rewind_all_button = Button(font_size=48, text='I<<')
+        rewind_all_button = self.ControlPanelButton(font_size=48, text='I<<')
         rewind_all_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.rewind_all())
         self.add_widget(rewind_all_button)
-        seek_prev_button = Button(font_size=48, text='<<')
+        seek_prev_button = self.ControlPanelButton(font_size=48, text='<<')
         seek_prev_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.seek_prev_change())
         self.add_widget(seek_prev_button)
-        undo_step_button = Button(font_size=48, text='<')
+        undo_step_button = self.ControlPanelButton(font_size=48, text='<')
         undo_step_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.undo_step())
         self.add_widget(undo_step_button)
-        do_step_button = Button(font_size=48, text='>')
+        do_step_button = self.ControlPanelButton(font_size=48, text='>')
         do_step_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.step())
         self.add_widget(do_step_button)
-        seek_next_change = Button(font_size=48, text='>>')
+        seek_next_change = self.ControlPanelButton(font_size=48, text='>>')
         seek_next_change.bind(on_release=lambda _: App.get_running_app().root.ids.grid.seek_next_change())
         self.add_widget(seek_next_change)
-        forward_all_button = Button(font_size=48, text='>>I')
+        forward_all_button = self.ControlPanelButton(font_size=48, text='>>I')
         forward_all_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.simulate())
         self.add_widget(forward_all_button)
 
@@ -519,10 +538,11 @@ class ParadigmaticSystemText(TextInput):
             self.parent.update_label(row=self.row, col=self.col, text=self.text)
 
 
-class ParadigmaticSystemCell(AnchorLayout, Button):
+class ParadigmaticSystemCell(ScaledFontBehavior, AnchorLayout, Button):
 
     def __init__(self, row, col, **kwargs):
-        super().__init__(**kwargs)
+        super(ScaledFontBehavior, self).__init__(**kwargs)
+        super(ParadigmaticSystemCell, self).__init__()
         self.row = row
         self.col = col
         self.bind(on_release=self.edit_bias)
@@ -643,14 +663,17 @@ class CriterionLabel(Label):
             self.background_color = Color(0.85, 0.25, 0.18).rgba
 
 
-class SettingsAndResultsLabel(Label):
+class SettingsAndResultsLabel(ScaledFontBehavior, Label):
+
+    def __init__(self, **kwargs):
+        super(ScaledFontBehavior, self).__init__(**kwargs)
+        super(SettingsAndResultsLabel, self).__init__()
 
     def update(self):
         """Display latest information about the simulation's state and settings."""
         settings = self.parent.parent.ids.grid.settings
         results = self.parent.parent.ids.grid.state().sim_result
-        text = (f'''[size=20][b]______ Settings ______[/b][/size]
-            effect_direction = {settings.effect_direction}
+        text = (f'''[size=29][b]______ Settings ______[/b][/size]
             effect_radius = {settings.effect_radius}
             cells_own_weight = {settings.cells_own_weight}
             no_edges = {settings.no_edges}\n''' +
@@ -659,7 +682,7 @@ class SettingsAndResultsLabel(Label):
             (f'tripartite_cutoff = {settings.tripartite_cutoff}\n' if settings.tripartite_colors else '') +
             f'''max_steps = {settings.max_steps}
 
-            [size=20][b]______ Results ______[/b][/size]
+            [size=29][b]______ Results ______[/b][/size]
             conjunctive_states = {results.conjunctive_states}
             monotonic_states = {results.monotonic_states}
             total_states = {results.total_states}
