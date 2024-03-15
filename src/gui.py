@@ -129,6 +129,10 @@ class PyramidWindow(AnchorLayout):
         self.help_window = None
         self.overlay = None
         self.ids.grid.set_para(para)
+        self.update_information_labels()
+
+    def update_information_labels(self):
+        """Update and refresh all texts on screen indicating the state of the simulation."""
         self.ids.settings_results_label.update()
         self.ids.conjunctive_label.update()
         self.ids.monotonic_label.update()
@@ -437,6 +441,8 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         if self[row][col].value != new_bias:
             self.invalidate_future_history()
             self.store_snapshot()
+            self.state().total_steps += 1
+            self.state().last_pick = row, col
             self[row][col].value = new_bias
             self.get_cell(row, col).update()
 
@@ -456,9 +462,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
                         # this must be the blank spaceholder widget in the top left corner
                         assert type(child) == Widget
         if App.get_running_app().root:
-            App.get_running_app().root.ids.settings_results_label.update()
-            App.get_running_app().root.ids.conjunctive_label.update()
-            App.get_running_app().root.ids.monotonic_label.update()
+            App.get_running_app().root.update_information_labels()
 
 
 class ParadigmaticSystemText(TextInput):
@@ -524,7 +528,6 @@ class CellEditText(TextInput):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         App.get_running_app().root.keyboardhandler.disable()
-        self.bind(on_text_validate=self.set_new_value)
         self.bind(focus=self.focus_changed)
 
     def set_new_value(self, instance):
@@ -545,10 +548,8 @@ class CellEditText(TextInput):
             except NameError:
                 self.parent.parent.show_warning("Matrix values are supposed to be numeric or Boolean.")
                 pass
-        # TODO: this bit should probably be factored out
         App.get_running_app().root.ids.grid.eval_criteria()
-        App.get_running_app().root.ids.conjunctive_label.update()
-        App.get_running_app().root.ids.monotonic_label.update()
+        App.get_running_app().root.update_information_labels()
 
     def focus_changed(self, instance, focused=None):
         """Get rid of this TextInput box if the user has clicked elsewhere."""
