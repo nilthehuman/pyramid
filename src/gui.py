@@ -714,8 +714,8 @@ class SettingsAndResultsLabel(ScaledFontBehavior, Label):
 
 class PyramidApp(App):
     def build(self):
-        state_5x5 = ParadigmaticSystem.State( row_labels=['bordó', 'millió', 'szigorú', 'józan', 'új'],
-                                              col_labels=['-n', '-k', '-bb', '-t', '-nAk'],
+        state_5x5 = ParadigmaticSystem.State( row_labels=['root A', 'root B', 'root C', 'root D', 'root E'],
+                                              col_labels=['suffix 1', 'suffix 2', 'suffix 3', 'suffix 4', 'suffix 5'],
                                               matrix=cells_from_floats(
                                                          [ [0, 0, 0, 0, 0],
                                                            [0, 0, 0, 0, 0],
