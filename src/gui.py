@@ -427,7 +427,18 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         """Jump to the next state where a cell changes its color."""
         if self.timed_callback:
             self.start_stop_simulation()
+        if self.state().total_steps < self.settings.max_steps and self.history_index > len(self.history) - 10:
+            # this might take a while, let the user know we didn't hang
+            self.show_info("Seeking next change...")
+            Clock.schedule_once(self.find_next_change, 0.1)
+        else:
+            super().seek_next_change()
+            self.show_current_cell_frame(True)
+
+    def find_next_change(self, *_args):
+        """Actually do the number crunching part of seek_next_change."""
         super().seek_next_change()
+        self.hide_info()
         self.show_current_cell_frame(True)
 
     def delete_rest_of_history(self):
