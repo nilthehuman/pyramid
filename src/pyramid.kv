@@ -51,6 +51,11 @@
             anchor_y: 'center'
             ParadigmaticSystemGrid:
                 id: grid
+    AnchorLayout:
+        id: control_panel_anchor
+        size_hint: 1, 1
+        anchor_x: 'center'
+        anchor_y: 'bottom'
 
 
 <HelpButton>
@@ -73,6 +78,10 @@
         Rectangle:
             size: self.size
             pos: self.pos
+
+
+<ControlPanel>
+    size_hint: 1, 0.1
 
 
 <ParadigmaticSystemGrid>

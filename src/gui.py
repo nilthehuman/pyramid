@@ -10,6 +10,7 @@ from kivy.clock import Clock
 from kivy.graphics import Color
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
@@ -112,6 +113,9 @@ class KeyboardHandler(Widget):
         if keycode[1] == 'enter' and 'shift' in modifiers:
             App.get_running_app().root.replace_para_with_overlay()
             return True
+        if keycode[1] == 'p':
+            App.get_running_app().root.toggle_control_panel()
+            return True
         return False
 
     def on_keyreleased(self, _keyboard, keycode):
@@ -127,9 +131,11 @@ class PyramidWindow(AnchorLayout):
     def __init__(self, para=None, **kwargs):
         super().__init__(**kwargs)
         self.help_window = None
+        self.control_panel = None
         self.overlay = None
         self.ids.grid.set_para(para)
         self.update_information_labels()
+        self.toggle_control_panel()
 
     def update_information_labels(self):
         """Update and refresh all texts on screen indicating the state of the simulation."""
@@ -152,6 +158,15 @@ class PyramidWindow(AnchorLayout):
             self.remove_widget(self.help_window)
             self.help_window = None
             self.keyboardhandler.enable()
+
+    def toggle_control_panel(self, *_args):
+        """Show or hide ControlPanel widget at the bottom."""
+        if not self.control_panel:
+            self.control_panel = ControlPanel()
+            self.ids.control_panel_anchor.add_widget(self.control_panel)
+        else:
+            self.ids.control_panel_anchor.remove_widget(self.control_panel)
+            self.control_panel = None
 
     def show_overlay_grid(self):
         """Show paradigmatic system rearranged to be compact and monotonic."""
@@ -243,6 +258,30 @@ class HelpWindow(Label):
         """Show or hide fullscreen Label with help text."""
         App.get_running_app().root.toggle_help_window(args)
         return True
+
+
+class ControlPanel(BoxLayout):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        rewind_all_button = Button(font_size=48, text='I<<')
+        rewind_all_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.rewind_all())
+        self.add_widget(rewind_all_button)
+        seek_prev_button = Button(font_size=48, text='<<')
+        seek_prev_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.seek_prev_change())
+        self.add_widget(seek_prev_button)
+        undo_step_button = Button(font_size=48, text='<')
+        undo_step_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.undo_step())
+        self.add_widget(undo_step_button)
+        do_step_button = Button(font_size=48, text='>')
+        do_step_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.step())
+        self.add_widget(do_step_button)
+        seek_next_change = Button(font_size=48, text='>>')
+        seek_next_change.bind(on_release=lambda _: App.get_running_app().root.ids.grid.seek_next_change())
+        self.add_widget(seek_next_change)
+        forward_all_button = Button(font_size=48, text='>>I')
+        forward_all_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.simulate())
+        self.add_widget(forward_all_button)
 
 
 class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
