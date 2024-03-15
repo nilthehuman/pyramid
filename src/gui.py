@@ -181,9 +181,9 @@ class PyramidWindow(AnchorLayout):
         """Callback to actually crunch the numbers and come up with a compact paradigmatic system."""
         try:
             good_permutation = self.ids.grid.can_be_made_monotonic_strict()
-            self.ids.grid.hide_warning()
+            self.ids.grid.hide_info()
         except ValueError as error:
-            self.ids.grid.hide_warning()
+            self.ids.grid.hide_info()
             self.ids.grid.show_warning(str(error))
             return
         # FIXME: we're supposed to check if Shift is still being held at this point but I don't know how
@@ -310,6 +310,8 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         GridLayout.__init__(self, **kwargs)
         self.warning_label = None
         self.timed_callback = None
+        # a convenient alias to maintain symmetry with show_info
+        self.hide_info = self.hide_warning
         if para:
             self.set_para(para)
 
@@ -354,7 +356,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         """Display a popup on screen about some expected event."""
         # FIXME: this is probably bad UI design, but an info label always replaces a warning
         if self.warning_label:
-            self.hide_warning()
+            self.hide_info()
         self.warning_label = InfoLabel()
         self.warning_label.text = message
         self.parent.add_widget(self.warning_label)
@@ -484,7 +486,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
     def run_simulation(self, _elapsed_time):
         """Callback to run the simulation up to the predefined number of maximum steps."""
         super().simulate()
-        self.hide_warning()
+        self.hide_info()
 
     def update_label(self, row=None, col=None, text=None):
         """Set the user's desired string as row or column label in the paradigm."""
