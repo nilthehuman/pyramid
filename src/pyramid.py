@@ -295,6 +295,9 @@ class ParadigmaticSystem:
     @with_history
     def seek_prev_change(self):
         """Jump to the last state where a cell changed its color."""
+        if self.history_index == 0:
+            self.show_warning("Already at oldest state in history.")
+            return
         para_quant = self.clone_quantized()
         change = False
         while not change and self.history_index > 0:
@@ -305,6 +308,9 @@ class ParadigmaticSystem:
     @with_history
     def seek_next_change(self):
         """Jump to the next state where a cell changes its color."""
+        if self.state().total_steps == self.settings.max_steps:
+            self.show_warning("Maximum number of steps reached.")
+            return
         para_quant = self.clone_quantized()
         change = False
         while not change and self.history_index < self.settings.max_steps:
