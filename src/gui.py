@@ -44,7 +44,15 @@ class KeyboardHandler(Widget):
     def on_keypressed(self, _keyboard, keycode, _text, modifiers):
         """Catch and handle user keypresses corresponding to app functions."""
         if not self.enabled:
+            # except we're still responsible for dismissing the help window
+            if App.get_running_app().root.help_window:
+                if keycode[1] == 'escape':
+                    App.get_running_app().root.toggle_help_window()
+                # block all other keypresses too
+                return True
             return False
+        # we should be disabled if the help window is being shown
+        assert App.get_running_app().root.help_window is None
         if App.get_running_app().root.ids.grid.warning_label:
             if keycode[1] in ['escape', 'right', 'left', 'pageup', 'pagedown',
                               'home', 'end', 'spacebar', 'delete']:
@@ -52,11 +60,6 @@ class KeyboardHandler(Widget):
             if keycode[1] == 'escape':
                 return True
             # fallthrough on purpose
-        if App.get_running_app().root.help_window:
-            if keycode[1] == 'escape':
-                App.get_running_app().root.toggle_help_window()
-            # block all other keypresses too
-            return True
         if keycode[1] == 'right' and 'ctrl' not in modifiers:
             # run a single step of the simulation
             App.get_running_app().root.ids.grid.step()
