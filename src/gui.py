@@ -719,8 +719,12 @@ class PyramidApp(App):
                                                              [1, 1, 1, 1, 1, 0, 0, 0, 0, 0]
                                                            ]) )
         para = ParadigmaticSystem(state_5x5)
-        para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_tripartite
-        para.settings.monotonic_criterion = ParadigmaticSystem.can_be_made_monotonic_tripartite
+        if para.settings.tripartite_colors:
+            para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_tripartite
+            para.settings.monotonic_criterion = ParadigmaticSystem.can_be_made_monotonic_tripartite
+        else:
+            para.settings.conjunctive_criterion = ParadigmaticSystem.is_conjunctive_strict
+            para.settings.monotonic_criterion = ParadigmaticSystem.can_be_made_monotonic_strict
         para.track_history(True)
         root = PyramidWindow(para)
         root.keyboardhandler = KeyboardHandler()
