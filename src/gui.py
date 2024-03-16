@@ -509,13 +509,18 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
 
     def update_cell(self, row, col, new_bias):
         """Set the bias of a cell in the underlying ParadigmaticSystem object to a new value."""
-        if self[row][col].value != new_bias:
-            self.invalidate_future_history()
-            self.store_snapshot()
-            self.state().total_steps += 1
-            self.state().last_pick = row, col
-            self[row][col].value = new_bias
-            self.get_cell(row, col).update()
+        if self[row][col].value == new_bias:
+            return False
+        self.invalidate_future_history()
+        self.store_snapshot()
+        self.state().total_steps += 1
+        self.state().last_pick = row, col
+        quant_before = self.quantize(row, col)
+        self[row][col].value = new_bias
+        quant_after = self.quantize(row, col)
+        self.state().sim_result.current_state_changed = quant_before != quant_after
+        self.get_cell(row, col).update()
+        return True
 
     def update_all_cells(self):
         """Sync all visual grid cells with the cells of the underlying ParadigmaticSystem object."""
@@ -610,20 +615,21 @@ class CellEditText(TextInput):
             new_value = float(self.text)
             # clamp to [0, 1]
             new_value = max(0, min(1, new_value))
-            self.parent.parent.update_cell(self.parent.row, self.parent.col, new_value)
+            updated = self.parent.parent.update_cell(self.parent.row, self.parent.col, new_value)
         except ValueError:
             try:
                 if "true" == self.text.lower():
                     new_value = True
                 elif "false" == self.text.lower():
                     new_value = False
-                self.parent.parent.update_cell(self.parent.row, self.parent.col, new_value)
+                updated = self.parent.parent.update_cell(self.parent.row, self.parent.col, new_value)
             except NameError:
                 self.parent.parent.show_warning("Matrix values are supposed to be numeric or Boolean.")
                 pass
-        App.get_running_app().root.ids.grid.eval_criteria()
-        App.get_running_app().root.ids.grid.update_all_cells()
-        App.get_running_app().root.update_information_labels()
+        if updated:
+            App.get_running_app().root.ids.grid.eval_criteria()
+            App.get_running_app().root.ids.grid.update_all_cells()
+            App.get_running_app().root.update_information_labels()
 
     def focus_changed(self, instance, focused=None):
         """Get rid of this TextInput box if the user has clicked elsewhere."""
