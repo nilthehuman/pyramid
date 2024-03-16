@@ -627,6 +627,7 @@ class CellEditText(TextInput):
                 self.parent.parent.show_warning("Matrix values are supposed to be numeric or Boolean.")
                 pass
         App.get_running_app().root.ids.grid.eval_criteria()
+        App.get_running_app().root.ids.grid.update_all_cells()
         App.get_running_app().root.update_information_labels()
 
     def focus_changed(self, instance, focused=None):
