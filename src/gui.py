@@ -601,10 +601,11 @@ class ParadigmaticSystemCell(ScaledFontBehavior, AnchorLayout, Button):
                                                          [(1-cell) * c for c in grapefruit.rgb])]
 
 
-class CellEditText(TextInput):
+class CellEditText(ScaledFontBehavior, TextInput):
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super(ScaledFontBehavior, self).__init__(**kwargs)
+        super(CellEditText, self).__init__()
         App.get_running_app().root.keyboardhandler.disable()
         self.bind(focus=self.focus_changed)
 
