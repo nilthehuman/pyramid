@@ -398,13 +398,11 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         """Perform one iteration of the simulation (thin wrapper around ParadigmaticSystem.step)."""
         super().step()
         self.update_all_cells()
-        self.show_current_cell_frame(True)
 
     def undo_step(self):
         """Revert one iteration of the simulation (thin wrapper around ParadigmaticSystem.undo_step)."""
         super().undo_step()
         self.update_all_cells()
-        self.show_current_cell_frame(True)
 
     def rewind_all(self):
         """Revert simulation all the way to initial state."""
@@ -412,7 +410,6 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
             self.start_stop_simulation()
         super().rewind_all()
         self.update_all_cells()
-        self.show_current_cell_frame(True)
 
     def forward_all(self):
         """Redo all iterations until the latest state."""
@@ -420,7 +417,6 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
             self.start_stop_simulation()
         super().forward_all()
         self.update_all_cells()
-        self.show_current_cell_frame(True)
 
     def seek_prev_change(self):
         """Jump to the last state where a cell changed its color."""
@@ -441,13 +437,11 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
             Clock.schedule_once(self.find_next_change, 0.1)
         else:
             super().seek_next_change()
-            self.show_current_cell_frame(True)
 
     def find_next_change(self, *_args):
         """Actually do the number crunching part of seek_next_change."""
         super().seek_next_change()
         self.hide_info()
-        self.show_current_cell_frame(True)
 
     def delete_rest_of_history(self):
         """Get rid of history items forward from current state."""
@@ -538,6 +532,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
                     except (AttributeError, TypeError):
                         # this must be the blank spaceholder widget in the top left corner
                         assert type(child) == Widget
+        self.show_current_cell_frame(True)
         if App.get_running_app().root:
             App.get_running_app().root.update_information_labels()
 
