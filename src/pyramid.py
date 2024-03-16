@@ -591,8 +591,8 @@ class ParadigmaticSystem:
                 self[row][col] = original_para[permuted_row][permuted_col]
         if len(original_para.state().last_pick):
             # point to the new cell
-            new_row = row_permutation[original_para.state().last_pick[0]]
-            new_col = col_permutation[original_para.state().last_pick[1]]
+            new_row = row_permutation.index(original_para.state().last_pick[0])
+            new_col = col_permutation.index(original_para.state().last_pick[1])
             self.state().last_pick = (new_row, new_col)
 
     def can_be_made_monotonic_binary(self):
