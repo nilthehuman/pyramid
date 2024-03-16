@@ -123,6 +123,7 @@ class ParadigmaticSystem:
         """Struct written by the simulate method tallying the number of monotonic vs non-monotonic states."""
         current_state_conjunctive: bool = True
         current_state_monotonic:   bool = True
+        current_state_changed:     bool = False
         conjunctive_states:  int = 0
         conjunctive_changes: int = 0
         monotonic_states:    int = 0
@@ -183,6 +184,14 @@ class ParadigmaticSystem:
         if self.history:
             return self.history[self.history_index]
         return self.para_state
+
+    def prev_state(self):
+        """The previous matrix of bias values."""
+        assert self.history is not None
+        try:
+            return self.history[self.history_index - 1]
+        except IndexError:
+            return None
 
     def __repr__(self):
         def inner_str(row):
@@ -298,12 +307,10 @@ class ParadigmaticSystem:
         if self.history_index == 0:
             self.show_warning("Already at oldest state in history.")
             return
-        para_quant = self.clone_quantized()
-        change = False
-        while not change and self.history_index > 0:
-            row, col = self.state().last_pick
+        while not self.state().sim_result.current_state_changed and self.history_index > 0:
             self.undo_step()
-            change = para_quant[row][col] != self.quantize(row, col)
+        if 0 < self.history_index:
+            self.undo_step()
 
     @with_history
     def seek_next_change(self):
@@ -311,12 +318,9 @@ class ParadigmaticSystem:
         if self.state().total_steps == self.settings.max_steps:
             self.show_warning("Maximum number of steps reached.")
             return
-        para_quant = self.clone_quantized()
-        change = False
-        while not change and self.history_index < self.settings.max_steps:
+        self.step()
+        while not self.state().sim_result.current_state_changed and self.history_index < self.settings.max_steps:
             self.step()
-            row, col = self.state().last_pick
-            change = para_quant[row][col] != self.quantize(row, col)
 
     @with_history
     def delete_rest_of_history(self):
@@ -336,14 +340,17 @@ class ParadigmaticSystem:
     def quantize(self, row, col):
         """Determine which morphological pattern a given cell follows, or if it vacillates."""
         bias = self[row][col]
-        if bias < 1 - self.settings.tripartite_cutoff:
-            return 'A'
-        elif 1 - self.settings.tripartite_cutoff <= bias <= self.settings.tripartite_cutoff:
-            return 'AB'
-        elif self.settings.tripartite_cutoff < bias:
-            return 'B'
+        if self.settings.tripartite_colors:
+            if bias < 1 - self.settings.tripartite_cutoff:
+                return 'A'
+            elif 1 - self.settings.tripartite_cutoff <= bias <= self.settings.tripartite_cutoff:
+                return 'AB'
+            elif self.settings.tripartite_cutoff < bias:
+                return 'B'
+            else:
+                assert False
         else:
-            assert False
+            return bias >= 0.5
 
     def nudge(self, row, col, outcome):
         """Adjust the value of a single cell based on an outcome in a neighboring cell or cells."""
@@ -387,31 +394,39 @@ class ParadigmaticSystem:
                 phony_cell_bias = avg(relevant_biases[1:])
                 relevant_biases += [phony_cell_bias] * (5 - len(relevant_biases))
             outcome = random() < avg(relevant_biases)
-            changed = self.nudge(row, col, outcome)
+            self.state().sim_result.current_state_changed = self.nudge(row, col, outcome)
         elif self.settings.effect_direction == ParadigmaticSystem.Settings.EffectDir.OUTWARD:
             # picked cell adjusts neighboring cells (probably) toward itself
             outcome = random() < self[row][col]
-            changed = self.nudge(row, col, outcome)
+            self.state().sim_result.current_state_changed = self.nudge(row, col, outcome)
             for i in range(1, min(self.settings.effect_radius + 1, max(len(self), len(self[0])))):
                 for y, x in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
                     current_row = row + i * y
                     current_col = col + i * x
                     if 0 <= current_row < len(self) and 0 <= current_col < len(self[0]):
-                        changed |= self.nudge(current_row, current_col, outcome)
+                        self.state().sim_result.current_state_changed |= self.nudge(current_row, current_col, outcome)
         else:
             raise ValueError("The EffectDir enum has no such value:", self.settings.effect_direction)
-        self.eval_criteria(changed)
+        self.eval_criteria()
 
-    def eval_criteria(self, changed=False):
-        """Check the preselected criteria for the lastest state of the matrix."""
+    def eval_criteria(self):
+        """Check the preselected conjunctivity and monotonicity criteria for the lastest state of the matrix."""
         if self.settings.conjunctive_criterion is not None:
-            self.state().sim_result.current_state_conjunctive = self.settings.conjunctive_criterion(self)
+            if not self.state().sim_result.current_state_changed:
+                # nothing happened in the last step, so don't bother brute-forcing the criterion
+                self.state().sim_result.current_state_conjunctive = bool(self.prev_state().sim_result.current_state_conjunctive)
+            else:
+                self.state().sim_result.current_state_conjunctive = self.settings.conjunctive_criterion(self)
             if self.state().sim_result.current_state_conjunctive:
                 self.state().sim_result.conjunctive_states += 1
-                if changed:
+                if self.state().sim_result.current_state_changed:
                     self.state().sim_result.conjunctive_changes += 1
         if self.settings.monotonic_criterion is not None:
-            self.state().sim_result.current_state_monotonic = self.settings.monotonic_criterion(self)
+            if not self.state().sim_result.current_state_changed:
+                # nothing happened in the last step, so don't bother brute-forcing the criterion
+                self.state().sim_result.current_state_monotonic = bool(self.prev_state().sim_result.current_state_monotonic)
+            else:
+                self.state().sim_result.current_state_monotonic = self.settings.monotonic_criterion(self)
             if type(self.state().sim_result.current_state_monotonic) is bool:
                 # monotonic_criterion is an "is_..." kind of criterion,
                 # so no rearranging required by the user
@@ -428,10 +443,10 @@ class ParadigmaticSystem:
                         col_permutation != list(range(len(col_permutation)))):
                         self.permute(self, row_permutation, col_permutation)
                     self.state().sim_result.monotonic_states += 1
-                    if changed:
+                    if self.state().sim_result.current_state_changed:
                         self.state().sim_result.monotonic_changes += 1
         self.state().sim_result.total_states += 1
-        if changed:
+        if self.state().sim_result.current_state_changed:
             self.state().sim_result.total_changes += 1
 
     def simulate(self, max_steps=None, batch_size=None):
