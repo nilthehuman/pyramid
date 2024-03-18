@@ -116,6 +116,9 @@ class KeyboardHandler(Widget):
         if keycode[1] == 'enter' and 'shift' in modifiers:
             App.get_running_app().root.replace_para_with_overlay()
             return True
+        if keycode[1] == 'f':
+            Window.fullscreen = not Window.fullscreen
+            return True
         if keycode[1] == 'p':
             App.get_running_app().root.toggle_control_panel()
             return True
