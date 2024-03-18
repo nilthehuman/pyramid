@@ -298,7 +298,7 @@ class ControlPanel(BoxLayout):
         undo_step_button = self.ControlPanelButton(font_size=44, text='<')
         undo_step_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.undo_step())
         self.add_widget(undo_step_button)
-        go_button = self.ControlPanelButton(font_size=44, text='Go!')
+        go_button = self.ControlPanelButton(font_size=38, text='Go!')
         go_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.start_stop_simulation())
         self.add_widget(go_button)
         do_step_button = self.ControlPanelButton(font_size=44, text='>')
