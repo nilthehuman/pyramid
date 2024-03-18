@@ -483,8 +483,12 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         if self.state().total_steps >= self.settings.max_steps:
             self.show_warning("Maximum number of steps reached.")
             return
-        self.show_info("Simulation running...")
-        Clock.schedule_once(self.run_simulation, 0.1)
+        if self.history is not None:
+            # skip to the last simulation state in existing history
+            self.forward_all()
+        if self.state().total_steps < self.settings.max_steps:
+            self.show_info("Simulation running...")
+            Clock.schedule_once(self.run_simulation, 0.1)
 
     def run_simulation(self, _elapsed_time):
         """Callback to run the simulation up to the predefined number of maximum steps."""
