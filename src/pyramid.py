@@ -421,6 +421,7 @@ class ParadigmaticSystem:
                 self.state().sim_result.conjunctive_states += 1
                 if self.state().sim_result.current_state_changed:
                     self.state().sim_result.conjunctive_changes += 1
+        reordered = False
         if self.settings.monotonic_criterion is not None:
             if not self.state().sim_result.current_state_changed:
                 # nothing happened in the last step, so don't bother brute-forcing the criterion
@@ -439,15 +440,26 @@ class ParadigmaticSystem:
                 if self.state().sim_result.current_state_monotonic is not None:
                     row_permutation, col_permutation = self.state().sim_result.current_state_monotonic
                     # change to the new arrangement and keep the monotonic property
-                    if (row_permutation != list(range(len(row_permutation))) or
-                        col_permutation != list(range(len(col_permutation)))):
+                    reordered = (list(row_permutation) != list(range(len(row_permutation))) or
+                                 list(col_permutation) != list(range(len(col_permutation))))
+                    if reordered:
+                        # store state both before and after reordering, easier to follow on the UI
+                        self.state().sim_result.monotonic_states += 1
+                        if self.state().sim_result.current_state_changed:
+                            self.state().sim_result.monotonic_changes += 1
+                        self.state().sim_result.total_states += 1
+                        if self.state().sim_result.current_state_changed:
+                            self.state().sim_result.total_changes += 1
+                        self.store_snapshot()
                         self.permute(self, row_permutation, col_permutation)
-                    self.state().sim_result.monotonic_states += 1
-                    if self.state().sim_result.current_state_changed:
-                        self.state().sim_result.monotonic_changes += 1
-        self.state().sim_result.total_states += 1
-        if self.state().sim_result.current_state_changed:
-            self.state().sim_result.total_changes += 1
+                    if not reordered:
+                        self.state().sim_result.monotonic_states += 1
+                        if self.state().sim_result.current_state_changed:
+                            self.state().sim_result.monotonic_changes += 1
+        if not reordered:
+            self.state().sim_result.total_states += 1
+            if self.state().sim_result.current_state_changed:
+                self.state().sim_result.total_changes += 1
 
     def simulate(self, max_steps=None, batch_size=None):
         """Run a predefined number of iterations of the simulation or until cancelled by the user."""
