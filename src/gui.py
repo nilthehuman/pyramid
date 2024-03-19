@@ -53,6 +53,10 @@ class KeyboardHandler(Widget):
             return False
         # we should be disabled if the help window is being shown
         assert App.get_running_app().root.help_window is None
+        if App.get_running_app().root.ids.grid.demo_callback is not None:
+            App.get_running_app().root.ids.grid.start_stop_simulation()
+            App.get_running_app().root.ids.grid.demo_callback.cancel()
+            App.get_running_app().root.ids.grid.demo_callback = None
         if App.get_running_app().root.ids.grid.warning_label:
             if keycode[1] in ['escape', 'right', 'left', 'pageup', 'pagedown',
                               'home', 'end', 'spacebar', 'delete']:
@@ -121,6 +125,9 @@ class KeyboardHandler(Widget):
             return True
         if keycode[1] == 'p':
             App.get_running_app().root.toggle_control_panel()
+            return True
+        if keycode[1] == 'd':
+            App.get_running_app().root.ids.grid.demo_setup(0)
             return True
         return False
 
@@ -319,6 +326,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         GridLayout.__init__(self, **kwargs)
         self.warning_label = None
         self.timed_callback = None
+        self.demo_callback = None
         # a convenient alias to maintain symmetry with show_info
         self.hide_info = self.hide_warning
         if para:
@@ -494,6 +502,16 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         """Callback to run the simulation up to the predefined number of maximum steps."""
         super().simulate()
         self.hide_info()
+
+    def demo_setup(self, _elapsed_time):
+        self.rewind_all()
+        self.delete_rest_of_history()
+        self.hide_info()
+        self.demo_callback = Clock.schedule_once(self.demo_run, 2)
+
+    def demo_run(self, _elapsed_time):
+        self.start_stop_simulation()
+        self.demo_callback = Clock.schedule_once(self.demo_setup, 20)
 
     def update_label(self, row=None, col=None, text=None):
         """Set the user's desired string as row or column label in the paradigm."""
