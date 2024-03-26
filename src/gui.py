@@ -53,10 +53,16 @@ class KeyboardHandler(Widget):
             return False
         # we should be disabled if the help window is being shown
         assert App.get_running_app().root.help_window is None
-        if App.get_running_app().root.ids.grid.demo_callback is not None:
-            App.get_running_app().root.ids.grid.start_stop_simulation()
-            App.get_running_app().root.ids.grid.demo_callback.cancel()
-            App.get_running_app().root.ids.grid.demo_callback = None
+        if App.get_running_app().root.ids.grid.demo_callback is None:
+            if keycode[1] == 'd':
+                App.get_running_app().root.ids.grid.demo_setup(0)
+                return True
+            if keycode[1] == 'e':
+                App.get_running_app().root.ids.grid.demo_setup_slow(0)
+                return True
+        else:
+            if App.get_running_app().root.ids.grid.running():
+                App.get_running_app().root.ids.grid.start_stop_simulation()
         if App.get_running_app().root.ids.grid.warning_label:
             if keycode[1] in ['escape', 'right', 'left', 'pageup', 'pagedown',
                               'home', 'end', 'spacebar', 'delete']:
@@ -125,9 +131,6 @@ class KeyboardHandler(Widget):
             return True
         if keycode[1] == 'p':
             App.get_running_app().root.toggle_control_panel()
-            return True
-        if keycode[1] == 'd':
-            App.get_running_app().root.ids.grid.demo_setup(0)
             return True
         return False
 
@@ -305,9 +308,12 @@ class ControlPanel(BoxLayout):
         undo_step_button = self.ControlPanelButton(font_size=44, text='<')
         undo_step_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.undo_step())
         self.add_widget(undo_step_button)
-        go_button = self.ControlPanelButton(font_size=38, text='Go!')
-        go_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.start_stop_simulation())
+        go_button = self.ControlPanelButton(font_size=32, text='Walk')
+        go_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.demo_setup_slow(0))
         self.add_widget(go_button)
+        go_faster_button = self.ControlPanelButton(font_size=32, text='Run')
+        go_faster_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.demo_setup(0))
+        self.add_widget(go_faster_button)
         do_step_button = self.ControlPanelButton(font_size=44, text='>')
         do_step_button.bind(on_release=lambda _: App.get_running_app().root.ids.grid.step())
         self.add_widget(do_step_button)
@@ -417,6 +423,13 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
 
     def rewind_all(self):
         """Revert simulation all the way to initial state."""
+        # TODO: refactor this
+        if self.demo_callback is not None:
+            if self.running():
+                self.start_stop_simulation()
+            if self.demo_callback is not None:
+                self.demo_callback.cancel()
+            self.demo_callback = None
         if self.timed_callback:
             self.start_stop_simulation()
         super().rewind_all()
@@ -424,6 +437,13 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
 
     def forward_all(self):
         """Redo all iterations until the latest state."""
+        # TODO: refactor this
+        if self.demo_callback is not None:
+            if self.running():
+                self.start_stop_simulation()
+            if self.demo_callback is not None:
+                self.demo_callback.cancel()
+            self.demo_callback = None
         if self.timed_callback:
             self.start_stop_simulation()
         super().forward_all()
@@ -431,6 +451,11 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
 
     def seek_prev_change(self):
         """Jump to the last state where a cell changed its color."""
+        # TODO: refactor this
+        if self.demo_callback is not None:
+            if self.running:
+                self.start_stop_simulation()
+            self.demo_callback = None
         if self.timed_callback:
             self.start_stop_simulation()
         super().seek_prev_change()
@@ -440,6 +465,11 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
 
     def seek_next_change(self):
         """Jump to the next state where a cell changes its color."""
+        # TODO: refactor this
+        if self.demo_callback is not None:
+            if self.running:
+                self.start_stop_simulation()
+            self.demo_callback = None
         if self.timed_callback:
             self.start_stop_simulation()
         if self.state().total_steps < self.settings.max_steps and self.history_index > len(self.history) - 10:
@@ -504,14 +534,46 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         self.hide_info()
 
     def demo_setup(self, _elapsed_time):
+        # TODO: refactor this
+        if self.demo_callback is not None:
+            if self.running():
+                self.start_stop_simulation()
+            self.demo_callback.cancel()
+            self.demo_callback = None
+        else:
+            self.demo_callback = Clock.schedule_once(self.demo_run, 0)
+
+    def demo_reset(self, _elapsed_time):
         self.rewind_all()
         self.delete_rest_of_history()
         self.hide_info()
-        self.demo_callback = Clock.schedule_once(self.demo_run, 2)
+        self.demo_callback = None
+        self.demo_setup(0)
 
     def demo_run(self, _elapsed_time):
         self.start_stop_simulation()
-        self.demo_callback = Clock.schedule_once(self.demo_setup, 20)
+        self.demo_callback = Clock.schedule_once(self.demo_reset, 30)
+
+    def demo_setup_slow(self, _elapsed_time):
+        if self.timed_callback:
+            assert self.running()
+            self.timed_callback.cancel()
+            self.timed_callback = None
+        if self.demo_callback is not None:
+            self.demo_callback.cancel()
+            self.demo_callback = None
+        else:
+            self.demo_callback = Clock.schedule_once(self.demo_run_slow, 0)
+
+    def demo_run_slow(self, _elapsed_time):
+        self.step()
+        if self.state().total_steps < 1000:
+            self.demo_callback = Clock.schedule_once(self.demo_run_slow, 0.4)
+        else:
+            self.rewind_all()
+            self.delete_rest_of_history()
+            self.hide_info()
+            self.demo_callback = Clock.schedule_once(self.demo_setup_slow, 3)
 
     def update_label(self, row=None, col=None, text=None):
         """Set the user's desired string as row or column label in the paradigm."""
