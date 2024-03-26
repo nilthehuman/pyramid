@@ -480,7 +480,7 @@ class ParadigmaticSystem:
 
     def export_results(self, filename):
         """Write the current tally along with settings to a CSV file."""
-        csv_fields = [f.name for f in fields(ParadigmaticSystem.Settings) + fields(ParadigmaticSystem.SimResult)] + ['conjunctive_log_odds', 'monotonic_log_odds']
+        csv_fields = [f.name for f in fields(ParadigmaticSystem.Settings) + fields(ParadigmaticSystem.SimResult)] + ['conjunctive_log_odds', 'monotonic_log_odds', 'last_state_monotonic']
         header = ','.join(csv_fields)
         file_has_header = False
         if isfile(filename):
@@ -509,6 +509,7 @@ class ParadigmaticSystem:
                 data['monotonic_log_odds'] = -inf
             except ZeroDivisionError:
                 data['monotonic_log_odds'] = inf
+            data['last_state_monotonic'] = self.state().sim_result.current_state_monotonic
             csv_writer.writerow(data)
 
     def is_conjunctive_binary(self):
