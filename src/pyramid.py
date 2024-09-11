@@ -84,7 +84,7 @@ class Cell:
 
 
 def cells_from_floats(float_matrix):
-    """Convenience function to turn a 2D matrix of float values to a matrix of Cell objects."""
+    """Convenience function to turn a 2D matrix of float values into a matrix of Cell objects."""
     assert isinstance(float_matrix, list)
     assert isinstance(float_matrix[0][0], (float, int))
     return list(map(lambda row: list(map(Cell, row)), float_matrix))
@@ -102,6 +102,7 @@ class ParadigmaticSystem:
         effect_direction: EffectDir = EffectDir.INWARD
         effect_radius: int = 1
         cells_own_weight: float = 1
+        no_reordering: bool = False
         no_edges: bool = True  # add mock cells around the table so that all real cells have four neighbors
         decaying_delta: bool = False
         delta: float = 0.1
@@ -440,8 +441,9 @@ class ParadigmaticSystem:
                 if self.state().sim_result.current_state_monotonic is not None:
                     row_permutation, col_permutation = self.state().sim_result.current_state_monotonic
                     # change to the new arrangement and keep the monotonic property
-                    reordered = (list(row_permutation) != list(range(len(row_permutation))) or
-                                 list(col_permutation) != list(range(len(col_permutation))))
+                    if not self.settings.no_reordering:
+                        reordered = (list(row_permutation) != list(range(len(row_permutation))) or
+                                     list(col_permutation) != list(range(len(col_permutation))))
                     if reordered:
                         # store state both before and after reordering, easier to follow on the UI
                         self.state().sim_result.monotonic_states += 1

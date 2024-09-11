@@ -786,6 +786,7 @@ class SettingsAndResultsLabel(ScaledFontBehavior, Label):
         text = (f'''[size=29][b]______ Settings ______[/b][/size]
             effect_radius = {settings.effect_radius}
             cells_own_weight = {settings.cells_own_weight}
+            no_reordering = {settings.no_reordering}
             no_edges = {settings.no_edges}\n''' +
             (f'kappa = {settings.kappa}\n' if settings.decaying_delta else f'delta = {settings.delta}\n') +
             f'tripartite_colors = {settings.tripartite_colors}\n' +
