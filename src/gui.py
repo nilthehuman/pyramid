@@ -699,6 +699,9 @@ class CellEditText(ScaledFontBehavior, TextInput):
     def set_new_value(self, instance):
         """Set a new bias value in the cell once the user finished typing."""
         assert self == instance
+        if not self.text:
+            # user left the text field blank
+            return
         updated = False
         try:
             new_value = float(self.text)
