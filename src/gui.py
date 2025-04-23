@@ -841,6 +841,10 @@ class PyramidApp(App):
             para.settings.monotonic_criterion = ParadigmaticSystem.can_be_made_monotonic_strict
         para.track_history(True)
         root = PyramidWindow(para)
+        if para.settings.no_reordering:
+            if para.settings.monotonic_criterion in [ParadigmaticSystem.can_be_made_monotonic_strict,
+                                                     ParadigmaticSystem.can_be_made_monotonic_tripartite]:
+                root.ids.grid.show_warning('Warning: monotonic criterion allows reordering')
         root.keyboardhandler = KeyboardHandler()
         return root
 
