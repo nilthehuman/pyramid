@@ -196,7 +196,7 @@ class PyramidWindow(AnchorLayout):
     def find_rearranged_para(self, *_args):
         """Callback to actually crunch the numbers and come up with a compact paradigmatic system."""
         try:
-            good_permutation = self.ids.grid.can_be_made_monotonic_strict()
+            good_permutation = self.ids.grid.settings.monotonic_criterion(self.ids.grid)
             self.ids.grid.hide_info()
         except ValueError as error:
             self.ids.grid.hide_info()
