@@ -415,7 +415,10 @@ class ParadigmaticSystem:
         if self.settings.conjunctive_criterion is not None:
             if not self.state().sim_result.current_state_changed:
                 # nothing happened in the last step, so don't bother brute-forcing the criterion
-                self.state().sim_result.current_state_conjunctive = bool(self.prev_state().sim_result.current_state_conjunctive)
+                if self.history:
+                    self.state().sim_result.current_state_conjunctive = bool(self.prev_state().sim_result.current_state_conjunctive)
+                else:
+                    self.state().sim_result.current_state_conjunctive = bool(self.state().sim_result.current_state_conjunctive)
             else:
                 self.state().sim_result.current_state_conjunctive = self.settings.conjunctive_criterion(self)
             if self.state().sim_result.current_state_conjunctive:
@@ -426,7 +429,10 @@ class ParadigmaticSystem:
         if self.settings.monotonic_criterion is not None:
             if not self.state().sim_result.current_state_changed:
                 # nothing happened in the last step, so don't bother brute-forcing the criterion
-                self.state().sim_result.current_state_monotonic = bool(self.prev_state().sim_result.current_state_monotonic)
+                if self.history:
+                    self.state().sim_result.current_state_monotonic = bool(self.prev_state().sim_result.current_state_monotonic)
+                else:
+                    self.state().sim_result.current_state_monotonic = bool(self.state().sim_result.current_state_monotonic)
             else:
                 self.state().sim_result.current_state_monotonic = self.settings.monotonic_criterion(self)
             if type(self.state().sim_result.current_state_monotonic) is bool:
