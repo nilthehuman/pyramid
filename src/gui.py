@@ -11,6 +11,7 @@ from kivy.graphics import Color
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
+from kivy.graphics import Color, Line
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
@@ -333,6 +334,7 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
         self.warning_label = None
         self.timed_callback = None
         self.demo_callback = None
+        self.pegs = []
         # a convenient alias to maintain symmetry with show_info
         self.hide_info = self.hide_warning
         if para:
@@ -411,15 +413,70 @@ class ParadigmaticSystemGrid(ParadigmaticSystem, GridLayout):
                     CURRENT_CELL_FRAME.parent.remove_widget(CURRENT_CELL_FRAME)
                 CURRENT_CELL_FRAME = None
 
+    def hide_pegs(self):
+        """Remove demonstrative pegs from the screen."""
+        for s in self.pegs:
+            self.canvas.remove(s)
+        self.pegs = []
+
+    def show_pegs(self):
+        """Display illustrative pegs for an easier visual explanation of the model's mechanics."""
+        self.hide_pegs()
+        if pick := self.state().last_pick:
+            current_cell = self.get_cell(*pick)
+            cell_size = current_cell.width
+            pick_coordinates = (current_cell.x + cell_size * 0.5, current_cell.y + cell_size * 0.5)
+            length = cell_size * 0.5
+            gap = 50
+            width = 3
+            for drow, dcol in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                row = pick[0] + drow
+                col = pick[1] + dcol
+                try:
+                    neighbor = self.get_cell(row, col)
+                except IndexError:
+                    continue
+                if not isinstance(neighbor, ParadigmaticSystemCell):
+                    continue
+                if self[row][col] == 0.5:
+                    continue
+                elif self[row][col] < 0.5:
+                    peg_color = Color(0.90, 0.31, 0.30)
+                else:
+                    peg_color = Color(0.22, 0.80, 0.22)
+                border_color = Color(0.85, 0.9, 0)
+                from_coordinates = (pick_coordinates[0] + dcol * (length + gap * 0.5),
+                                    pick_coordinates[1] - drow * (length + gap * 0.5))
+                to_coordinates = (pick_coordinates[0] + dcol * gap * 0.5,
+                                  pick_coordinates[1] - drow * gap * 0.5)
+                next_peg = Line(points=[from_coordinates[0], from_coordinates[1],
+                                        to_coordinates[0], to_coordinates[1]],
+                                width=width)
+                next_border = Line(points=[from_coordinates[0], from_coordinates[1],
+                                           to_coordinates[0], to_coordinates[1]],
+                                   width=width+2)
+                self.pegs.append(next_peg)
+                self.pegs.append(next_border)
+                if self.settings.effect_direction == ParadigmaticSystem.Settings.EffectDir.INWARD:
+                    self.canvas.add(border_color)
+                    self.canvas.add(next_border)
+                    self.canvas.add(peg_color)
+                    self.canvas.add(next_peg)
+                else:
+                    # TODO
+                    pass
+
     def step(self):
         """Perform one iteration of the simulation (thin wrapper around ParadigmaticSystem.step)."""
         super().step()
         self.update_all_cells()
+        self.show_pegs()
 
     def undo_step(self):
         """Revert one iteration of the simulation (thin wrapper around ParadigmaticSystem.undo_step)."""
         super().undo_step()
         self.update_all_cells()
+        self.show_pegs()
 
     def rewind_all(self):
         """Revert simulation all the way to initial state."""
