@@ -410,8 +410,14 @@ class ParadigmaticSystem:
             raise ValueError("The EffectDir enum has no such value:", self.settings.effect_direction)
         self.eval_criteria()
 
-    def eval_criteria(self):
+    def eval_criteria(self, initial_eval=False):
         """Check the preselected conjunctivity and monotonicity criteria for the lastest state of the matrix."""
+        if initial_eval:
+            if self.settings.conjunctive_criterion is not None:
+                self.state().sim_result.current_state_conjunctive = self.settings.conjunctive_criterion(self)
+            if self.settings.monotonic_criterion is not None:
+                self.state().sim_result.current_state_monotonic = self.settings.monotonic_criterion(self)
+            return
         if self.settings.conjunctive_criterion is not None:
             if not self.state().sim_result.current_state_changed:
                 # nothing happened in the last step, so don't bother brute-forcing the criterion
@@ -480,6 +486,7 @@ class ParadigmaticSystem:
             max_steps = self.settings.max_steps
         if batch_size is None:
             batch_size = int(1e9)  # math.inf is not applicable
+        self.eval_criteria(initial_eval=True)
         for _ in range(batch_size):
             if max_steps is not None and self.state().total_steps >= max_steps:
                 self.sim_status = ParadigmaticSystem.SimStatus.STOPPED
